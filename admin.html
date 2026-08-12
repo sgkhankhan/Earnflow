@@ -17,11 +17,14 @@
         .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
         .header h2 { font-size: 20px; color: #1b5e20; }
 
-        /* Total Users Counter Widget */
-        .widget-card { background: linear-gradient(135deg, #15803d, #16a34a); color: white; border-radius: 16px; padding: 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 6px 16px rgba(22, 163, 74, 0.25); }
-        .widget-info h4 { font-size: 13px; font-weight: 600; color: #dcfce7; text-transform: uppercase; }
-        .widget-info h2 { font-size: 28px; font-weight: 800; margin-top: 4px; }
-        .widget-btn { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; backdrop-filter: blur(4px); }
+        /* Metrics Grid Cards */
+        .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+        .metric-card { background: linear-gradient(135deg, #15803d, #16a34a); color: white; border-radius: 14px; padding: 12px 10px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2); display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+        .metric-card.blue { background: linear-gradient(135deg, #1e40af, #2563eb); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+        .metric-card.red { background: linear-gradient(135deg, #b91c1c, #ef4444); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
+        .metric-card h4 { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.85); text-transform: uppercase; letter-spacing: 0.3px; }
+        .metric-card h2 { font-size: 15px; font-weight: 800; margin-top: 4px; margin-bottom: 6px; }
+        .metric-btn { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; cursor: pointer; align-self: flex-start; backdrop-filter: blur(4px); }
 
         .card { background: #f9fafb; border: 1px solid #e0e0e0; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
         .card h3 { font-size: 15px; color: #1b5e20; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
@@ -67,13 +70,31 @@
             <a href="index.html" style="color: #2e7d32; text-decoration: none; font-weight: bold; font-size: 14px;">Home</a>
         </div>
 
-        <!-- Registered Users Counter Widget -->
-        <div class="widget-card">
-            <div class="widget-info">
-                <h4>Total Registered Users</h4>
-                <h2 id="totalUsersCount">0</h2>
+        <!-- 3 Metrics Cards Grid -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div>
+                    <h4>Total Users</h4>
+                    <h2 id="totalUsersCount">0</h2>
+                </div>
+                <button class="metric-btn" onclick="openUsersModal()"><i class="fa-solid fa-users"></i> View</button>
             </div>
-            <button class="widget-btn" onclick="openUsersModal()"><i class="fa-solid fa-users"></i> View All</button>
+
+            <div class="metric-card blue">
+                <div>
+                    <h4>Recharge</h4>
+                    <h2 id="totalRechargeVolume">₹0</h2>
+                </div>
+                <div style="font-size: 9px; color: rgba(255,255,255,0.8);"><i class="fa-solid fa-circle-check"></i> Total Rec.</div>
+            </div>
+
+            <div class="metric-card red">
+                <div>
+                    <h4>Withdrawal</h4>
+                    <h2 id="totalWithdrawVolume">₹0</h2>
+                </div>
+                <div style="font-size: 9px; color: rgba(255,255,255,0.8);"><i class="fa-solid fa-circle-check"></i> Total Paid</div>
+            </div>
         </div>
 
         <!-- Dynamic UPI ID Settings -->
@@ -165,19 +186,42 @@
             }
 
             document.body.style.display = 'flex';
-            fetchTotalUsersCount();
+            fetchDashboardMetrics();
             loadUpiSettings();
             loadPendingRecharges();
             loadPendingWithdrawals();
         });
 
-        async function fetchTotalUsersCount() {
-            const { count, error } = await supabaseClient
+        async function fetchDashboardMetrics() {
+            // 1. Total Users Count
+            const { count } = await supabaseClient
                 .from('profiles')
                 .select('id', { count: 'exact' });
 
-            if (!error) {
-                document.getElementById('totalUsersCount').innerText = count || 0;
+            document.getElementById('totalUsersCount').innerText = count || 0;
+
+            // 2. Total Approved Recharge Volume
+            const { data: approvedRecs } = await supabaseClient
+                .from('transactions')
+                .select('amount')
+                .eq('type', 'recharge')
+                .eq('status', 'success');
+
+            if (approvedRecs) {
+                const totalRec = approvedRecs.reduce((sum, tx) => sum + parseFloat(tx.amount || 0), 0);
+                document.getElementById('totalRechargeVolume').innerText = '₹' + totalRec.toFixed(0);
+            }
+
+            // 3. Total Approved Withdrawal Volume
+            const { data: approvedWiths } = await supabaseClient
+                .from('transactions')
+                .select('amount')
+                .eq('type', 'withdraw')
+                .eq('status', 'success');
+
+            if (approvedWiths) {
+                const totalWith = approvedWiths.reduce((sum, tx) => sum + parseFloat(tx.amount || 0), 0);
+                document.getElementById('totalWithdrawVolume').innerText = '₹' + totalWith.toFixed(0);
             }
         }
 
@@ -312,6 +356,7 @@
                 searchedUser.balance = newBal;
                 document.getElementById('resUserBalance').innerText = '₹' + newBal.toFixed(2);
                 document.getElementById('manualAmount').value = '';
+                fetchDashboardMetrics();
 
             } catch (err) {
                 alert("Error updating balance: " + err.message);
@@ -435,6 +480,7 @@
 
                 alert("Recharge Approved & Multi-Level Commission Distributed!");
                 loadPendingRecharges();
+                fetchDashboardMetrics();
 
             } catch (err) {
                 alert("Error approving recharge: " + err.message);
@@ -480,6 +526,7 @@
 
                 alert(`Withdrawal Rejected! ₹${amount} refunded back to user wallet.`);
                 loadPendingWithdrawals();
+                fetchDashboardMetrics();
 
             } catch (err) {
                 alert("Error executing refund: " + err.message);
@@ -490,6 +537,7 @@
             await supabaseClient.from('transactions').update({ status: newStatus }).eq('id', txId);
             loadPendingRecharges();
             loadPendingWithdrawals();
+            fetchDashboardMetrics();
         }
     </script>
 </body>
