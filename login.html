@@ -74,10 +74,6 @@
             </div>
             <div class="input-group">
                 <i class="fa-solid fa-lock"></i>
-                <input type="password" id="signupPassword" class="input-box" placeholder="Set Password" required>
-            </div>
-            <div class="input-group">
-                <i class="fa-solid fa-shield-halved"></i>
                 <input type="password" id="confirmPassword" class="input-box" placeholder="Confirm Password" required>
             </div>
             <div class="input-group">
@@ -90,7 +86,6 @@
     </div>
 
     <script>
-        // Clean Valid Supabase Key
         const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
         const SUPABASE_ANON_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
         
@@ -119,17 +114,10 @@
             e.preventDefault();
             
             const phone = document.getElementById('signupPhone').value.trim();
-            const password = document.getElementById('signupPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const referral = document.getElementById('referralCode').value.trim();
+            const password = document.getElementById('confirmPassword').value;
 
             if (phone.length < 10) {
                 alert('Please enter a valid 10-digit phone number');
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                alert('Passwords do not match!');
                 return;
             }
 
@@ -142,10 +130,7 @@
             try {
                 const { data, error } = await supabaseClient.auth.signUp({
                     email: email,
-                    password: password,
-                    options: {
-                        data: { phone_number: phone, referral_code: referral }
-                    }
+                    password: password
                 });
 
                 if (error) {
