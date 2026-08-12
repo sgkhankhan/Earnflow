@@ -101,14 +101,13 @@
     </div>
 
     <script>
-        // --- 1. SUPABASE CONFIGURATION ---
-        // Apni Supabase Details Yahan Replace Karein
-        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        // --- SUPABASE LIVE CREDENTIALS SET ---
+        const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6IjoyMTAyMDkxMDYwfQ.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
         
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // --- 2. TAB SWITCHER ---
+        // Tab Switcher
         function switchForm(type) {
             const loginForm = document.getElementById('loginForm');
             const signupForm = document.getElementById('signupForm');
@@ -128,7 +127,7 @@
             }
         }
 
-        // --- 3. HANDLE USER REGISTRATION ---
+        // Handle Signup
         async function handleSignup(e) {
             e.preventDefault();
             
@@ -142,7 +141,6 @@
                 return;
             }
 
-            // Phone number ko dummy email format me convert karke auth chalana
             const email = phone + "@earnflow.app";
             const signupBtn = document.getElementById('signupBtn');
             signupBtn.innerText = "Creating Account...";
@@ -165,7 +163,7 @@
             }
         }
 
-        // --- 4. HANDLE USER LOGIN ---
+        // Handle Login
         async function handleLogin(e) {
             e.preventDefault();
 
@@ -193,5 +191,5 @@
     </script>
 
 </body>
-                    </html>
-                    
+    </html>
+    
