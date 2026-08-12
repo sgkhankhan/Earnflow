@@ -86,7 +86,6 @@
                     <button class="btn-deduct" onclick="updateUserBalance('deduct')">- Deduct Money</button>
                 </div>
                 
-                <!-- Block/Unblock Toggle Button -->
                 <button id="blockToggleBtn" class="btn-block" onclick="toggleUserBlock()">Block User Account</button>
             </div>
         </div>
@@ -206,7 +205,7 @@
                 
                 searchedUser.is_blocked = newBlockStatus;
                 alert(`User account has been ${newBlockStatus ? 'BLOCKED' : 'UNBLOCKED'} successfully!`);
-                searchUser(); // Refresh UI
+                searchUser();
 
             } catch (err) {
                 alert("Error toggling block status: " + err.message);
@@ -266,40 +265,107 @@
             `).join('');
         }
 
+        // Multi-Level Referral Commission Logic (Level 1: 27%, Level 2: 2%, Level 3: 1%)
         async function approveRecharge(txId, userId, amount) {
             try {
-                const { data: profile } = await supabaseClient.from('profiles').select('balance, total_recharge, referred_by').eq('id', userId).single();
-                const newBal = parseFloat(profile.balance || 0) + parseFloat(amount);
-                const newTotalRec = parseFloat(profile.total_recharge || 0) + parseFloat(amount);
+                const rechargeAmt = parseFloat(amount);
+
+                // 1. Update user account balance
+                const { data: userProfile } = await supabaseClient
+                    .from('profiles')
+                    .select('balance, total_recharge, referred_by')
+                    .eq('id', userId)
+                    .single();
+
+                const newBal = parseFloat(userProfile.balance || 0) + rechargeAmt;
+                const newTotalRec = parseFloat(userProfile.total_recharge || 0) + rechargeAmt;
 
                 await supabaseClient.from('profiles').update({ balance: newBal, total_recharge: newTotalRec }).eq('id', userId);
                 await supabaseClient.from('transactions').update({ status: 'success' }).eq('id', txId);
 
-                if (profile && profile.referred_by) {
-                    const commissionAmt = parseFloat(amount) * 0.10;
-                    const { data: inviter } = await supabaseClient.from('profiles').select('id, balance, team_income').eq('referral_code', profile.referred_by).single();
+                // 2. LEVEL 1 COMMISSION (27%)
+                if (userProfile && userProfile.referred_by) {
+                    const { data: level1Parent } = await supabaseClient
+                        .from('profiles')
+                        .select('id, balance, team_income, level1_income, referred_by')
+                        .eq('referral_code', userProfile.referred_by)
+                        .maybeSingle();
 
-                    if (inviter) {
+                    if (level1Parent) {
+                        const l1Comm = rechargeAmt * 0.27; // 27%
                         await supabaseClient.from('profiles').update({
-                            balance: parseFloat(inviter.balance || 0) + commissionAmt,
-                            team_income: parseFloat(inviter.team_income || 0) + commissionAmt
-                        }).eq('id', inviter.id);
+                            balance: parseFloat(level1Parent.balance || 0) + l1Comm,
+                            team_income: parseFloat(level1Parent.team_income || 0) + l1Comm,
+                            level1_income: parseFloat(level1Parent.level1_income || 0) + l1Comm
+                        }).eq('id', level1Parent.id);
 
                         await supabaseClient.from('transactions').insert([{
-                            user_id: inviter.id,
+                            user_id: level1Parent.id,
                             type: 'recharge',
-                            amount: commissionAmt,
+                            amount: l1Comm,
                             status: 'success',
-                            payment_details: '10% Referral Reward'
+                            payment_details: 'Level 1 Referral Bonus (27%)'
                         }]);
+
+                        // 3. LEVEL 2 COMMISSION (2%)
+                        if (level1Parent.referred_by) {
+                            const { data: level2Parent } = await supabaseClient
+                                .from('profiles')
+                                .select('id, balance, team_income, level2_income, referred_by')
+                                .eq('referral_code', level1Parent.referred_by)
+                                .maybeSingle();
+
+                            if (level2Parent) {
+                                const l2Comm = rechargeAmt * 0.02; // 2%
+                                await supabaseClient.from('profiles').update({
+                                    balance: parseFloat(level2Parent.balance || 0) + l2Comm,
+                                    team_income: parseFloat(level2Parent.team_income || 0) + l2Comm,
+                                    level2_income: parseFloat(level2Parent.level2_income || 0) + l2Comm
+                                }).eq('id', level2Parent.id);
+
+                                await supabaseClient.from('transactions').insert([{
+                                    user_id: level2Parent.id,
+                                    type: 'recharge',
+                                    amount: l2Comm,
+                                    status: 'success',
+                                    payment_details: 'Level 2 Referral Bonus (2%)'
+                                }]);
+
+                                // 4. LEVEL 3 COMMISSION (1%)
+                                if (level2Parent.referred_by) {
+                                    const { data: level3Parent } = await supabaseClient
+                                        .from('profiles')
+                                        .select('id, balance, team_income, level3_income')
+                                        .eq('referral_code', level2Parent.referred_by)
+                                        .maybeSingle();
+
+                                    if (level3Parent) {
+                                        const l3Comm = rechargeAmt * 0.01; // 1%
+                                        await supabaseClient.from('profiles').update({
+                                            balance: parseFloat(level3Parent.balance || 0) + l3Comm,
+                                            team_income: parseFloat(level3Parent.team_income || 0) + l3Comm,
+                                            level3_income: parseFloat(level3Parent.level3_income || 0) + l3Comm
+                                        }).eq('id', level3Parent.id);
+
+                                        await supabaseClient.from('transactions').insert([{
+                                            user_id: level3Parent.id,
+                                            type: 'recharge',
+                                            amount: l3Comm,
+                                            status: 'success',
+                                            payment_details: 'Level 3 Referral Bonus (1%)'
+                                        }]);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
-                alert("Recharge Approved!");
+                alert("Recharge Approved and Multi-Level Commission (27%, 2%, 1%) Distributed!");
                 loadPendingRecharges();
 
             } catch (err) {
-                alert("Error: " + err.message);
+                alert("Error approving recharge: " + err.message);
             }
         }
 
@@ -319,41 +385,5 @@
                     <div class="action-btns">
                         <button class="btn-approve" onclick="updateStatus('${tx.id}', 'success')">Mark Sent</button>
                         <button class="btn-reject" onclick="rejectWithdrawal('${tx.id}', '${tx.user_id}', ${tx.amount})">Reject & Refund</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        async function rejectWithdrawal(txId, userId, amount) {
-            try {
-                const { data: profile } = await supabaseClient.from('profiles').select('balance').eq('id', userId).single();
-                const refundedBal = parseFloat(profile.balance || 0) + parseFloat(amount);
-
-                await supabaseClient.from('profiles').update({ balance: refundedBal }).eq('id', userId);
-                await supabaseClient.from('transactions').update({ status: 'failed' }).eq('id', txId);
-
-                await supabaseClient.from('transactions').insert([{
-                    user_id: userId,
-                    type: 'recharge',
-                    amount: parseFloat(amount),
-                    status: 'success',
-                    payment_details: 'Withdrawal Rejected - Refunded to Wallet'
-                }]);
-
-                alert(`Withdrawal Rejected! ₹${amount} refunded back to user wallet.`);
-                loadPendingWithdrawals();
-
-            } catch (err) {
-                alert("Error executing refund: " + err.message);
-            }
-        }
-
-        async function updateStatus(txId, newStatus) {
-            await supabaseClient.from('transactions').update({ status: newStatus }).eq('id', txId);
-            loadPendingRecharges();
-            loadPendingWithdrawals();
-        }
-    </script>
-</body>
-                                                                     </html>
-    
+    </div>
+        
