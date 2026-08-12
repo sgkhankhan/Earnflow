@@ -5,28 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Earnflow - Home</title>
     
-    <!-- Supabase JS Library -->
+    <!-- Supabase JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <script>
-        const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6IjoyMTAyMDkxMDYwfQ.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
-        
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // Instant Auth Guard - Session nahi milne par instant login page par bhejega
-        (async function checkAuth() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                window.location.replace('login.html');
-            }
-        })();
-    </script>
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: #f4f7f4; display: flex; justify-content: center; }
+        
+        /* By default page tab tak hidden rahega jab tak auth pass na ho jaye */
+        body { background-color: #f4f7f4; display: none; justify-content: center; }
+        
         .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 15px; padding-bottom: 90px; position: relative; }
         
         .banner { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 25px 15px; border-radius: 15px; text-align: center; }
@@ -159,5 +148,30 @@
         </div>
     </div>
 
+    <!-- Strict Auth Guard Logic -->
+    <script>
+        const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6IjoyMTAyMDkxMDYwfQ.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
+
+        document.addEventListener("DOMContentLoaded", async function() {
+            try {
+                const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                const { data: { session } } = await supabaseClient.auth.getSession();
+
+                if (!session) {
+                    // Logged in nahi hai -> Direct login.html
+                    window.location.replace('login.html');
+                } else {
+                    // Logged in hai -> Body show kar do
+                    document.body.style.display = 'flex';
+                }
+            } catch (err) {
+                // Koi bhi error aaye -> Safety ke liye login.html par bhej do
+                window.location.replace('login.html');
+            }
+        });
+    </script>
+
 </body>
-</html>
+    </html>
+    
