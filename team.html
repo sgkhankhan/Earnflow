@@ -3,47 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earnflow - Team Referral</title>
+    <title>Earnflow - Team</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: #f4f7f4; display: flex; justify-content: center; }
-        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 15px; padding-bottom: 90px; position: relative; }
+        body { background-color: #f4f7f4; display: none; justify-content: center; min-height: 100vh; }
+        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 20px; padding-bottom: 90px; position: relative; }
         
-        /* Header */
-        .page-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-        .page-header a { color: #1b5e20; text-decoration: none; font-size: 18px; }
-        .page-header h2 { font-size: 18px; color: #1b5e20; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .header h2 { font-size: 20px; color: #1b5e20; }
 
-        /* Referral Card */
-        .referral-card { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 20px; border-radius: 15px; margin-top: 15px; text-align: center; }
-        .referral-card h3 { font-size: 18px; margin-bottom: 5px; }
-        .referral-card p { font-size: 12px; opacity: 0.9; margin-bottom: 15px; }
-        
-        .code-box { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(5px); padding: 10px; border-radius: 10px; border: 1px dashed rgba(255, 255, 255, 0.4); display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: bold; }
-        .copy-btn { background: #ffffff; color: #1b5e20; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; }
+        .referral-card { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 20px; border-radius: 16px; margin-bottom: 20px; text-align: center; }
+        .referral-card h3 { font-size: 14px; opacity: 0.9; margin-bottom: 8px; }
+        .invite-box { background: rgba(255, 255, 255, 0.15); border: 1px dashed rgba(255, 255, 255, 0.4); padding: 10px 12px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; }
+        .invite-link { font-size: 12px; word-break: break-all; text-align: left; opacity: 0.95; }
+        .copy-btn { background: #ffffff; color: #1b5e20; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; white-space: nowrap; }
 
-        /* Stats Grid */
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
-        .stat-box { background: #f0fdf4; border: 1px solid #c8e6c9; padding: 12px 8px; border-radius: 10px; text-align: center; }
-        .stat-box p { font-size: 10px; color: #666; }
-        .stat-box h4 { font-size: 15px; color: #1b5e20; margin-top: 4px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: #f0fdf4; border: 1px solid #c8e6c9; padding: 15px; border-radius: 12px; text-align: center; }
+        .stat-card p { font-size: 12px; color: #666; }
+        .stat-card h4 { font-size: 20px; color: #1b5e20; margin-top: 4px; font-weight: bold; }
 
-        /* Level Cards */
-        .section-title { font-size: 14px; font-weight: bold; color: #333; margin: 20px 0 10px; }
-        
-        .level-card { background: #ffffff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 12px 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
-        .level-info { display: flex; align-items: center; gap: 12px; }
-        .level-badge { width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 14px; }
-        .lvl-1 { background: #16a34a; }
-        .lvl-2 { background: #2563eb; }
-        .lvl-3 { background: #9333ea; }
-        
-        .level-details h5 { font-size: 14px; color: #333; }
-        .level-details p { font-size: 11px; color: #777; }
-        .commission-rate { font-size: 14px; font-weight: bold; color: #16a34a; }
+        .team-section h3 { font-size: 16px; color: #333; margin-bottom: 12px; }
+        .member-list { display: flex; flex-direction: column; gap: 10px; }
+        .member-card { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 10px; }
+        .member-info h5 { font-size: 13px; color: #333; }
+        .member-info p { font-size: 11px; color: #888; margin-top: 2px; }
+        .member-joined { font-size: 11px; color: #2e7d32; font-weight: bold; }
 
-        /* Bottom Nav */
+        .empty-box { text-align: center; padding: 30px 20px; color: #888; font-size: 13px; }
+
         .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e0e0e0; left: 50%; transform: translateX(-50%); }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #888; cursor: pointer; text-decoration: none; }
         .nav-item.active { color: #2e7d32; font-weight: bold; }
@@ -54,109 +47,137 @@
 <body>
 
     <div class="app-container">
-        <!-- Top Header -->
-        <div class="page-header">
-            <a href="index.html"><i class="fa-solid fa-arrow-left"></i></a>
-            <h2>Team & Referral</h2>
-            <span></span>
+        <div class="header">
+            <h2><i class="fa-solid fa-users"></i> Referral Team</h2>
+            <div></div>
         </div>
 
         <!-- Referral Link Card -->
         <div class="referral-card">
             <h3>Invite Friends & Earn Commission</h3>
-            <p>Get high daily rebates from your team investments</p>
-            
-            <div class="code-box">
-                <span id="refCode">EF889201</span>
-                <button class="copy-btn" onclick="copyReferralLink()">Copy Link</button>
+            <div class="invite-box">
+                <span id="refLink" class="invite-link">Loading link...</span>
+                <button class="copy-btn" onclick="copyReferralLink()">Copy</button>
             </div>
         </div>
 
-        <!-- Team Statistics Grid -->
+        <!-- Team Stats Summary -->
         <div class="stats-grid">
-            <div class="stat-box">
-                <p>Total Team</p>
-                <h4>12</h4>
+            <div class="stat-card">
+                <p>Total Invited</p>
+                <h4 id="totalTeam">0</h4>
             </div>
-            <div class="stat-box">
-                <p>Active Users</p>
-                <h4>8</h4>
-            </div>
-            <div class="stat-box">
-                <p>Commission</p>
-                <h4>₹1,850</h4>
+            <div class="stat-card">
+                <p>Team Earnings</p>
+                <h4 id="teamIncome">₹0.00</h4>
             </div>
         </div>
 
-        <!-- Level Breakdown -->
-        <div class="section-title">Commission Rates</div>
-
-        <div class="level-card">
-            <div class="level-info">
-                <div class="level-badge lvl-1">L1</div>
-                <div class="level-details">
-                    <h5>Level 1 Team</h5>
-                    <p>Directly invited users</p>
+        <!-- Team Member List -->
+        <div class="team-section">
+            <h3>Invited Members List</h3>
+            <div id="memberContainer" class="member-list">
+                <div class="empty-box">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 8px;"></i>
+                    <p>Loading team members...</p>
                 </div>
             </div>
-            <div class="commission-rate">10%</div>
         </div>
 
-        <div class="level-card">
-            <div class="level-info">
-                <div class="level-badge lvl-2">L2</div>
-                <div class="level-details">
-                    <h5>Level 2 Team</h5>
-                    <p>Invited by Level 1</p>
-                </div>
-            </div>
-            <div class="commission-rate">3%</div>
-        </div>
-
-        <div class="level-card">
-            <div class="level-info">
-                <div class="level-badge lvl-3">L3</div>
-                <div class="level-details">
-                    <h5>Level 3 Team</h5>
-                    <p>Invited by Level 2</p>
-                </div>
-            </div>
-            <div class="commission-rate">1%</div>
-        </div>
-
-        <!-- Bottom Navigation Bar -->
+        <!-- Bottom Navigation -->
         <div class="bottom-nav">
-            <a href="index.html" class="nav-item">
-                <i class="fa-solid fa-house"></i>
-                <span>Home</span>
-            </a>
-            <div class="nav-item">
-                <i class="fa-solid fa-box-archive"></i>
-                <span>Treasure</span>
-            </div>
-            <div class="nav-item wheel-btn">
-                <div class="wheel-icon">
-                    <i class="fa-solid fa-dharmachakra"></i>
-                </div>
-                <span>Wheel</span>
-            </div>
-            <a href="team.html" class="nav-item active">
-                <i class="fa-solid fa-users"></i>
-                <span>Team</span>
-            </a>
-            <a href="profile.html" class="nav-item">
-                <i class="fa-solid fa-user"></i>
-                <span>Profile</span>
-            </a>
+            <a href="index.html" class="nav-item"><i class="fa-solid fa-house"></i><span>Home</span></a>
+            <a href="recharge.html" class="nav-item"><i class="fa-solid fa-box-archive"></i><span>Treasure</span></a>
+            <a href="wheel.html" class="nav-item wheel-btn"><div class="wheel-icon"><i class="fa-solid fa-dharmachakra"></i></div><span>Wheel</span></a>
+            <a href="team.html" class="nav-item active"><i class="fa-solid fa-users"></i><span>Team</span></a>
+            <a href="profile.html" class="nav-item"><i class="fa-solid fa-user"></i><span>Profile</span></a>
         </div>
     </div>
 
     <script>
+        const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
+        let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
+        const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let currentUser = null;
+
+        document.addEventListener("DOMContentLoaded", async function() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+
+            if (!session) {
+                window.location.replace('login.html');
+            } else {
+                currentUser = session.user;
+                document.body.style.display = 'flex';
+                loadTeamData();
+            }
+        });
+
+        async function loadTeamData() {
+            try {
+                // Fetch user profile for referral code & team earnings
+                const { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('referral_code, team_income')
+                    .eq('id', currentUser.id)
+                    .single();
+
+                const refCode = profile?.referral_code || 'EARNFLOW';
+                const baseUrl = window.location.origin + window.location.pathname.replace('team.html', 'login.html');
+                const fullRefLink = `${baseUrl}?ref=${refCode}`;
+
+                document.getElementById('refLink').innerText = fullRefLink;
+                document.getElementById('teamIncome').innerText = '₹' + parseFloat(profile?.team_income || 0).toFixed(2);
+
+                // Fetch team members invited by this referral code
+                const { data: members, error } = await supabaseClient
+                    .from('profiles')
+                    .select('created_at, email')
+                    .eq('referred_by', refCode)
+                    .order('created_at', { ascending: false });
+
+                const container = document.getElementById('memberContainer');
+
+                if (error) throw error;
+
+                if (!members || members.length === 0) {
+                    document.getElementById('totalTeam').innerText = '0';
+                    container.innerHTML = `
+                        <div class="empty-box">
+                            <i class="fa-solid fa-user-plus" style="font-size: 32px; color: #ccc; margin-bottom: 8px;"></i>
+                            <p>No invited members yet. Share your link to start earning!</p>
+                        </div>`;
+                    return;
+                }
+
+                document.getElementById('totalTeam').innerText = members.length;
+
+                container.innerHTML = members.map(m => {
+                    const rawPhone = (m.email || '').replace('@earnflow.app', '');
+                    const maskedPhone = rawPhone.length > 5 ? rawPhone.substring(0, 3) + '****' + rawPhone.slice(-2) : 'User';
+                    const joinDate = new Date(m.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+
+                    return `
+                        <div class="member-card">
+                            <div class="member-info">
+                                <h5>${maskedPhone}</h5>
+                                <p>Joined: ${joinDate}</p>
+                            </div>
+                            <span class="member-joined">Active Member</span>
+                        </div>`;
+                }).join('');
+
+            } catch (err) {
+                console.error("Team load error:", err.message);
+            }
+        }
+
         function copyReferralLink() {
-            let code = document.getElementById('refCode').innerText;
-            let link = "https://sgkhankhan.github.io/Earnflow/?ref=" + code;
-            navigator.clipboard.writeText(link);
-            alert('Referral link copied to clipboard:\n' + link);
+            const linkText = document.getElementById('refLink').innerText;
+            navigator.clipboard.writeText(linkText).then(() => {
+                alert("Referral Link copied to clipboard!");
+            });
         }
     </script>
 
