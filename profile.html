@@ -6,33 +6,32 @@
     <title>Earnflow - Profile</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Supabase JS CDN -->
+    <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        
         body { background-color: #f4f7f4; display: none; justify-content: center; min-height: 100vh; }
-        
         .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 20px; padding-bottom: 90px; position: relative; }
         
-        .profile-header { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 25px 20px; border-radius: 20px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.2); }
-        .avatar-box { width: 70px; height: 70px; background: #ffffff; color: #1b5e20; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 10px; }
-        .profile-header h2 { font-size: 20px; font-weight: bold; }
-        .profile-header p { font-size: 13px; opacity: 0.9; margin-top: 4px; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .header h2 { font-size: 20px; color: #1b5e20; }
 
-        .balance-card { background: #f0fdf4; border: 1px solid #c8e6c9; border-radius: 15px; padding: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .balance-title { font-size: 13px; color: #666; }
-        .balance-amount { font-size: 22px; font-weight: bold; color: #1b5e20; margin-top: 2px; }
+        .profile-card { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; text-align: center; }
+        .avatar-icon { font-size: 50px; margin-bottom: 8px; color: #ffffff; }
+        .profile-card h3 { font-size: 18px; font-weight: bold; }
+        .profile-card p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
 
         .menu-list { display: flex; flex-direction: column; gap: 12px; }
-        .menu-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 12px; text-decoration: none; color: #333; font-weight: 600; font-size: 14px; transition: 0.2s; }
-        .menu-item:active { background: #f5f5f5; }
+        .menu-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: #f9fafb; border: 1px solid #e0e0e0; border-radius: 12px; text-decoration: none; color: #333; font-size: 14px; font-weight: 500; }
         .menu-left { display: flex; align-items: center; gap: 12px; }
-        .menu-left i { font-size: 18px; color: #2e7d32; width: 24px; text-align: center; }
+        .menu-left i { font-size: 18px; color: #2e7d32; width: 22px; text-align: center; }
 
-        .logout-btn { width: 100%; background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 14px; border-radius: 25px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 30px; transition: 0.2s; }
-        .logout-btn:active { background: #fecaca; }
+        /* Secret Admin Button Style */
+        .admin-item { background: #fef2f2; border-color: #fca5a5; color: #dc2626; display: none; }
+        .admin-item i { color: #dc2626; }
+
+        .logout-btn { width: 100%; background: #dc2626; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 25px; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
         .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e0e0e0; left: 50%; transform: translateX(-50%); }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #888; cursor: pointer; text-decoration: none; }
@@ -44,74 +43,52 @@
 <body>
 
     <div class="app-container">
-        <!-- User Profile Card -->
-        <div class="profile-header">
-            <div class="avatar-box">
-                <i class="fa-solid fa-user"></i>
-            </div>
-            <h2 id="userPhone">Loading...</h2>
-            <p>Earnflow Investor Account</p>
+        <div class="header">
+            <h2>My Profile</h2>
+            <div></div>
         </div>
 
-        <!-- Wallet Balance Summary -->
-        <div class="balance-card">
-            <div>
-                <div class="balance-title">Current Balance</div>
-                <div class="balance-amount" id="profileBalance">₹0.00</div>
-            </div>
-            <a href="recharge.html" style="background: #2e7d32; color: white; padding: 8px 16px; border-radius: 20px; text-decoration: none; font-size: 12px; font-weight: bold;">Recharge</a>
+        <div class="profile-card">
+            <i class="fa-solid fa-circle-user avatar-icon"></i>
+            <h3 id="userDisplayPhone">User</h3>
+            <p id="userDisplayEmail">user@earnflow.app</p>
         </div>
 
-        <!-- Settings & Links Menu -->
         <div class="menu-list">
-            <a href="transactions.html" class="menu-item">
-                <div class="menu-left"><i class="fa-solid fa-wallet"></i><span>Recharge History</span></div>
-                <i class="fa-solid fa-chevron-right" style="color: #ccc; font-size: 12px;"></i>
+            <!-- Hidden Admin Panel Link (Visible only to 7983678835) -->
+            <a href="admin.html" id="adminPanelBtn" class="menu-item admin-item">
+                <div class="menu-left">
+                    <i class="fa-solid fa-user-shield"></i>
+                    <span>Admin Panel</span>
+                </div>
+                <i class="fa-solid fa-chevron-right" style="color: #dc2626;"></i>
             </a>
-            <a href="transactions.html" class="menu-item">
-                <div class="menu-left"><i class="fa-solid fa-hand-holding-dollar"></i><span>Withdrawal History</span></div>
-                <i class="fa-solid fa-chevron-right" style="color: #ccc; font-size: 12px;"></i>
+
+            <a href="recharge.html" class="menu-item">
+                <div class="menu-left"><i class="fa-solid fa-wallet"></i><span>Recharge Wallet</span></div>
+                <i class="fa-solid fa-chevron-right"></i>
+            </a>
+            <a href="withdraw.html" class="menu-item">
+                <div class="menu-left"><i class="fa-solid fa-money-bill-transfer"></i><span>Withdraw Funds</span></div>
+                <i class="fa-solid fa-chevron-right"></i>
             </a>
             <a href="team.html" class="menu-item">
-                <div class="menu-left"><i class="fa-solid fa-users"></i><span>My Team</span></div>
-                <i class="fa-solid fa-chevron-right" style="color: #ccc; font-size: 12px;"></i>
-            </a>
-            <a href="support.html" class="menu-item">
-                <div class="menu-left"><i class="fa-solid fa-headset"></i><span>Customer Support</span></div>
-                <i class="fa-solid fa-chevron-right" style="color: #ccc; font-size: 12px;"></i>
+                <div class="menu-left"><i class="fa-solid fa-users"></i><span>My Referral Team</span></div>
+                <i class="fa-solid fa-chevron-right"></i>
             </a>
         </div>
 
-        <!-- Logout Button -->
-        <button type="button" class="logout-btn" onclick="handleLogout()">
+        <button class="logout-btn" onclick="logoutUser()">
             <i class="fa-solid fa-right-from-bracket"></i>
-            <span>Log Out</span>
+            <span>Logout Account</span>
         </button>
 
-        <!-- Bottom Navigation Bar -->
         <div class="bottom-nav">
-            <a href="index.html" class="nav-item">
-                <i class="fa-solid fa-house"></i>
-                <span>Home</span>
-            </a>
-            <a href="recharge.html" class="nav-item">
-                <i class="fa-solid fa-box-archive"></i>
-                <span>Treasure</span>
-            </a>
-            <a href="wheel.html" class="nav-item wheel-btn">
-                <div class="wheel-icon">
-                    <i class="fa-solid fa-dharmachakra"></i>
-                </div>
-                <span>Wheel</span>
-            </a>
-            <a href="team.html" class="nav-item">
-                <i class="fa-solid fa-users"></i>
-                <span>Team</span>
-            </a>
-            <a href="profile.html" class="nav-item active">
-                <i class="fa-solid fa-user"></i>
-                <span>Profile</span>
-            </a>
+            <a href="index.html" class="nav-item"><i class="fa-solid fa-house"></i><span>Home</span></a>
+            <a href="recharge.html" class="nav-item"><i class="fa-solid fa-box-archive"></i><span>Treasure</span></a>
+            <a href="wheel.html" class="nav-item wheel-btn"><div class="wheel-icon"><i class="fa-solid fa-dharmachakra"></i></div><span>Wheel</span></a>
+            <a href="team.html" class="nav-item"><i class="fa-solid fa-users"></i><span>Team</span></a>
+            <a href="profile.html" class="nav-item active"><i class="fa-solid fa-user"></i><span>Profile</span></a>
         </div>
     </div>
 
@@ -121,6 +98,9 @@
         const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // 🔒 ADMIN MOBILE EMAIL FORMAT
+        const ADMIN_EMAIL = "7983678835@earnflow.app";
 
         document.addEventListener("DOMContentLoaded", async function() {
             const { data: { session } } = await supabaseClient.auth.getSession();
@@ -129,39 +109,23 @@
                 window.location.replace('login.html');
             } else {
                 document.body.style.display = 'flex';
+                const userEmail = session.user.email || '';
                 
-                let email = session.user.email || "";
-                let phone = email.replace("@earnflow.app", "");
-                if (phone) {
-                    document.getElementById('userPhone').innerText = "+91 " + phone;
-                }
+                const rawPhone = userEmail.replace('@earnflow.app', '');
+                document.getElementById('userDisplayPhone').innerText = rawPhone;
+                document.getElementById('userDisplayEmail').innerText = userEmail;
 
-                // Fetch Balance from Supabase
-                const { data: profile } = await supabaseClient
-                    .from('profiles')
-                    .select('balance')
-                    .eq('id', session.user.id)
-                    .single();
-
-                if (profile) {
-                    document.getElementById('profileBalance').innerText = '₹' + parseFloat(profile.balance || 0).toFixed(2);
+                // Reveal Admin Button if mobile matches
+                if (userEmail === ADMIN_EMAIL || rawPhone === '7983678835') {
+                    document.getElementById('adminPanelBtn').style.display = 'flex';
                 }
             }
         });
 
-        async function handleLogout() {
-            const confirmLogout = confirm("Kya aap Log Out karna chahte hain?");
-            if (confirmLogout) {
-                const { error } = await supabaseClient.auth.signOut();
-                if (error) {
-                    alert("Logout failed: " + error.message);
-                } else {
-                    alert("Successfully logged out!");
-                    window.location.replace('login.html');
-                }
-            }
+        async function logoutUser() {
+            await supabaseClient.auth.signOut();
+            window.location.replace('login.html');
         }
     </script>
-
 </body>
 </html>
