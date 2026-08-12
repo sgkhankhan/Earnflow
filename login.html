@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Earnflow - Login / Register</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase JS Library CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
         body { background-color: #f4f7f4; display: flex; justify-content: center; }
@@ -34,7 +38,6 @@
         .form-footer { text-align: center; font-size: 12px; color: #666; margin-top: 15px; }
         .form-footer a { color: #1b5e20; text-decoration: none; font-weight: bold; }
 
-        /* Hidden Class */
         .hidden { display: none; }
     </style>
 </head>
@@ -60,13 +63,13 @@
         <form id="loginForm" class="form-container" onsubmit="handleLogin(event)">
             <div class="input-group">
                 <i class="fa-solid fa-mobile-screen"></i>
-                <input type="tel" class="input-box" placeholder="Phone Number" maxlength="10" required>
+                <input type="tel" id="loginPhone" class="input-box" placeholder="Phone Number" maxlength="10" required>
             </div>
             <div class="input-group">
                 <i class="fa-solid fa-lock"></i>
-                <input type="password" class="input-box" placeholder="Password" required>
+                <input type="password" id="loginPassword" class="input-box" placeholder="Password" required>
             </div>
-            <button type="submit" class="submit-btn">Log In</button>
+            <button type="submit" id="loginBtn" class="submit-btn">Log In</button>
             <div class="form-footer">
                 <a href="#">Forgot Password?</a>
             </div>
@@ -76,21 +79,21 @@
         <form id="signupForm" class="form-container hidden" onsubmit="handleSignup(event)">
             <div class="input-group">
                 <i class="fa-solid fa-mobile-screen"></i>
-                <input type="tel" class="input-box" placeholder="Phone Number" maxlength="10" required>
+                <input type="tel" id="signupPhone" class="input-box" placeholder="Phone Number" maxlength="10" required>
             </div>
             <div class="input-group">
                 <i class="fa-solid fa-lock"></i>
-                <input type="password" class="input-box" placeholder="Set Password" required>
+                <input type="password" id="signupPassword" class="input-box" placeholder="Set Password" required>
             </div>
             <div class="input-group">
                 <i class="fa-solid fa-shield-halved"></i>
-                <input type="password" class="input-box" placeholder="Confirm Password" required>
+                <input type="password" id="confirmPassword" class="input-box" placeholder="Confirm Password" required>
             </div>
             <div class="input-group">
                 <i class="fa-solid fa-user-plus"></i>
-                <input type="text" class="input-box" placeholder="Referral Code (Optional)">
+                <input type="text" id="referralCode" class="input-box" placeholder="Referral Code (Optional)">
             </div>
-            <button type="submit" class="submit-btn">Create Account</button>
+            <button type="submit" id="signupBtn" class="submit-btn">Create Account</button>
             <div class="form-footer">
                 By registering, you agree to our Terms & Conditions.
             </div>
@@ -98,6 +101,14 @@
     </div>
 
     <script>
+        // --- 1. SUPABASE CONFIGURATION ---
+        // Apni Supabase Details Yahan Replace Karein
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // --- 2. TAB SWITCHER ---
         function switchForm(type) {
             const loginForm = document.getElementById('loginForm');
             const signupForm = document.getElementById('signupForm');
@@ -117,18 +128,70 @@
             }
         }
 
-        function handleLogin(e) {
+        // --- 3. HANDLE USER REGISTRATION ---
+        async function handleSignup(e) {
             e.preventDefault();
-            alert('Login successful! Redirecting to Home...');
-            window.location.href = 'index.html';
+            
+            const phone = document.getElementById('signupPhone').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const referral = document.getElementById('referralCode').value.trim();
+
+            if (password !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+
+            // Phone number ko dummy email format me convert karke auth chalana
+            const email = phone + "@earnflow.app";
+            const signupBtn = document.getElementById('signupBtn');
+            signupBtn.innerText = "Creating Account...";
+
+            const { data, error } = await supabase.auth.signUp({
+                email: email,
+                password: password,
+                options: {
+                    data: { phone_number: phone, referral_code: referral }
+                }
+            });
+
+            signupBtn.innerText = "Create Account";
+
+            if (error) {
+                alert("Signup Failed: " + error.message);
+            } else {
+                alert("Account created successfully! Logging in...");
+                window.location.href = 'index.html';
+            }
         }
 
-        function handleSignup(e) {
+        // --- 4. HANDLE USER LOGIN ---
+        async function handleLogin(e) {
             e.preventDefault();
-            alert('Account created successfully! Redirecting to Home...');
-            window.location.href = 'index.html';
+
+            const phone = document.getElementById('loginPhone').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const email = phone + "@earnflow.app";
+
+            const loginBtn = document.getElementById('loginBtn');
+            loginBtn.innerText = "Logging in...";
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+
+            loginBtn.innerText = "Log In";
+
+            if (error) {
+                alert("Login Failed: Incorrect Phone or Password!");
+            } else {
+                alert("Login Successful!");
+                window.location.href = 'index.html';
+            }
         }
     </script>
 
 </body>
-</html>
+                    </html>
+                    
