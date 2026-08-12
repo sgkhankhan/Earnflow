@@ -22,15 +22,20 @@
         .balance-card p { font-size: 12px; opacity: 0.9; }
         .balance-card h3 { font-size: 28px; margin-top: 5px; font-weight: bold; }
 
-        .form-group { margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 13px; font-weight: bold; color: #333; margin-bottom: 8px; }
         .amount-input-box { position: relative; }
         .amount-input-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #2e7d32; font-size: 18px; }
         .amount-input { width: 100%; padding: 14px 15px 14px 45px; border: 1px solid #ccc; border-radius: 12px; font-size: 18px; font-weight: bold; outline: none; }
 
-        .quick-amounts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 25px; }
+        .quick-amounts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
         .amt-btn { background: #f0fdf4; border: 1px solid #c8e6c9; padding: 12px; border-radius: 10px; color: #2e7d32; font-weight: bold; font-size: 14px; cursor: pointer; text-align: center; }
         .amt-btn:active { background: #2e7d32; color: white; }
+
+        .pay-upi-btn { width: 100%; background: #16a34a; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; text-decoration: none; }
+        
+        .utr-section { background: #f9fafb; border: 1px dashed #2e7d32; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
+        .utr-section label { display: block; font-size: 12px; font-weight: bold; color: #1b5e20; margin-bottom: 6px; }
 
         .submit-btn { width: 100%; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; border: none; padding: 15px; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer; }
 
@@ -57,7 +62,7 @@
 
         <form id="rechargeForm">
             <div class="form-group">
-                <label>Enter Recharge Amount (₹)</label>
+                <label>1. Select / Enter Amount (₹)</label>
                 <div class="amount-input-box">
                     <i class="fa-solid fa-indian-rupee-sign"></i>
                     <input type="number" id="rechargeAmount" class="amount-input" placeholder="525" min="100" required>
@@ -68,37 +73,32 @@
                 <div class="amt-btn" onclick="selectAmount(525)">₹525</div>
                 <div class="amt-btn" onclick="selectAmount(1500)">₹1,500</div>
                 <div class="amt-btn" onclick="selectAmount(3000)">₹3,000</div>
-                <div class="amt-btn" onclick="selectAmount(5000)">₹5,000</div>
-                <div class="amt-btn" onclick="selectAmount(10000)">₹10,000</div>
-                <div class="amt-btn" onclick="selectAmount(25000)">₹25,000</div>
             </div>
 
-            <button type="submit" id="submitBtn" class="submit-btn">Pay & Add Balance</button>
+            <!-- UPI Deep Link Button -->
+            <button type="button" class="pay-upi-btn" onclick="openUPIApp()">
+                <i class="fa-solid fa-mobile-screen-button"></i>
+                <span>2. Pay via PhonePe / GPay / Paytm</span>
+            </button>
+
+            <!-- UTR / Ref No Entry -->
+            <div class="utr-section">
+                <label>3. Enter 12-Digit UTR / Transaction Ref No.</label>
+                <div class="amount-input-box">
+                    <i class="fa-solid fa-receipt"></i>
+                    <input type="text" id="utrNumber" class="amount-input" style="font-size: 14px;" placeholder="e.g. 423819203812" maxlength="12" minlength="12" required>
+                </div>
+            </div>
+
+            <button type="submit" id="submitBtn" class="submit-btn">Submit Request</button>
         </form>
 
         <div class="bottom-nav">
-            <a href="index.html" class="nav-item">
-                <i class="fa-solid fa-house"></i>
-                <span>Home</span>
-            </a>
-            <a href="recharge.html" class="nav-item active">
-                <i class="fa-solid fa-box-archive"></i>
-                <span>Treasure</span>
-            </a>
-            <a href="wheel.html" class="nav-item wheel-btn">
-                <div class="wheel-icon">
-                    <i class="fa-solid fa-dharmachakra"></i>
-                </div>
-                <span>Wheel</span>
-            </a>
-            <a href="team.html" class="nav-item">
-                <i class="fa-solid fa-users"></i>
-                <span>Team</span>
-            </a>
-            <a href="profile.html" class="nav-item">
-                <i class="fa-solid fa-user"></i>
-                <span>Profile</span>
-            </a>
+            <a href="index.html" class="nav-item"><i class="fa-solid fa-house"></i><span>Home</span></a>
+            <a href="recharge.html" class="nav-item active"><i class="fa-solid fa-box-archive"></i><span>Treasure</span></a>
+            <a href="wheel.html" class="nav-item wheel-btn"><div class="wheel-icon"><i class="fa-solid fa-dharmachakra"></i></div><span>Wheel</span></a>
+            <a href="team.html" class="nav-item"><i class="fa-solid fa-users"></i><span>Team</span></a>
+            <a href="profile.html" class="nav-item"><i class="fa-solid fa-user"></i><span>Profile</span></a>
         </div>
     </div>
 
@@ -110,8 +110,23 @@
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null;
 
+        // ⚠️ AAPKI UPI ID HERE (Apni UPI ID yahan daalein)
+        const MY_ADMIN_UPI_ID = "YOUR_UPI_ID@upi"; 
+
         function selectAmount(amt) {
             document.getElementById('rechargeAmount').value = amt;
+        }
+
+        // Open GPay / PhonePe App Automatically
+        function openUPIApp() {
+            const amount = document.getElementById('rechargeAmount').value;
+            if (!amount || amount < 100) {
+                alert("Please enter a valid amount (Minimum ₹100)");
+                return;
+            }
+            
+            const upiUrl = `upi://pay?pa=${MY_ADMIN_UPI_ID}&pn=Earnflow&am=${amount}&cu=INR`;
+            window.location.href = upiUrl;
         }
 
         document.addEventListener("DOMContentLoaded", async function() {
@@ -138,72 +153,54 @@
             }
         }
 
-        // Handle Recharge & Transaction Record
+        // Submit Pending Recharge Request
         document.getElementById('rechargeForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const amount = parseFloat(document.getElementById('rechargeAmount').value);
+            const utr = document.getElementById('utrNumber').value.trim();
+
             if (!amount || amount < 100) {
                 alert("Minimum recharge amount is ₹100");
                 return;
             }
 
+            if (utr.length !== 12) {
+                alert("Please enter valid 12-digit UTR number");
+                return;
+            }
+
             const submitBtn = document.getElementById('submitBtn');
-            submitBtn.innerText = "Processing...";
+            submitBtn.innerText = "Submitting...";
             submitBtn.disabled = true;
 
             try {
-                // 1. Fetch current profile balance
-                const { data: profile, error: fetchErr } = await supabaseClient
-                    .from('profiles')
-                    .select('balance, total_recharge')
-                    .eq('id', currentUser.id)
-                    .single();
-
-                if (fetchErr) throw fetchErr;
-
-                const currentBal = parseFloat(profile.balance || 0);
-                const currentRecharge = parseFloat(profile.total_recharge || 0);
-
-                const newBalance = currentBal + amount;
-                const newTotalRecharge = currentRecharge + amount;
-
-                // 2. Update profiles balance
-                const { error: updateErr } = await supabaseClient
-                    .from('profiles')
-                    .update({ 
-                        balance: newBalance,
-                        total_recharge: newTotalRecharge 
-                    })
-                    .eq('id', currentUser.id);
-
-                if (updateErr) throw updateErr;
-
-                // 3. Insert record in transactions table
+                // Insert as Pending status for Admin Approval
                 const { error: txErr } = await supabaseClient
                     .from('transactions')
                     .insert([{
                         user_id: currentUser.id,
                         type: 'recharge',
                         amount: amount,
-                        status: 'success',
-                        payment_details: 'Wallet Topup'
+                        status: 'pending',
+                        payment_details: `UTR: ${utr}`
                     }]);
 
                 if (txErr) throw txErr;
 
-                alert(`Success! ₹${amount} added to your wallet.`);
+                alert(`Recharge request for ₹${amount} submitted! It will be verified and approved shortly.`);
                 document.getElementById('rechargeAmount').value = '';
-                fetchUserBalance();
+                document.getElementById('utrNumber').value = '';
 
             } catch (err) {
-                alert("Recharge Failed: " + err.message);
+                alert("Failed to submit request: " + err.message);
             } finally {
-                submitBtn.innerText = "Pay & Add Balance";
+                submitBtn.innerText = "Submit Request";
                 submitBtn.disabled = false;
             }
         });
     </script>
 
 </body>
-</html>
+    </html>
+    
