@@ -14,7 +14,7 @@
         
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Instant Auth Guard - Body render hone se pehle hi redirect kar dega
+        // Instant Auth Guard - Session nahi milne par instant login page par bhejega
         (async function checkAuth() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
