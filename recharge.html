@@ -5,96 +5,193 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Earnflow - Recharge</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: #f4f7f4; display: flex; justify-content: center; }
-        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 15px; padding-bottom: 30px; position: relative; }
+        body { background-color: #f4f7f4; display: none; justify-content: center; min-height: 100vh; }
+        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 20px; padding-bottom: 90px; position: relative; }
         
-        /* Top Navigation Header */
-        .page-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-        .page-header a { color: #1b5e20; text-decoration: none; font-size: 18px; }
-        .page-header h2 { font-size: 18px; color: #1b5e20; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .header h2 { font-size: 20px; color: #1b5e20; }
+        .back-btn { text-decoration: none; color: #1b5e20; font-size: 20px; }
 
-        /* Amount Selection Grid */
-        .section-title { font-size: 14px; font-weight: bold; color: #333; margin: 20px 0 10px; }
-        .amount-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .amount-btn { background: #f0fdf4; border: 1px solid #a7f3d0; padding: 12px; border-radius: 10px; text-align: center; font-size: 16px; font-weight: bold; color: #166534; cursor: pointer; }
-        .amount-btn.active, .amount-btn:hover { background: #2e7d32; color: white; border-color: #2e7d32; }
+        .balance-card { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; text-align: center; }
+        .balance-card p { font-size: 12px; opacity: 0.9; }
+        .balance-card h3 { font-size: 28px; margin-top: 5px; font-weight: bold; }
 
-        /* Custom Input */
-        .input-box { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 10px; font-size: 16px; margin-top: 10px; outline: none; }
-        .input-box:focus { border-color: #2e7d32; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 13px; font-weight: bold; color: #333; margin-bottom: 8px; }
+        .amount-input-box { position: relative; }
+        .amount-input-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #2e7d32; font-size: 18px; }
+        .amount-input { width: 100%; padding: 14px 15px 14px 45px; border: 1px solid #ccc; border-radius: 12px; font-size: 18px; font-weight: bold; outline: none; }
 
-        /* Payment Details Box */
-        .payment-box { background: #f9fafb; border: 1px dashed #2e7d32; padding: 15px; border-radius: 12px; margin-top: 20px; text-align: center; }
-        .qr-placeholder { width: 150px; height: 150px; background: #e5e7eb; margin: 10px auto; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 12px; color: #666; }
-        .upi-box { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #ddd; margin-top: 10px; font-size: 13px; font-weight: bold; }
-        .copy-btn { background: #16a34a; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 11px; }
+        .quick-amounts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 25px; }
+        .amt-btn { background: #f0fdf4; border: 1px solid #c8e6c9; padding: 12px; border-radius: 10px; color: #2e7d32; font-weight: bold; font-size: 14px; cursor: pointer; text-align: center; }
+        .amt-btn.active { background: #2e7d32; color: white; border-color: #2e7d32; }
 
-        /* UTR Form */
-        .utr-section { margin-top: 20px; }
-        .submit-btn { width: 100%; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; border: none; padding: 14px; border-radius: 25px; margin-top: 20px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .submit-btn { width: 100%; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; border: none; padding: 15px; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer; }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e0e0e0; left: 50%; transform: translateX(-50%); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #888; cursor: pointer; text-decoration: none; }
+        .nav-item.active { color: #2e7d32; font-weight: bold; }
+        .wheel-btn { position: relative; top: -20px; }
+        .wheel-icon { width: 50px; height: 50px; background: #16a34a; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 22px; border: 4px solid #ffffff; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        <!-- Top Header -->
-        <div class="page-header">
-            <a href="index.html"><i class="fa-solid fa-arrow-left"></i></a>
+        <div class="header">
+            <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
             <h2>Recharge Wallet</h2>
-            <span></span>
+            <div></div>
         </div>
 
-        <!-- Select Amount -->
-        <div class="section-title">Select Recharge Amount</div>
-        <div class="amount-grid">
-            <div class="amount-btn active" onclick="setAmount(525)">₹525</div>
-            <div class="amount-btn" onclick="setAmount(1000)">₹1,000</div>
-            <div class="amount-btn" onclick="setAmount(2000)">₹2,000</div>
-            <div class="amount-btn" onclick="setAmount(5000)">₹5,000</div>
-            <div class="amount-btn" onclick="setAmount(10000)">₹10,000</div>
-            <div class="amount-btn" onclick="setAmount(20000)">₹20,000</div>
+        <div class="balance-card">
+            <p>Current Balance</p>
+            <h3 id="currentBalance">₹0.00</h3>
         </div>
 
-        <input type="number" id="customAmount" class="input-box" value="525" placeholder="Enter custom amount">
-
-        <!-- Payment Instructions -->
-        <div class="payment-box">
-            <p style="font-size: 13px; color: #555;">Scan QR Code or copy UPI ID to pay</p>
-            <div class="qr-placeholder">
-                <i class="fa-solid fa-qrcode" style="font-size: 80px; color: #2e7d32;"></i>
+        <form id="rechargeForm">
+            <div class="form-group">
+                <label>Enter Recharge Amount (₹)</label>
+                <div class="amount-input-box">
+                    <i class="fa-solid fa-indian-rupee-sign"></i>
+                    <input type="number" id="rechargeAmount" class="amount-input" placeholder="525" min="100" required>
+                </div>
             </div>
-            <div class="upi-box">
-                <span id="upiId">earnflow@upi</span>
-                <button class="copy-btn" onclick="copyUPI()">Copy UPI</button>
+
+            <div class="quick-amounts">
+                <div class="amt-btn" onclick="selectAmount(525)">₹525</div>
+                <div class="amt-btn" onclick="selectAmount(1500)">₹1,500</div>
+                <div class="amt-btn" onclick="selectAmount(3000)">₹3,000</div>
+                <div class="amt-btn" onclick="selectAmount(5000)">₹5,000</div>
+                <div class="amt-btn" onclick="selectAmount(10000)">₹10,000</div>
+                <div class="amt-btn" onclick="selectAmount(25000)">₹25,000</div>
             </div>
-        </div>
 
-        <!-- UTR / Ref No Entry -->
-        <div class="utr-section">
-            <div class="section-title">Enter 12-Digit UTR / Ref No.</div>
-            <input type="text" class="input-box" placeholder="e.g. 324156789012" maxlength="12">
-            <p style="font-size: 11px; color: #888; margin-top: 5px;">* Mandatory step after completing UPI payment.</p>
-        </div>
+            <button type="submit" id="submitBtn" class="submit-btn">Pay & Add Balance</button>
+        </form>
 
-        <button class="submit-btn" onclick="alert('Recharge request submitted successfully! Pending Admin approval.')">Submit Payment</button>
+        <div class="bottom-nav">
+            <a href="index.html" class="nav-item">
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </a>
+            <a href="recharge.html" class="nav-item active">
+                <i class="fa-solid fa-box-archive"></i>
+                <span>Treasure</span>
+            </a>
+            <a href="wheel.html" class="nav-item wheel-btn">
+                <div class="wheel-icon">
+                    <i class="fa-solid fa-dharmachakra"></i>
+                </div>
+                <span>Wheel</span>
+            </a>
+            <a href="team.html" class="nav-item">
+                <i class="fa-solid fa-users"></i>
+                <span>Team</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <i class="fa-solid fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </div>
     </div>
 
     <script>
-        function setAmount(val) {
-            document.getElementById('customAmount').value = val;
-            let btns = document.querySelectorAll('.amount-btn');
-            btns.forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+        const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
+        let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
+        const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let currentUser = null;
+
+        function selectAmount(amt) {
+            document.getElementById('rechargeAmount').value = amt;
         }
 
-        function copyUPI() {
-            let upi = document.getElementById('upiId').innerText;
-            navigator.clipboard.writeText(upi);
-            alert('UPI ID copied: ' + upi);
+        document.addEventListener("DOMContentLoaded", async function() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+
+            if (!session) {
+                window.location.replace('login.html');
+            } else {
+                currentUser = session.user;
+                document.body.style.display = 'flex';
+                fetchUserBalance();
+            }
+        });
+
+        async function fetchUserBalance() {
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('balance')
+                .eq('id', currentUser.id)
+                .single();
+
+            if (profile) {
+                document.getElementById('currentBalance').innerText = '₹' + parseFloat(profile.balance).toFixed(2);
+            }
         }
+
+        // Handle Balance Addition
+        document.getElementById('rechargeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const amount = parseFloat(document.getElementById('rechargeAmount').value);
+            if (!amount || amount < 100) {
+                alert("Minimum recharge amount is ₹100");
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerText = "Processing...";
+            submitBtn.disabled = true;
+
+            try {
+                // Get current balance first
+                const { data: profile, error: fetchErr } = await supabaseClient
+                    .from('profiles')
+                    .select('balance, total_recharge')
+                    .eq('id', currentUser.id)
+                    .single();
+
+                if (fetchErr) throw fetchErr;
+
+                const currentBal = parseFloat(profile.balance || 0);
+                const currentRecharge = parseFloat(profile.total_recharge || 0);
+
+                const newBalance = currentBal + amount;
+                const newTotalRecharge = currentRecharge + amount;
+
+                // Update profiles table
+                const { error: updateErr } = await supabaseClient
+                    .from('profiles')
+                    .update({ 
+                        balance: newBalance,
+                        total_recharge: newTotalRecharge 
+                    })
+                    .eq('id', currentUser.id);
+
+                if (updateErr) throw updateErr;
+
+                alert(`Success! ₹${amount} added to your wallet.`);
+                document.getElementById('rechargeAmount').value = '';
+                fetchUserBalance();
+
+            } catch (err) {
+                alert("Recharge Failed: " + err.message);
+            } finally {
+                submitBtn.innerText = "Pay & Add Balance";
+                submitBtn.disabled = false;
+            }
+        });
     </script>
 
 </body>
-</html>
+    </html>
+    
