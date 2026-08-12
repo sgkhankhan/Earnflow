@@ -12,34 +12,28 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
         
-        /* Hidden by default until auth check passes */
         body { background-color: #f4f7f4; display: none; justify-content: center; min-height: 100vh; }
         
         .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 20px; padding-bottom: 90px; position: relative; }
         
-        /* Profile Header */
         .profile-header { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 25px 20px; border-radius: 20px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.2); }
         .avatar-box { width: 70px; height: 70px; background: #ffffff; color: #1b5e20; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 10px; }
         .profile-header h2 { font-size: 20px; font-weight: bold; }
         .profile-header p { font-size: 13px; opacity: 0.9; margin-top: 4px; }
 
-        /* Wallet / Balance Card */
         .balance-card { background: #f0fdf4; border: 1px solid #c8e6c9; border-radius: 15px; padding: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .balance-title { font-size: 13px; color: #666; }
         .balance-amount { font-size: 22px; font-weight: bold; color: #1b5e20; margin-top: 2px; }
 
-        /* Options Menu */
         .menu-list { display: flex; flex-direction: column; gap: 12px; }
         .menu-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 12px; text-decoration: none; color: #333; font-weight: 600; font-size: 14px; transition: 0.2s; }
         .menu-item:active { background: #f5f5f5; }
         .menu-left { display: flex; align-items: center; gap: 12px; }
         .menu-left i { font-size: 18px; color: #2e7d32; width: 24px; text-align: center; }
 
-        /* Logout Button */
         .logout-btn { width: 100%; background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 14px; border-radius: 25px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 30px; transition: 0.2s; }
         .logout-btn:active { background: #fecaca; }
 
-        /* Bottom Nav */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e0e0e0; left: 50%; transform: translateX(-50%); }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #888; cursor: pointer; text-decoration: none; }
         .nav-item.active { color: #2e7d32; font-weight: bold; }
@@ -63,18 +57,18 @@
         <div class="balance-card">
             <div>
                 <div class="balance-title">Current Balance</div>
-                <div class="balance-amount">₹0.00</div>
+                <div class="balance-amount" id="profileBalance">₹0.00</div>
             </div>
             <a href="recharge.html" style="background: #2e7d32; color: white; padding: 8px 16px; border-radius: 20px; text-decoration: none; font-size: 12px; font-weight: bold;">Recharge</a>
         </div>
 
         <!-- Settings & Links Menu -->
         <div class="menu-list">
-            <a href="recharge.html" class="menu-item">
+            <a href="transactions.html" class="menu-item">
                 <div class="menu-left"><i class="fa-solid fa-wallet"></i><span>Recharge History</span></div>
                 <i class="fa-solid fa-chevron-right" style="color: #ccc; font-size: 12px;"></i>
             </a>
-            <a href="withdraw.html" class="menu-item">
+            <a href="transactions.html" class="menu-item">
                 <div class="menu-left"><i class="fa-solid fa-hand-holding-dollar"></i><span>Withdrawal History</span></div>
                 <i class="fa-solid fa-chevron-right" style="color: #ccc; font-size: 12px;"></i>
             </a>
@@ -123,12 +117,11 @@
 
     <script>
         const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
-        let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
+        let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
         const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Session Check & Display Phone Number
         document.addEventListener("DOMContentLoaded", async function() {
             const { data: { session } } = await supabaseClient.auth.getSession();
 
@@ -137,18 +130,25 @@
             } else {
                 document.body.style.display = 'flex';
                 
-                // Phone number extract from email metadata
                 let email = session.user.email || "";
                 let phone = email.replace("@earnflow.app", "");
                 if (phone) {
                     document.getElementById('userPhone').innerText = "+91 " + phone;
-                } else {
-                    document.getElementById('userPhone').innerText = "Investor Account";
+                }
+
+                // Fetch Balance from Supabase
+                const { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('balance')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (profile) {
+                    document.getElementById('profileBalance').innerText = '₹' + parseFloat(profile.balance || 0).toFixed(2);
                 }
             }
         });
 
-        // Logout Action
         async function handleLogout() {
             const confirmLogout = confirm("Kya aap Log Out karna chahte hain?");
             if (confirmLogout) {
@@ -164,5 +164,4 @@
     </script>
 
 </body>
-                </html>
-                
+</html>
