@@ -1,69 +1,215 @@
-async function loadTeamData() {
-    try {
-        let { data: profile } = await supabaseClient
-            .from('profiles')
-            .select('referral_code, team_income')
-            .eq('id', currentUser.id)
-            .maybeSingle();
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earnflow - My Team & Invite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        let refCode = profile ? profile.referral_code : null;
-
-        if (!refCode) {
-            refCode = currentUser.id.substring(0, 8);
-            await supabaseClient.from('profiles').update({ referral_code: refCode }).eq('id', currentUser.id);
-        }
-
-        // FIX: Replaced signup.html with login.html
-        const currentFolder = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
-        generatedLink = `${currentFolder}/login.html?ref=${refCode}`;
-
-        document.getElementById('referralLinkInput').value = generatedLink;
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: #f1f7f2; display: none; justify-content: center; min-height: 100vh; }
+        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 20px; padding-bottom: 95px; position: relative; }
         
-        // Set WhatsApp Direct Share Link
-        const waText = encodeURIComponent(`Join Earnflow Seeds and get daily returns on seed investments! Register using my referral link: ${generatedLink}`);
-        document.getElementById('whatsappShareBtn').href = `https://wa.me/?text=${waText}`;
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .header h2 { font-size: 18px; font-weight: 800; color: #0f172a; }
+        .back-btn { text-decoration: none; color: #0f172a; font-size: 18px; }
 
-        document.getElementById('teamIncome').innerText = '₹' + parseFloat((profile && profile.team_income) || 0).toFixed(2);
+        .invite-banner { background: linear-gradient(135deg, #064e3b, #047857); color: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 8px 20px rgba(6, 78, 59, 0.2); }
+        .invite-banner i { font-size: 40px; color: #a7f3d0; margin-bottom: 8px; }
+        .invite-banner h3 { font-size: 18px; font-weight: 800; }
+        .invite-banner p { font-size: 12px; color: #a7f3d0; margin-top: 4px; }
 
-        // Fetch team members list
-        const { data: members } = await supabaseClient
-            .from('profiles')
-            .select('email, created_at')
-            .eq('referred_by', refCode)
-            .order('created_at', { ascending: false });
+        .link-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-bottom: 20px; }
+        .link-title { font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 8px; text-transform: uppercase; }
+        .link-box { display: flex; align-items: center; background: white; border: 1px solid #cbd5e1; border-radius: 12px; padding: 8px 12px; margin-bottom: 12px; }
+        .link-input { border: none; outline: none; width: 100%; font-size: 13px; font-weight: 600; color: #0f172a; background: transparent; }
 
-        const container = document.getElementById('teamMemberList');
-        document.getElementById('totalTeamCount').innerText = members ? members.length : 0;
+        .action-btns { display: flex; gap: 10px; }
+        .btn-copy { flex: 1; background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-share { flex: 1; background: linear-gradient(135deg, #25d366, #128c7e); color: white; border: none; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.25); text-decoration: none; }
 
-        if (!members || members.length === 0) {
-            container.innerHTML = `<div class="empty-team">No members joined yet. Share your referral link to earn commissions!</div>`;
-            return;
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; text-align: center; }
+        .stat-num { font-size: 22px; font-weight: 800; color: #16a34a; margin-top: 4px; }
+        .stat-label { font-size: 12px; color: #64748b; font-weight: 600; }
+
+        /* Team Member List Styles */
+        .section-title { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .team-list { display: flex; flex-direction: column; gap: 10px; }
+        .member-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        .member-info { display: flex; align-items: center; gap: 12px; }
+        .member-icon { width: 38px; height: 38px; background: #dcfce7; color: #15803d; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .member-details p { font-size: 13px; font-weight: 800; color: #0f172a; }
+        .member-details span { font-size: 11px; color: #64748b; font-weight: 500; }
+        .status-badge { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+
+        .empty-team { text-align: center; padding: 25px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 16px; color: #64748b; font-size: 13px; font-weight: 600; }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #f1f5f9; left: 50%; transform: translateX(-50%); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #64748b; cursor: pointer; text-decoration: none; font-weight: 600; gap: 3px; }
+        .nav-item.active { color: #16a34a; font-weight: 800; }
+        .wheel-btn { position: relative; top: -20px; }
+        .wheel-icon { width: 52px; height: 52px; background: linear-gradient(135deg, #16a34a, #15803d); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 22px; border: 4px solid #ffffff; box-shadow: 0 6px 14px rgba(22, 163, 74, 0.35); }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="header">
+            <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+            <h2>Refer & Earn</h2>
+            <div></div>
+        </div>
+
+        <div class="invite-banner">
+            <i class="fa-solid fa-gift"></i>
+            <h3>3-Level Commission (27%, 2%, 1%)</h3>
+            <p>Get instant referral rewards up to 3 levels on every team deposit.</p>
+        </div>
+
+        <!-- Referral Link Share Section -->
+        <div class="link-card">
+            <div class="link-title">Your Exclusive Referral Link</div>
+            <div class="link-box">
+                <input type="text" id="referralLinkInput" class="link-input" readonly value="Generating link...">
+            </div>
+            <div class="action-btns">
+                <button class="btn-copy" onclick="copyReferralLink()"><i class="fa-regular fa-copy"></i> Copy Link</button>
+                <a href="#" id="whatsappShareBtn" target="_blank" class="btn-share"><i class="fa-brands fa-whatsapp"></i> Share Link</a>
+            </div>
+        </div>
+
+        <!-- Referral Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Invited</div>
+                <div class="stat-num" id="totalTeamCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Team Income</div>
+                <div class="stat-num" id="teamIncome">₹0.00</div>
+            </div>
+        </div>
+
+        <!-- Team Member List View -->
+        <div class="section-title">
+            <i class="fa-solid fa-users-viewfinder" style="color: #16a34a;"></i>
+            <span>My Invited Members</span>
+        </div>
+
+        <div id="teamMemberList" class="team-list">
+            <div class="empty-team">Loading team members...</div>
+        </div>
+
+        <!-- Bottom Nav -->
+        <div class="bottom-nav">
+            <a href="index.html" class="nav-item"><i class="fa-solid fa-house"></i><span>Home</span></a>
+            <a href="recharge.html" class="nav-item"><i class="fa-solid fa-box-archive"></i><span>Treasure</span></a>
+            <a href="wheel.html" class="nav-item wheel-btn"><div class="wheel-icon"><i class="fa-solid fa-dharmachakra"></i></div><span>Wheel</span></a>
+            <a href="team.html" class="nav-item active"><i class="fa-solid fa-users"></i><span>Team</span></a>
+            <a href="profile.html" class="nav-item"><i class="fa-solid fa-user"></i><span>Profile</span></a>
+        </div>
+    </div>
+        <script>
+        const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
+        let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
+        const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let currentUser = null;
+        let generatedLink = "";
+
+        document.addEventListener("DOMContentLoaded", async function() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+
+            if (!session) {
+                window.location.replace('login.html');
+            } else {
+                currentUser = session.user;
+                document.body.style.display = 'flex';
+                loadTeamData();
+            }
+        });
+
+        async function loadTeamData() {
+            try {
+                let { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('referral_code, team_income')
+                    .eq('id', currentUser.id)
+                    .maybeSingle();
+
+                let refCode = profile ? profile.referral_code : null;
+
+                if (!refCode) {
+                    refCode = currentUser.id.substring(0, 8);
+                    await supabaseClient.from('profiles').update({ referral_code: refCode }).eq('id', currentUser.id);
+                }
+
+                // Generates valid link pointing to login.html
+                const currentFolder = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+                generatedLink = `${currentFolder}/login.html?ref=${refCode}`;
+
+                document.getElementById('referralLinkInput').value = generatedLink;
+                
+                const waText = encodeURIComponent(`Join Earnflow Seeds and get daily returns on seed investments! Register using my referral link: ${generatedLink}`);
+                document.getElementById('whatsappShareBtn').href = `https://wa.me/?text=${waText}`;
+
+                document.getElementById('teamIncome').innerText = '₹' + parseFloat((profile && profile.team_income) || 0).toFixed(2);
+
+                // Fetch team members list
+                const { data: members } = await supabaseClient
+                    .from('profiles')
+                    .select('email, created_at')
+                    .eq('referred_by', refCode)
+                    .order('created_at', { ascending: false });
+
+                const container = document.getElementById('teamMemberList');
+                document.getElementById('totalTeamCount').innerText = members ? members.length : 0;
+
+                if (!members || members.length === 0) {
+                    container.innerHTML = `<div class="empty-team">No members joined yet. Share your referral link to earn 27% commission!</div>`;
+                    return;
+                }
+
+                container.innerHTML = members.map(m => {
+                    const rawPhone = (m.email || '').replace('@earnflow.app', '');
+                    const maskedPhone = rawPhone.length === 10 ? rawPhone.substring(0, 4) + '****' + rawPhone.substring(8) : rawPhone;
+                    const joinDate = new Date(m.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+
+                    return `
+                        <div class="member-card">
+                            <div class="member-info">
+                                <div class="member-icon"><i class="fa-solid fa-user-check"></i></div>
+                                <div class="member-details">
+                                    <p>${maskedPhone}</p>
+                                    <span>Joined: ${joinDate}</span>
+                                </div>
+                            </div>
+                            <span class="status-badge">Active</span>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                const fallbackCode = currentUser.id.substring(0, 8);
+                const currentFolder = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+                generatedLink = `${currentFolder}/login.html?ref=${fallbackCode}`;
+                document.getElementById('referralLinkInput').value = generatedLink;
+            }
         }
 
-        container.innerHTML = members.map(m => {
-            const rawPhone = (m.email || '').replace('@earnflow.app', '');
-            const maskedPhone = rawPhone.length === 10 ? rawPhone.substring(0, 4) + '****' + rawPhone.substring(8) : rawPhone;
-            const joinDate = new Date(m.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
-
-            return `
-                <div class="member-card">
-                    <div class="member-info">
-                        <div class="member-icon"><i class="fa-solid fa-user-check"></i></div>
-                        <div class="member-details">
-                            <p>${maskedPhone}</p>
-                            <span>Joined: ${joinDate}</span>
-                        </div>
-                    </div>
-                    <span class="status-badge">Active</span>
-                </div>
-            `;
-        }).join('');
-
-    } catch (err) {
-        // Fallback link on error
-        const fallbackCode = currentUser.id.substring(0, 8);
-        const currentFolder = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
-        generatedLink = `${currentFolder}/login.html?ref=${fallbackCode}`;
-        document.getElementById('referralLinkInput').value = generatedLink;
-    }
-}
+        function copyReferralLink() {
+            const linkInput = document.getElementById('referralLinkInput');
+            linkInput.select();
+            document.execCommand('copy');
+            alert("Referral link copied to clipboard!");
+        }
+    </script>
+</body>
+</html>
