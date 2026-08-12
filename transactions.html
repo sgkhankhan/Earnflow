@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earnflow - History</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #f4f7f4; display: none; justify-content: center; min-height: 100vh; }
+        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 20px; padding-bottom: 90px; position: relative; }
+        
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .header h2 { font-size: 20px; color: #1b5e20; }
+        .back-btn { text-decoration: none; color: #1b5e20; font-size: 20px; }
+
+        .tx-list { display: flex; flex-direction: column; gap: 12px; }
+        .tx-card { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        
+        .tx-left { display: flex; align-items: center; gap: 12px; }
+        .tx-icon { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .tx-icon.recharge { background: #dcfce7; color: #16a34a; }
+        .tx-icon.withdraw { background: #fee2e2; color: #dc2626; }
+
+        .tx-info h4 { font-size: 14px; color: #333; text-transform: capitalize; }
+        .tx-info p { font-size: 11px; color: #888; margin-top: 2px; }
+
+        .tx-right { text-align: right; }
+        .tx-amount { font-size: 15px; font-weight: bold; }
+        .tx-amount.recharge { color: #16a34a; }
+        .tx-amount.withdraw { color: #dc2626; }
+        .tx-status { font-size: 10px; font-weight: bold; text-transform: uppercase; padding: 2px 6px; border-radius: 6px; display: inline-block; margin-top: 3px; }
+        .status-success { background: #f0fdf4; color: #16a34a; }
+        .status-pending { background: #fffbe3; color: #d97706; }
+        .status-failed { background: #fef2f2; color: #dc2626; }
+
+        .empty-box { text-align: center; padding: 40px 20px; color: #888; }
+        .empty-box i { font-size: 45px; margin-bottom: 10px; color: #ccc; }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e0e0e0; left: 50%; transform: translateX(-50%); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #888; cursor: pointer; text-decoration: none; }
+        .nav-item.active { color: #2e7d32; font-weight: bold; }
+        .wheel-btn { position: relative; top: -20px; }
+        .wheel-icon { width: 50px; height: 50px; background: #16a34a; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 22px; border: 4px solid #ffffff; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="header">
+            <a href="profile.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+            <h2>Transaction Records</h2>
+            <div></div>
+        </div>
+
+        <div id="txContainer" class="tx-list">
+            <div class="empty-box">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <p>Loading History...</p>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <a href="index.html" class="nav-item">
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </a>
+            <a href="recharge.html" class="nav-item">
+                <i class="fa-solid fa-box-archive"></i>
+                <span>Treasure</span>
+            </a>
+            <a href="wheel.html" class="nav-item wheel-btn">
+                <div class="wheel-icon">
+                    <i class="fa-solid fa-dharmachakra"></i>
+                </div>
+                <span>Wheel</span>
+            </a>
+            <a href="team.html" class="nav-item">
+                <i class="fa-solid fa-users"></i>
+                <span>Team</span>
+            </a>
+            <a href="profile.html" class="nav-item active">
+                <i class="fa-solid fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
+        let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
+        const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document.addEventListener("DOMContentLoaded", async function() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+
+            if (!session) {
+                window.location.replace('login.html');
+            } else {
+                document.body.style.display = 'flex';
+                fetchTransactions(session.user.id);
+            }
+        });
+
+        async function fetchTransactions(userId) {
+            const container = document.getElementById('txContainer');
+
+            try {
+                const { data: txs, error } = await supabaseClient
+                    .from('transactions')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!txs || txs.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-box">
+                            <i class="fa-solid fa-receipt"></i>
+                            <p>No transactions found yet.</p>
+                        </div>`;
+                    return;
+                }
+
+                container.innerHTML = txs.map(tx => {
+                    const isRecharge = tx.type === 'recharge';
+                    const sign = isRecharge ? '+' : '-';
+                    const iconClass = isRecharge ? 'fa-arrow-down-left' : 'fa-arrow-up-right';
+                    const dateStr = new Date(tx.created_at).toLocaleString('en-IN', {
+                        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                    });
+
+                    return `
+                        <div class="tx-card">
+                            <div class="tx-left">
+                                <div class="tx-icon ${tx.type}">
+                                    <i class="fa-solid ${iconClass}"></i>
+                                </div>
+                                <div class="tx-info">
+                                    <h4>${tx.type}</h4>
+                                    <p>${dateStr}</p>
+                                </div>
+                            </div>
+                            <div class="tx-right">
+                                <div class="tx-amount ${tx.type}">${sign}₹${parseFloat(tx.amount).toFixed(2)}</div>
+                                <span class="tx-status status-${tx.status}">${tx.status}</span>
+                            </div>
+                        </div>`;
+                }).join('');
+
+            } catch (err) {
+                container.innerHTML = `
+                    <div class="empty-box">
+                        <i class="fa-solid fa-circle-exclamation" style="color: #ef4444;"></i>
+                        <p>Failed to load transactions: ${err.message}</p>
+                    </div>`;
+            }
+        }
+    </script>
+
+</body>
+</html>
