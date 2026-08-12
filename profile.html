@@ -5,38 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Earnflow - Profile</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: #f4f7f4; display: flex; justify-content: center; }
-        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 15px; padding-bottom: 90px; position: relative; }
         
-        /* Header Profile Box */
-        .profile-header { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 20px; border-radius: 20px; text-align: center; position: relative; }
-        .avatar-box { width: 70px; height: 70px; background: #ffffff; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 10px; border: 3px solid #81c784; }
-        .avatar-box i { font-size: 38px; color: #1b5e20; }
-        .user-phone { font-size: 18px; font-weight: bold; }
-        .user-id { font-size: 12px; opacity: 0.8; margin-top: 3px; }
+        /* Hidden by default until auth check passes */
+        body { background-color: #f4f7f4; display: none; justify-content: center; min-height: 100vh; }
+        
+        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 20px; padding-bottom: 90px; position: relative; }
+        
+        /* Profile Header */
+        .profile-header { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 25px 20px; border-radius: 20px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.2); }
+        .avatar-box { width: 70px; height: 70px; background: #ffffff; color: #1b5e20; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 10px; }
+        .profile-header h2 { font-size: 20px; font-weight: bold; }
+        .profile-header p { font-size: 13px; opacity: 0.9; margin-top: 4px; }
 
-        /* Balance Cards */
-        .balance-container { display: flex; gap: 10px; margin-top: 15px; }
-        .balance-card { flex: 1; background: #f0fdf4; padding: 15px; border-radius: 12px; border: 1px solid #c8e6c9; text-align: center; }
-        .balance-card p { font-size: 11px; color: #555; }
-        .balance-card h3 { font-size: 18px; color: #1b5e20; margin-top: 4px; }
+        /* Wallet / Balance Card */
+        .balance-card { background: #f0fdf4; border: 1px solid #c8e6c9; border-radius: 15px; padding: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .balance-title { font-size: 13px; color: #666; }
+        .balance-amount { font-size: 22px; font-weight: bold; color: #1b5e20; margin-top: 2px; }
 
-        /* Menu Options List */
-        .menu-list { margin-top: 20px; }
-        .menu-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 10px; border-bottom: 1px solid #f0f0f0; cursor: pointer; text-decoration: none; color: #333; }
+        /* Options Menu */
+        .menu-list { display: flex; flex-direction: column; gap: 12px; }
+        .menu-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 12px; text-decoration: none; color: #333; font-weight: 600; font-size: 14px; transition: 0.2s; }
+        .menu-item:active { background: #f5f5f5; }
         .menu-left { display: flex; align-items: center; gap: 12px; }
-        .menu-left i { font-size: 18px; color: #2e7d32; width: 25px; text-align: center; }
-        .menu-left span { font-size: 14px; font-weight: 500; }
-        .menu-right { color: #aaa; font-size: 12px; }
-
-        /* Admin Highlight Item */
-        .admin-item { background: #fefce8; border-radius: 10px; border: 1px solid #fef08a; margin-top: 5px; }
-        .admin-item i { color: #ca8a04 !important; }
+        .menu-left i { font-size: 18px; color: #2e7d32; width: 24px; text-align: center; }
 
         /* Logout Button */
-        .logout-btn { width: 100%; background: #fee2e2; color: #dc2626; border: none; padding: 12px; border-radius: 25px; margin-top: 25px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .logout-btn { width: 100%; background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 14px; border-radius: 25px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 30px; transition: 0.2s; }
+        .logout-btn:active { background: #fecaca; }
 
         /* Bottom Nav */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e0e0e0; left: 50%; transform: translateX(-50%); }
@@ -49,115 +50,119 @@
 <body>
 
     <div class="app-container">
-        <!-- User Header -->
+        <!-- User Profile Card -->
         <div class="profile-header">
             <div class="avatar-box">
                 <i class="fa-solid fa-user"></i>
             </div>
-            <div class="user-phone">+91 98******10</div>
-            <div class="user-id">ID: EF889201</div>
+            <h2 id="userPhone">Loading...</h2>
+            <p>Earnflow Investor Account</p>
         </div>
 
-        <!-- Balance Info -->
-        <div class="balance-container">
-            <div class="balance-card">
-                <p>Wallet Balance</p>
-                <h3>₹1,250.00</h3>
+        <!-- Wallet Balance Summary -->
+        <div class="balance-card">
+            <div>
+                <div class="balance-title">Current Balance</div>
+                <div class="balance-amount">₹0.00</div>
             </div>
-            <div class="balance-card">
-                <p>Total Earnings</p>
-                <h3>₹4,800.00</h3>
-            </div>
+            <a href="recharge.html" style="background: #2e7d32; color: white; padding: 8px 16px; border-radius: 20px; text-decoration: none; font-size: 12px; font-weight: bold;">Recharge</a>
         </div>
 
-        <!-- Navigation / Action List -->
+        <!-- Settings & Links Menu -->
         <div class="menu-list">
-            <!-- Admin Dashboard Link -->
-            <a href="https://sgkhankhan.github.io/Earnflow/admin.html" class="menu-item admin-item">
-                <div class="menu-left">
-                    <i class="fa-solid fa-user-gear"></i>
-                    <span style="font-weight: bold; color: #854d0e;">Admin Control Panel</span>
-                </div>
-                <div class="menu-right"><i class="fa-solid fa-chevron-right"></i></div>
+            <a href="recharge.html" class="menu-item">
+                <div class="menu-left"><i class="fa-solid fa-wallet"></i><span>Recharge History</span></div>
+                <i class="fa-solid fa-chevron-right" style="color: #ccc; font-size: 12px;"></i>
             </a>
-
-            <a href="https://sgkhankhan.github.io/Earnflow/recharge.html" class="menu-item">
-                <div class="menu-left">
-                    <i class="fa-solid fa-wallet"></i>
-                    <span>Recharge Record</span>
-                </div>
-                <div class="menu-right"><i class="fa-solid fa-chevron-right"></i></div>
+            <a href="withdraw.html" class="menu-item">
+                <div class="menu-left"><i class="fa-solid fa-hand-holding-dollar"></i><span>Withdrawal History</span></div>
+                <i class="fa-solid fa-chevron-right" style="color: #ccc; font-size: 12px;"></i>
             </a>
-
-            <a href="https://sgkhankhan.github.io/Earnflow/withdraw.html" class="menu-item">
-                <div class="menu-left">
-                    <i class="fa-solid fa-file-invoice-dollar"></i>
-                    <span>Withdrawal Record</span>
-                </div>
-                <div class="menu-right"><i class="fa-solid fa-chevron-right"></i></div>
+            <a href="team.html" class="menu-item">
+                <div class="menu-left"><i class="fa-solid fa-users"></i><span>My Team</span></div>
+                <i class="fa-solid fa-chevron-right" style="color: #ccc; font-size: 12px;"></i>
             </a>
-
-            <div class="menu-item">
-                <div class="menu-left">
-                    <i class="fa-solid fa-building-columns"></i>
-                    <span>Bank Account Details</span>
-                </div>
-                <div class="menu-right"><i class="fa-solid fa-chevron-right"></i></div>
-            </div>
-
-            <a href="https://sgkhankhan.github.io/Earnflow/team.html" class="menu-item">
-                <div class="menu-left">
-                    <i class="fa-solid fa-user-plus"></i>
-                    <span>Invite Friends & Earn</span>
-                </div>
-                <div class="menu-right"><i class="fa-solid fa-chevron-right"></i></div>
-            </a>
-
-            <!-- Fixed Customer Support Link -->
-            <a href="https://sgkhankhan.github.io/Earnflow/support.html" class="menu-item">
-                <div class="menu-left">
-                    <i class="fa-solid fa-headset"></i>
-                    <span>Customer Support</span>
-                </div>
-                <div class="menu-right"><i class="fa-solid fa-chevron-right"></i></div>
+            <a href="support.html" class="menu-item">
+                <div class="menu-left"><i class="fa-solid fa-headset"></i><span>Customer Support</span></div>
+                <i class="fa-solid fa-chevron-right" style="color: #ccc; font-size: 12px;"></i>
             </a>
         </div>
 
         <!-- Logout Button -->
-        <a href="https://sgkhankhan.github.io/Earnflow/login.html" style="text-decoration: none;">
-            <button class="logout-btn">
-                <i class="fa-solid fa-right-from-bracket"></i>
-                <span>Log Out</span>
-            </button>
-        </a>
+        <button type="button" class="logout-btn" onclick="handleLogout()">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Log Out</span>
+        </button>
 
         <!-- Bottom Navigation Bar -->
         <div class="bottom-nav">
-            <a href="https://sgkhankhan.github.io/Earnflow/" class="nav-item">
+            <a href="index.html" class="nav-item">
                 <i class="fa-solid fa-house"></i>
                 <span>Home</span>
             </a>
-            <a href="https://sgkhankhan.github.io/Earnflow/recharge.html" class="nav-item">
+            <a href="recharge.html" class="nav-item">
                 <i class="fa-solid fa-box-archive"></i>
                 <span>Treasure</span>
             </a>
-            <a href="https://sgkhankhan.github.io/Earnflow/wheel.html" class="nav-item wheel-btn">
+            <a href="wheel.html" class="nav-item wheel-btn">
                 <div class="wheel-icon">
                     <i class="fa-solid fa-dharmachakra"></i>
                 </div>
                 <span>Wheel</span>
             </a>
-            <a href="https://sgkhankhan.github.io/Earnflow/team.html" class="nav-item">
+            <a href="team.html" class="nav-item">
                 <i class="fa-solid fa-users"></i>
                 <span>Team</span>
             </a>
-            <a href="https://sgkhankhan.github.io/Earnflow/profile.html" class="nav-item active">
+            <a href="profile.html" class="nav-item active">
                 <i class="fa-solid fa-user"></i>
                 <span>Profile</span>
             </a>
         </div>
     </div>
 
+    <script>
+        const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
+        let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
+        const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Session Check & Display Phone Number
+        document.addEventListener("DOMContentLoaded", async function() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+
+            if (!session) {
+                window.location.replace('login.html');
+            } else {
+                document.body.style.display = 'flex';
+                
+                // Phone number extract from email metadata
+                let email = session.user.email || "";
+                let phone = email.replace("@earnflow.app", "");
+                if (phone) {
+                    document.getElementById('userPhone').innerText = "+91 " + phone;
+                } else {
+                    document.getElementById('userPhone').innerText = "Investor Account";
+                }
+            }
+        });
+
+        // Logout Action
+        async function handleLogout() {
+            const confirmLogout = confirm("Kya aap Log Out karna chahte hain?");
+            if (confirmLogout) {
+                const { error } = await supabaseClient.auth.signOut();
+                if (error) {
+                    alert("Logout failed: " + error.message);
+                } else {
+                    alert("Successfully logged out!");
+                    window.location.replace('login.html');
+                }
+            }
+        }
+    </script>
+
 </body>
-                                                                                 </html>
-                                            
+                </html>
+                
