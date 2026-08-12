@@ -4,31 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Earnflow - Home</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-        // --- AUTHENTICATION PROTECTION GUARD ---
         const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6IjoyMTAyMDkxMDYwfQ.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
         
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Check if user session exists
-        async function checkUserSession() {
+        // Instant Session Check (Page Render Hone Se Pehle Check Karega)
+        async function enforceAuth() {
             const { data: { session } } = await supabase.auth.getSession();
-            
-            // Agar session nahi hai, toh instant login.html par bhej do
             if (!session) {
-                window.location.href = 'login.html';
+                // Agar session nahi hai toh page render hi nahi hone dega, direct login page!
+                window.location.replace('login.html');
             }
         }
-        
-        checkUserSession();
+        enforceAuth();
     </script>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
         body { background-color: #f4f7f4; display: flex; justify-content: center; }
@@ -165,5 +162,4 @@
     </div>
 
 </body>
-                    </html>
-                                                                                                                 
+</html>
