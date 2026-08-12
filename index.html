@@ -66,7 +66,6 @@
         .product-details { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
         .product-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
         .metric-item { background: #f8fafc; padding: 6px 10px; border-radius: 10px; border: 1px solid #f1f5f9; }
-        .metric-item.full { grid-column: span 2; }
         .metric-label { font-size: 10px; color: #64748b; font-weight: 600; }
         .metric-value { font-size: 13px; font-weight: 800; color: #0f172a; }
         .metric-value.highlight { color: #16a34a; }
@@ -204,6 +203,38 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Product 3: Paddy Rice Seed -->
+            <div class="product-card">
+                <span class="purchase-limit">Limit 0/5</span>
+                <div class="product-img-box">
+                    <i class="fa-solid fa-bowl-rice"></i>
+                    <span class="product-name">Paddy Seed</span>
+                </div>
+                <div class="product-details">
+                    <div class="product-metrics">
+                        <div class="metric-item">
+                            <div class="metric-label">Price</div>
+                            <div class="metric-value">₹3,000</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Daily Income</div>
+                            <div class="metric-value highlight">₹780</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Total Return</div>
+                            <div class="metric-value">₹1,17,000</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Validity</div>
+                            <div class="metric-value">150 Days</div>
+                        </div>
+                    </div>
+                    <button class="buy-now-btn" onclick="buyProduct('Paddy Seed', 3000, 780)">
+                        Buy Plan <i class="fa-solid fa-cart-shopping"></i>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Bottom Navigation -->
@@ -282,4 +313,4 @@
     </script>
 </body>
     </html>
-                    
+                        
