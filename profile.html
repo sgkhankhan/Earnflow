@@ -10,79 +10,174 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: #f4f7f4; display: none; justify-content: center; min-height: 100vh; }
-        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 20px; padding-bottom: 90px; position: relative; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: #f3f8f3; display: none; justify-content: center; min-height: 100vh; }
+        .app-container { width: 100%; max-width: 430px; background: #f3f8f3; min-height: 100vh; padding: 16px; padding-bottom: 95px; position: relative; }
+
+        /* Top Profile Header */
+        .profile-top-card { background: #ffffff; border-radius: 24px; padding: 20px 16px; margin-bottom: 16px; box-shadow: 0 10px 25px rgba(22, 101, 52, 0.05); }
+        .user-profile-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .avatar-wrap { position: relative; display: flex; align-items: center; gap: 12px; }
+        .avatar-box { width: 62px; height: 62px; border-radius: 50%; background: linear-gradient(135deg, #14532d, #15803d); color: white; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; border: 3px solid #dcfce7; position: relative; }
+        .edit-badge { position: absolute; bottom: 0; right: -2px; width: 22px; height: 22px; background: #22c55e; border: 2px solid white; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 10px; }
         
-        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-        .header h2 { font-size: 20px; color: #1b5e20; }
+        .user-meta h3 { font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 2px; }
+        .user-meta p { font-size: 12px; color: #64748b; font-weight: 600; }
 
-        .profile-card { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; text-align: center; }
-        .avatar-icon { font-size: 50px; margin-bottom: 8px; color: #ffffff; }
-        .profile-card h3 { font-size: 18px; font-weight: bold; }
-        .profile-card p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+        .vip-tag { background: linear-gradient(135deg, #22c55e, #15803d); color: white; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3); }
 
-        .menu-list { display: flex; flex-direction: column; gap: 12px; }
-        .menu-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: #f9fafb; border: 1px solid #e0e0e0; border-radius: 12px; text-decoration: none; color: #333; font-size: 14px; font-weight: 500; }
-        .menu-left { display: flex; align-items: center; gap: 12px; }
-        .menu-left i { font-size: 18px; color: #2e7d32; width: 22px; text-align: center; }
+        /* 3-Column Balance Section */
+        .balance-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 16px; }
+        .bal-col-item h4 { font-size: 17px; font-weight: 800; color: #16a34a; }
+        .bal-col-item.black h4 { color: #0f172a; }
+        .bal-col-item p { font-size: 11px; color: #64748b; font-weight: 600; margin-top: 2px; }
 
-        /* Secret Admin Button Style */
-        .admin-item { background: #fef2f2; border-color: #fca5a5; color: #dc2626; display: none; }
-        .admin-item i { color: #dc2626; }
+        /* Floating 3D Green Quick Action Grid */
+        .quick-actions-card { background: #ffffff; border-radius: 24px; padding: 18px 12px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(22, 101, 52, 0.05); display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .q-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; gap: 8px; }
+        .q-icon { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #4ade80, #15803d); color: white; display: flex; justify-content: center; align-items: center; font-size: 20px; box-shadow: 0 6px 14px rgba(21, 128, 61, 0.3); }
+        .q-item span { font-size: 12px; font-weight: 700; color: #0f172a; }
 
-        .logout-btn { width: 100%; background: #dc2626; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 25px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        /* More Services List */
+        .more-services-box { background: #ffffff; border-radius: 24px; padding: 20px 16px; box-shadow: 0 10px 25px rgba(22, 101, 52, 0.05); }
+        .services-title { font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 16px; position: relative; padding-bottom: 6px; }
+        .services-title::after { content: ''; position: absolute; left: 0; bottom: 0; width: 35px; height: 3px; background: #16a34a; border-radius: 4px; }
 
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e0e0e0; left: 50%; transform: translateX(-50%); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #888; cursor: pointer; text-decoration: none; }
-        .nav-item.active { color: #2e7d32; font-weight: bold; }
-        .wheel-btn { position: relative; top: -20px; }
-        .wheel-icon { width: 50px; height: 50px; background: #16a34a; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 22px; border: 4px solid #ffffff; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .service-list { display: flex; flex-direction: column; }
+        .service-link { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f8fafc; text-decoration: none; }
+        .service-link:last-child { border-bottom: none; }
+        .s-left { display: flex; align-items: center; gap: 14px; }
+        .s-icon { width: 42px; height: 42px; border-radius: 14px; background: #f0fdf4; color: #16a34a; display: flex; justify-content: center; align-items: center; font-size: 18px; }
+        .s-icon.red { background: #fef2f2; color: #ef4444; }
+        .s-text { font-size: 14px; font-weight: 700; color: #0f172a; }
+        .s-text.red { color: #ef4444; }
+        .arrow-icon { color: #cbd5e1; font-size: 12px; }
+
+        /* Bottom Navigation Bar */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #f1f5f9; left: 50%; transform: translateX(-50%); box-shadow: 0 -4px 20px rgba(0,0,0,0.05); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #64748b; cursor: pointer; text-decoration: none; font-weight: 600; gap: 3px; }
+        .nav-item.active { color: #16a34a; font-weight: 800; }
+        .wheel-btn { position: relative; top: -22px; }
+        .wheel-icon { width: 56px; height: 56px; background: radial-gradient(circle, #22c55e, #15803d); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; border: 4px solid #ffffff; box-shadow: 0 6px 16px rgba(22, 163, 74, 0.4); }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        <div class="header">
-            <h2>My Profile</h2>
-            <div></div>
-        </div>
-
-        <div class="profile-card">
-            <i class="fa-solid fa-circle-user avatar-icon"></i>
-            <h3 id="userDisplayPhone">User</h3>
-            <p id="userDisplayEmail">user@earnflow.app</p>
-        </div>
-
-        <div class="menu-list">
-            <!-- Hidden Admin Panel Link (Visible only to 7983678835) -->
-            <a href="admin.html" id="adminPanelBtn" class="menu-item admin-item">
-                <div class="menu-left">
-                    <i class="fa-solid fa-user-shield"></i>
-                    <span>Admin Panel</span>
+        <!-- Profile Top Card -->
+        <div class="profile-top-card">
+            <div class="user-profile-header">
+                <div class="avatar-wrap">
+                    <div class="avatar-box">
+                        <span id="avatarLetter">U</span>
+                        <div class="edit-badge"><i class="fa-solid fa-pen"></i></div>
+                    </div>
+                    <div class="user-meta">
+                        <h3 id="userDisplayPhone">User</h3>
+                        <p id="userDisplayEmail">user@earnflow.app</p>
+                    </div>
                 </div>
-                <i class="fa-solid fa-chevron-right" style="color: #dc2626;"></i>
-            </a>
+                <div class="vip-tag">
+                    <i class="fa-solid fa-crown"></i> VIP1
+                </div>
+            </div>
 
-            <a href="recharge.html" class="menu-item">
-                <div class="menu-left"><i class="fa-solid fa-wallet"></i><span>Recharge Wallet</span></div>
-                <i class="fa-solid fa-chevron-right"></i>
+            <!-- 3 Column Balance Summary -->
+            <div class="balance-3col">
+                <div class="bal-col-item">
+                    <h4 id="valAvailable">₹0.00</h4>
+                    <p>Available Balance</p>
+                </div>
+                <div class="bal-col-item black">
+                    <h4 id="valRecharge">₹0.00</h4>
+                    <p>Recharge Balance</p>
+                </div>
+                <div class="bal-col-item black">
+                    <h4 id="valIncome">₹0.00</h4>
+                    <p>Total Income</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3D Floating Quick Actions -->
+        <div class="quick-actions-card">
+            <a href="index.html" class="q-item">
+                <div class="q-icon"><i class="fa-solid fa-list-check"></i></div>
+                <span>Orders</span>
             </a>
-            <a href="withdraw.html" class="menu-item">
-                <div class="menu-left"><i class="fa-solid fa-money-bill-transfer"></i><span>Withdraw Funds</span></div>
-                <i class="fa-solid fa-chevron-right"></i>
+            <a href="recharge.html" class="q-item">
+                <div class="q-icon"><i class="fa-solid fa-trophy"></i></div>
+                <span>Treasure Box</span>
             </a>
-            <a href="team.html" class="menu-item">
-                <div class="menu-left"><i class="fa-solid fa-users"></i><span>My Referral Team</span></div>
-                <i class="fa-solid fa-chevron-right"></i>
+            <a href="about.html" class="q-item">
+                <div class="q-icon"><i class="fa-solid fa-building"></i></div>
+                <span>About</span>
+            </a>
+            <a href="withdraw.html" class="q-item">
+                <div class="q-icon"><i class="fa-solid fa-credit-card"></i></div>
+                <span>Bank Card</span>
             </a>
         </div>
 
-        <button class="logout-btn" onclick="logoutUser()">
-            <i class="fa-solid fa-right-from-bracket"></i>
-            <span>Logout Account</span>
-        </button>
+        <!-- More Services List -->
+        <div class="more-services-box">
+            <div class="services-title">More services</div>
 
+            <div class="service-list">
+                <!-- Admin Panel (Shown for Admin Only) -->
+                <a href="admin.html" id="adminPanelBtn" class="service-link" style="display: none;">
+                    <div class="s-left">
+                        <div class="s-icon" style="background: #fef2f2; color: #dc2626;"><i class="fa-solid fa-user-shield"></i></div>
+                        <span class="s-text" style="color: #dc2626;">Admin Panel Control</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right arrow-icon"></i>
+                </a>
+
+                <a href="team.html" class="service-link">
+                    <div class="s-left">
+                        <div class="s-icon"><i class="fa-solid fa-id-card"></i></div>
+                        <span class="s-text">Personal Information</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right arrow-icon"></i>
+                </a>
+
+                <a href="recharge.html" class="service-link">
+                    <div class="s-left">
+                        <div class="s-icon"><i class="fa-solid fa-receipt"></i></div>
+                        <span class="s-text">Balance Details</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right arrow-icon"></i>
+                </a>
+
+                <a href="withdraw.html" class="service-link">
+                    <div class="s-left">
+                        <div class="s-icon"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                        <span class="s-text">Withdrawal Details</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right arrow-icon"></i>
+                </a>
+
+                <a href="about.html" class="service-link">
+                    <div class="s-left">
+                        <div class="s-icon"><i class="fa-solid fa-bell"></i></div>
+                        <span class="s-text">Notification Center</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right arrow-icon"></i>
+                </a>
+
+                <div onclick="logoutUser()" class="service-link" style="cursor: pointer;">
+                    <div class="s-left">
+                        <div class="s-icon red"><i class="fa-solid fa-right-from-bracket"></i></div>
+                        <span class="s-text red">Logout</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right arrow-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
         <div class="bottom-nav">
             <a href="index.html" class="nav-item"><i class="fa-solid fa-house"></i><span>Home</span></a>
             <a href="recharge.html" class="nav-item"><i class="fa-solid fa-box-archive"></i><span>Treasure</span></a>
@@ -90,17 +185,14 @@
             <a href="team.html" class="nav-item"><i class="fa-solid fa-users"></i><span>Team</span></a>
             <a href="profile.html" class="nav-item active"><i class="fa-solid fa-user"></i><span>Profile</span></a>
         </div>
-    </div>
-
-    <script>
+                    </div>
+                        <script>
         const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
         let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
         const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // 🔒 ADMIN MOBILE EMAIL FORMAT
-        const ADMIN_EMAIL = "7983678835@earnflow.app";
+        const ADMIN_MOBILE = "7983678835";
 
         document.addEventListener("DOMContentLoaded", async function() {
             const { data: { session } } = await supabaseClient.auth.getSession();
@@ -110,17 +202,37 @@
             } else {
                 document.body.style.display = 'flex';
                 const userEmail = session.user.email || '';
-                
                 const rawPhone = userEmail.replace('@earnflow.app', '');
+                
                 document.getElementById('userDisplayPhone').innerText = rawPhone;
                 document.getElementById('userDisplayEmail').innerText = userEmail;
+                document.getElementById('avatarLetter').innerText = rawPhone.charAt(0).toUpperCase();
 
-                // Reveal Admin Button if mobile matches
-                if (userEmail === ADMIN_EMAIL || rawPhone === '7983678835') {
+                if (rawPhone === ADMIN_MOBILE) {
                     document.getElementById('adminPanelBtn').style.display = 'flex';
                 }
+
+                fetchProfileData(session.user.id);
             }
         });
+
+        async function fetchProfileData(userId) {
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('balance, total_recharge, team_income')
+                .eq('id', userId)
+                .single();
+
+            if (profile) {
+                const bal = parseFloat(profile.balance || 0);
+                const rec = parseFloat(profile.total_recharge || 0);
+                const inc = parseFloat(profile.team_income || 0);
+
+                document.getElementById('valAvailable').innerText = '₹' + bal.toFixed(0);
+                document.getElementById('valRecharge').innerText = '₹' + rec.toFixed(0);
+                document.getElementById('valIncome').innerText = '₹' + inc.toFixed(0);
+            }
+        }
 
         async function logoutUser() {
             await supabaseClient.auth.signOut();
