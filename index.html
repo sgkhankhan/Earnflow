@@ -9,38 +9,26 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
         body { background-color: #f4f7f4; display: flex; justify-content: center; }
         .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 15px; padding-bottom: 90px; position: relative; }
-        
-        /* Banner */
         .banner { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 25px 15px; border-radius: 15px; text-align: center; }
         .banner h2 { font-size: 22px; margin-bottom: 5px; }
         .banner p { font-size: 12px; opacity: 0.9; }
-
-        /* Quick Actions Grid */
         .action-grid { display: flex; justify-content: space-between; margin: 20px 0; background: #f0fdf4; padding: 12px; border-radius: 15px; }
         .action-item { display: flex; flex-direction: column; align-items: center; font-size: 12px; color: #2e7d32; position: relative; cursor: pointer; text-decoration: none; }
         .action-item i { font-size: 20px; margin-bottom: 5px; background: #dcfce7; padding: 10px; border-radius: 12px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
         .badge-parent .badge { position: absolute; top: -5px; right: -2px; background: #ef4444; color: white; font-size: 9px; padding: 2px 5px; border-radius: 8px; }
-
-        /* Product Section Header */
         .section-title { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 5px; }
         .section-title h3 { font-size: 16px; color: #1b5e20; }
         .popular-tag { background: #2e7d32; color: white; font-size: 11px; padding: 3px 8px; border-radius: 10px; }
-
-        /* Product Cards */
         .product-card { display: flex; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 15px; padding: 12px; margin-top: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
         .product-img { position: relative; width: 40%; background: #e8f5e9; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px; padding: 10px; text-align: center; }
         .product-img i { font-size: 40px; color: #2e7d32; margin-bottom: 5px; }
         .limit-tag { position: absolute; top: 5px; left: 5px; background: rgba(0, 0, 0, 0.6); color: white; font-size: 9px; padding: 2px 5px; border-radius: 6px; }
-
         .product-details { width: 60%; padding-left: 12px; display: flex; flex-direction: column; justify-content: center; }
         .detail-row { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 12px; }
         .detail-row .label { color: #666; }
         .detail-row .value { font-weight: bold; color: #1b5e20; }
         .detail-row .price { color: #16a34a; font-size: 15px; }
-
         .buy-btn { width: 100%; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; border: none; padding: 10px; border-radius: 20px; margin-top: 8px; font-size: 14px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; text-decoration: none; }
-
-        /* Bottom Nav */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e0e0e0; left: 50%; transform: translateX(-50%); }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #888; cursor: pointer; text-decoration: none; }
         .nav-item.active { color: #2e7d32; font-weight: bold; }
@@ -49,143 +37,40 @@
     </style>
 </head>
 <body>
-
     <div class="app-container">
-        <!-- Banner -->
         <div class="banner">
             <h2>Earnflow Seeds</h2>
             <p>Growing Quality, Harvesting Prosperity</p>
         </div>
-
-        <!-- Quick Actions -->
         <div class="action-grid">
-            <a href="https://sgkhankhan.github.io/Earnflow/recharge.html" class="action-item">
-                <i class="fa-solid fa-wallet"></i>
-                <span>Recharge</span>
-            </a>
-            <a href="https://sgkhankhan.github.io/Earnflow/withdraw.html" class="action-item">
-                <i class="fa-solid fa-hand-holding-dollar"></i>
-                <span>Withdraw</span>
-            </a>
-            <a href="https://sgkhankhan.github.io/Earnflow/login.html" class="action-item badge-parent">
-                <span class="badge">Login</span>
-                <i class="fa-solid fa-right-to-bracket"></i>
-                <span>Account</span>
-            </a>
-            <a href="https://sgkhankhan.github.io/Earnflow/team.html" class="action-item">
-                <i class="fa-solid fa-share-nodes"></i>
-                <span>Invite</span>
-            </a>
-            <a href="https://sgkhankhan.github.io/Earnflow/profile.html" class="action-item">
-                <i class="fa-solid fa-headset"></i>
-                <span>Support</span>
-            </a>
+            <a href="https://sgkhankhan.github.io/Earnflow/recharge.html" class="action-item"><i class="fa-solid fa-wallet"></i><span>Recharge</span></a>
+            <a href="https://sgkhankhan.github.io/Earnflow/withdraw.html" class="action-item"><i class="fa-solid fa-hand-holding-dollar"></i><span>Withdraw</span></a>
+            <a href="https://sgkhankhan.github.io/Earnflow/login.html" class="action-item badge-parent"><span class="badge">Login</span><i class="fa-solid fa-right-to-bracket"></i><span>Account</span></a>
+            <a href="https://sgkhankhan.github.io/Earnflow/team.html" class="action-item"><i class="fa-solid fa-share-nodes"></i><span>Invite</span></a>
+            <a href="https://sgkhankhan.github.io/Earnflow/support.html" class="action-item"><i class="fa-solid fa-headset"></i><span>Support</span></a>
         </div>
-
         <div class="section-title">
             <h3>Investment Products</h3>
             <span class="popular-tag">Daily Return</span>
         </div>
-
-        <!-- Product 1 -->
         <div class="product-card">
-            <div class="product-img">
-                <i class="fa-solid fa-wheat-awn"></i>
-                <span style="font-size: 11px; font-weight: bold; color: #1b5e20;">MAIZE SEED</span>
-                <span class="limit-tag">Limit 0/10</span>
-            </div>
+            <div class="product-img"><i class="fa-solid fa-wheat-awn"></i><span style="font-size: 11px; font-weight: bold; color: #1b5e20;">MAIZE SEED</span><span class="limit-tag">Limit 0/10</span></div>
             <div class="product-details">
                 <div class="detail-row"><span class="label">Price</span><span class="value price">₹525</span></div>
                 <div class="detail-row"><span class="label">Daily</span><span class="value">₹125</span></div>
                 <div class="detail-row"><span class="label">Total</span><span class="value">₹18,750</span></div>
                 <div class="detail-row"><span class="label">Validity</span><span class="value">150 Days</span></div>
-                <a href="https://sgkhankhan.github.io/Earnflow/recharge.html" class="buy-btn">
-                    <span>Buy Now</span><i class="fa-solid fa-cart-shopping"></i>
-                </a>
+                <a href="https://sgkhankhan.github.io/Earnflow/recharge.html" class="buy-btn"><span>Buy Now</span><i class="fa-solid fa-cart-shopping"></i></a>
             </div>
         </div>
-
-        <!-- Product 2 -->
-        <div class="product-card">
-            <div class="product-img">
-                <i class="fa-solid fa-seedling"></i>
-                <span style="font-size: 11px; font-weight: bold; color: #1b5e20;">WHEAT SEED</span>
-                <span class="limit-tag">Limit 0/5</span>
-            </div>
-            <div class="product-details">
-                <div class="detail-row"><span class="label">Price</span><span class="value price">₹1,500</span></div>
-                <div class="detail-row"><span class="label">Daily</span><span class="value">₹375</span></div>
-                <div class="detail-row"><span class="label">Total</span><span class="value">₹56,250</span></div>
-                <div class="detail-row"><span class="label">Validity</span><span class="value">150 Days</span></div>
-                <a href="https://sgkhankhan.github.io/Earnflow/recharge.html" class="buy-btn">
-                    <span>Buy Now</span><i class="fa-solid fa-cart-shopping"></i>
-                </a>
-            </div>
-        </div>
-
-        <!-- Product 3 -->
-        <div class="product-card">
-            <div class="product-img">
-                <i class="fa-solid fa-plant-wilt"></i>
-                <span style="font-size: 11px; font-weight: bold; color: #1b5e20;">PADDY SEED</span>
-                <span class="limit-tag">Limit 0/3</span>
-            </div>
-            <div class="product-details">
-                <div class="detail-row"><span class="label">Price</span><span class="value price">₹3,500</span></div>
-                <div class="detail-row"><span class="label">Daily</span><span class="value">₹920</span></div>
-                <div class="detail-row"><span class="label">Total</span><span class="value">₹1,38,000</span></div>
-                <div class="detail-row"><span class="label">Validity</span><span class="value">150 Days</span></div>
-                <a href="https://sgkhankhan.github.io/Earnflow/recharge.html" class="buy-btn">
-                    <span>Buy Now</span><i class="fa-solid fa-cart-shopping"></i>
-                </a>
-            </div>
-        </div>
-
-        <!-- Product 4 -->
-        <div class="product-card">
-            <div class="product-img">
-                <i class="fa-solid fa-tree"></i>
-                <span style="font-size: 11px; font-weight: bold; color: #1b5e20;">HYBRID SEED</span>
-                <span class="limit-tag">Limit 0/2</span>
-            </div>
-            <div class="product-details">
-                <div class="detail-row"><span class="label">Price</span><span class="value price">₹8,000</span></div>
-                <div class="detail-row"><span class="label">Daily</span><span class="value">₹2,200</span></div>
-                <div class="detail-row"><span class="label">Total</span><span class="value">₹3,30,000</span></div>
-                <div class="detail-row"><span class="label">Validity</span><span class="value">150 Days</span></div>
-                <a href="https://sgkhankhan.github.io/Earnflow/recharge.html" class="buy-btn">
-                    <span>Buy Now</span><i class="fa-solid fa-cart-shopping"></i>
-                </a>
-            </div>
-        </div>
-
-        <!-- Bottom Navigation Bar -->
         <div class="bottom-nav">
-            <a href="https://sgkhankhan.github.io/Earnflow/" class="nav-item active">
-                <i class="fa-solid fa-house"></i>
-                <span>Home</span>
-            </a>
-            <a href="https://sgkhankhan.github.io/Earnflow/recharge.html" class="nav-item">
-                <i class="fa-solid fa-box-archive"></i>
-                <span>Treasure</span>
-            </a>
-            <a href="https://sgkhankhan.github.io/Earnflow/wheel.html" class="nav-item wheel-btn">
-                <div class="wheel-icon">
-                    <i class="fa-solid fa-dharmachakra"></i>
-                </div>
-                <span>Wheel</span>
-            </a>
-            <a href="https://sgkhankhan.github.io/Earnflow/team.html" class="nav-item">
-                <i class="fa-solid fa-users"></i>
-                <span>Team</span>
-            </a>
-            <a href="https://sgkhankhan.github.io/Earnflow/profile.html" class="nav-item">
-                <i class="fa-solid fa-user"></i>
-                <span>Profile</span>
-            </a>
+            <a href="https://sgkhankhan.github.io/Earnflow/" class="nav-item active"><i class="fa-solid fa-house"></i><span>Home</span></a>
+            <a href="https://sgkhankhan.github.io/Earnflow/recharge.html" class="nav-item"><i class="fa-solid fa-box-archive"></i><span>Treasure</span></a>
+            <a href="https://sgkhankhan.github.io/Earnflow/wheel.html" class="nav-item wheel-btn"><div class="wheel-icon"><i class="fa-solid fa-dharmachakra"></i></div><span>Wheel</span></a>
+            <a href="https://sgkhankhan.github.io/Earnflow/team.html" class="nav-item"><i class="fa-solid fa-users"></i><span>Team</span></a>
+            <a href="https://sgkhankhan.github.io/Earnflow/profile.html" class="nav-item"><i class="fa-solid fa-user"></i><span>Profile</span></a>
         </div>
     </div>
-
 </body>
-                </html>
-    
+            </html>
+            
