@@ -83,7 +83,6 @@
         document.addEventListener("DOMContentLoaded", async function() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             
-            // Security Check: Lock out non-admin users
             if (!session) {
                 window.location.replace('login.html');
                 return;
@@ -101,7 +100,6 @@
             loadPendingWithdrawals();
         });
 
-        // Load & Save UPI ID
         async function loadUpiSettings() {
             const { data } = await supabaseClient.from('app_settings').select('upi_id').eq('id', 1).single();
             if (data) document.getElementById('upiInput').value = data.upi_id;
@@ -116,7 +114,6 @@
             else alert("UPI ID Updated Successfully!");
         }
 
-        // Load Pending Recharges
         async function loadPendingRecharges() {
             const container = document.getElementById('rechargeList');
             const { data: txs } = await supabaseClient.from('transactions').select('*').eq('type', 'recharge').eq('status', 'pending');
@@ -138,24 +135,64 @@
             `).join('');
         }
 
-        // Approve Recharge (Adds Balance automatically)
+        // Approve Recharge & Distribute Referral Commission (10%)
         async function approveRecharge(txId, userId, amount) {
             try {
-                const { data: profile } = await supabaseClient.from('profiles').select('balance, total_recharge').eq('id', userId).single();
+                // 1. Fetch User Profile
+                const { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('balance, total_recharge, referred_by')
+                    .eq('id', userId)
+                    .single();
+
                 const newBal = parseFloat(profile.balance || 0) + parseFloat(amount);
                 const newTotalRec = parseFloat(profile.total_recharge || 0) + parseFloat(amount);
 
+                // Update User Balance & Total Recharge
                 await supabaseClient.from('profiles').update({ balance: newBal, total_recharge: newTotalRec }).eq('id', userId);
                 await supabaseClient.from('transactions').update({ status: 'success' }).eq('id', txId);
 
-                alert("Recharge Approved & Balance Added!");
+                // 2. Check & Calculate Referral Commission (10%)
+                if (profile && profile.referred_by) {
+                    const commissionRate = 0.10; // 10% Commission
+                    const commissionAmt = parseFloat(amount) * commissionRate;
+
+                    // Fetch Inviter Profile by referral code
+                    const { data: inviter } = await supabaseClient
+                        .from('profiles')
+                        .select('id, balance, team_income')
+                        .eq('referral_code', profile.referred_by)
+                        .single();
+
+                    if (inviter) {
+                        const inviterNewBal = parseFloat(inviter.balance || 0) + commissionAmt;
+                        const inviterNewTeamInc = parseFloat(inviter.team_income || 0) + commissionAmt;
+
+                        // Credit Commission to Inviter
+                        await supabaseClient.from('profiles').update({
+                            balance: inviterNewBal,
+                            team_income: inviterNewTeamInc
+                        }).eq('id', inviter.id);
+
+                        // Record Commission Transaction
+                        await supabaseClient.from('transactions').insert([{
+                            user_id: inviter.id,
+                            type: 'recharge',
+                            amount: commissionAmt,
+                            status: 'success',
+                            payment_details: `10% Referral Reward from Team Member`
+                        }]);
+                    }
+                }
+
+                alert("Recharge Approved! Balance & Referral Commission Credited.");
                 loadPendingRecharges();
+
             } catch (err) {
                 alert("Error: " + err.message);
             }
         }
 
-        // Load Pending Withdrawals
         async function loadPendingWithdrawals() {
             const container = document.getElementById('withdrawList');
             const { data: txs } = await supabaseClient.from('transactions').select('*').eq('type', 'withdraw').eq('status', 'pending');
@@ -184,4 +221,5 @@
         }
     </script>
 </body>
-</html>
+    </html>
+    
