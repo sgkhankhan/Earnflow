@@ -3,46 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earnflow - API Key Debugger</title>
+    <title>Earnflow Seeds - Login / Register</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f1f7f2; text-align: center; }
-        .card { background: white; padding: 20px; border-radius: 15px; max-width: 380px; margin: 20px auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .btn { background: #16a34a; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; }
-        .log-box { background: #1e293b; color: #38bdf8; padding: 12px; border-radius: 8px; font-size: 12px; text-align: left; margin-top: 15px; word-break: break-all; font-family: monospace; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f1f7f2; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; }
+        .auth-card { width: 100%; max-width: 400px; background: #ffffff; border-radius: 24px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2ebd8; }
+        .brand-logo { text-align: center; margin-bottom: 20px; }
+        .brand-logo i { font-size: 45px; color: #16a34a; }
+        .brand-logo h2 { font-size: 22px; font-weight: 800; color: #0f172a; margin-top: 6px; }
+        .tab-switch { display: flex; background: #f1f5f9; border-radius: 14px; padding: 4px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; font-size: 14px; font-weight: 700; color: #64748b; cursor: pointer; border-radius: 10px; }
+        .tab-btn.active { background: #ffffff; color: #16a34a; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .form-group { margin-bottom: 14px; }
+        .form-label { font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; display: block; }
+        .input-box { width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 14px; font-weight: 600; outline: none; }
+        .submit-btn { width: 100%; background: linear-gradient(135deg, #22c55e, #15803d); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 10px; }
+        .ref-badge { background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; margin-left: 6px; display: none; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2>Supabase Connection Test</h2>
-        <p style="font-size:12px; color:#64748b; margin-top:5px;">API Key Verification Mode</p>
-        
-        <button class="btn" onclick="testConnection()">Test Connection Now</button>
+    <div class="auth-card">
+        <div class="brand-logo">
+            <i class="fa-solid fa-seedling"></i>
+            <h2>Earnflow Seeds</h2>
+        </div>
 
-        <div id="log" class="log-box">Click button to test connection...</div>
-    </div>
+        <div class="tab-switch">
+            <button class="tab-btn active" id="loginTabBtn" onclick="switchTab('login')">Login</button>
+            <button class="tab-btn" id="signupTabBtn" onclick="switchTab('signup')">Register</button>
+        </div>
 
-    <script>
+        <form id="loginForm" onsubmit="handleAuth(event, 'login')">
+            <div class="form-group">
+                <label class="form-label">Mobile Number</label>
+                <input type="tel" id="loginPhone" class="input-box" placeholder="10-digit mobile number" required pattern="[0-9]{10}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" id="loginPass" class="input-box" placeholder="Enter password" required>
+            </div>
+            <button type="submit" class="submit-btn">Sign In</button>
+        </form>
+
+        <form id="signupForm" onsubmit="handleAuth(event, 'signup')" style="display: none;">
+            <div class="form-group">
+                <label class="form-label">Mobile Number</label>
+                <input type="tel" id="signupPhone" class="input-box" placeholder="10-digit mobile number" required pattern="[0-9]{10}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Create Password</label>
+                <input type="password" id="signupPass" class="input-box" placeholder="Create password" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Referral Code (Optional) <span id="refAppliedBadge" class="ref-badge"><i class="fa-solid fa-check"></i> Applied</span></label>
+                <input type="text" id="referralCodeInput" class="input-box" placeholder="Enter referral code">
+            </div>
+            <button type="submit" class="submit-btn">Create Account</button>
+        </form>
+                    </div>
+                        <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
 
-        const log = document.getElementById('log');
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        async function testConnection() {
-            log.innerText = "Testing connection to Supabase...\nURL: " + SUPABASE_URL;
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const refCode = urlParams.get('ref');
 
-            try {
-                const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                
-                const { data, error } = await supabaseClient.from('profiles').select('id').limit(1);
+            if (refCode) {
+                const refInput = document.getElementById('referralCodeInput');
+                refInput.value = refCode;
+                document.getElementById('refAppliedBadge').style.display = 'inline-block';
+                switchTab('signup');
+            }
+        });
 
-                if (error) {
-                    log.innerHTML = `<span style="color:#ef4444;">❌ ERROR: ${error.message}</span>`;
-                } else {
-                    log.innerHTML = `<span style="color:#4ade80;">✅ SUCCESS! Connected to Supabase Database successfully!</span>\nProfiles found: ${data.length}`;
+        function switchTab(tab) {
+            if (tab === 'login') {
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('signupForm').style.display = 'none';
+                document.getElementById('loginTabBtn').classList.add('active');
+                document.getElementById('signupTabBtn').classList.remove('active');
+            } else {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('signupForm').style.display = 'block';
+                document.getElementById('signupTabBtn').classList.add('active');
+                document.getElementById('loginTabBtn').classList.remove('active');
+            }
+        }
+
+        async function handleAuth(e, type) {
+            e.preventDefault();
+            
+            const phone = type === 'login' ? document.getElementById('loginPhone').value.trim() : document.getElementById('signupPhone').value.trim();
+            const pass = type === 'login' ? document.getElementById('loginPass').value : document.getElementById('signupPass').value;
+            const email = `${phone}@earnflow.app`;
+
+            if (type === 'signup') {
+                const refCode = document.getElementById('referralCodeInput').value.trim();
+
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: pass,
+                });
+
+                if (error) return alert("Registration failed: " + error.message);
+
+                if (data.user) {
+                    const myRefCode = phone;
+                    
+                    const { error: profileErr } = await supabaseClient.from('profiles').upsert([{
+                        id: data.user.id,
+                        email: email,
+                        balance: 0,
+                        referral_code: myRefCode,
+                        referred_by: refCode || null
+                    }]);
+
+                    if (profileErr) console.error("Profile save error:", profileErr);
+
+                    alert("Registration Successful!");
+                    window.location.replace('index.html');
                 }
-            } catch (err) {
-                log.innerHTML = `<span style="color:#ef4444;">❌ CRITICAL ERROR: ${err.message}</span>`;
+            } else {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: pass,
+                });
+
+                if (error) return alert("Login failed: " + error.message);
+                if (data.session) window.location.replace('index.html');
             }
         }
     </script>
