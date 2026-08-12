@@ -4,38 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Earnflow</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
         body { background-color: #f4f7f4; display: flex; justify-content: center; }
         .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 15px; padding-bottom: 90px; position: relative; }
-        
         .banner { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 25px 15px; border-radius: 15px; text-align: center; }
         .banner h2 { font-size: 22px; margin-bottom: 5px; }
         .banner p { font-size: 12px; opacity: 0.9; }
-
         .action-grid { display: flex; justify-content: space-between; margin: 20px 0; background: #f0fdf4; padding: 12px; border-radius: 15px; }
         .action-item { display: flex; flex-direction: column; align-items: center; font-size: 12px; color: #2e7d32; position: relative; cursor: pointer; }
         .action-item i { font-size: 20px; margin-bottom: 5px; background: #dcfce7; padding: 10px; border-radius: 12px; }
         .badge-parent .badge { position: absolute; top: -5px; right: -2px; background: #ef4444; color: white; font-size: 9px; padding: 2px 5px; border-radius: 8px; }
-
         .section-title { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
         .section-title h3 { font-size: 16px; color: #1b5e20; }
         .popular-tag { background: #2e7d32; color: white; font-size: 11px; padding: 3px 8px; border-radius: 10px; }
-
         .product-card { display: flex; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 15px; padding: 12px; margin-top: 10px; }
         .product-img { position: relative; width: 40%; background: #e8f5e9; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px; }
         .product-img i { font-size: 45px; color: #2e7d32; margin-bottom: 5px; }
         .limit-tag { position: absolute; top: 5px; left: 5px; background: rgba(0, 0, 0, 0.6); color: white; font-size: 9px; padding: 2px 5px; border-radius: 6px; }
-
         .product-details { width: 60%; padding-left: 15px; display: flex; flex-direction: column; justify-content: center; }
         .detail-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
         .detail-row .label { color: #666; }
         .detail-row .value { font-weight: bold; color: #1b5e20; }
         .detail-row .price { color: #16a34a; font-size: 16px; }
-
         .buy-btn { width: 100%; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; border: none; padding: 12px; border-radius: 25px; margin-top: 12px; font-size: 16px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 10px; cursor: pointer; }
-
         .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e0e0e0; left: 50%; transform: translateX(-50%); }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #888; cursor: pointer; }
         .nav-item.active { color: #2e7d32; font-weight: bold; }
@@ -44,13 +37,11 @@
     </style>
 </head>
 <body>
-
     <div class="app-container">
         <div class="banner">
             <h2>Earnflow Seeds</h2>
             <p>Growing Quality, Harvesting Prosperity</p>
         </div>
-
         <div class="action-grid">
             <div class="action-item">
                 <i class="fa-solid fa-wallet"></i>
@@ -74,19 +65,16 @@
                 <span>Online</span>
             </div>
         </div>
-
         <div class="section-title">
             <h3>Product A – Daily withdrawal</h3>
             <span class="popular-tag">Popular</span>
         </div>
-
         <div class="product-card">
             <div class="product-img">
                 <i class="fa-solid fa-wheat-awn"></i>
                 <span style="font-size: 11px; font-weight: bold; color: #1b5e20;">MAIZE SEED</span>
                 <span class="limit-tag">Limit 0/10</span>
             </div>
-
             <div class="product-details">
                 <div class="detail-row">
                     <span class="label">Price</span>
@@ -106,12 +94,10 @@
                 </div>
             </div>
         </div>
-
         <button class="buy-btn">
             <span>Buy Now</span>
             <i class="fa-solid fa-cart-shopping"></i>
         </button>
-
         <div class="bottom-nav">
             <div class="nav-item active">
                 <i class="fa-solid fa-house"></i>
@@ -137,6 +123,5 @@
             </div>
         </div>
     </div>
-
 </body>
 </html>
