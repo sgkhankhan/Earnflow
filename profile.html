@@ -31,6 +31,10 @@
         .menu-left span { font-size: 14px; font-weight: 500; }
         .menu-right { color: #aaa; font-size: 12px; }
 
+        /* Admin Highlight Item */
+        .admin-item { background: #fefce8; border-radius: 10px; border: 1px solid #fef08a; margin-top: 5px; }
+        .admin-item i { color: #ca8a04 !important; }
+
         /* Logout Button */
         .logout-btn { width: 100%; background: #fee2e2; color: #dc2626; border: none; padding: 12px; border-radius: 25px; margin-top: 25px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
 
@@ -68,21 +72,30 @@
 
         <!-- Navigation / Action List -->
         <div class="menu-list">
-            <div class="menu-item">
+            <!-- Admin Dashboard Link -->
+            <a href="https://sgkhankhan.github.io/Earnflow/admin.html" class="menu-item admin-item">
+                <div class="menu-left">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span style="font-weight: bold; color: #854d0e;">Admin Control Panel</span>
+                </div>
+                <div class="menu-right"><i class="fa-solid fa-chevron-right"></i></div>
+            </a>
+
+            <a href="https://sgkhankhan.github.io/Earnflow/recharge.html" class="menu-item">
                 <div class="menu-left">
                     <i class="fa-solid fa-wallet"></i>
                     <span>Recharge Record</span>
                 </div>
                 <div class="menu-right"><i class="fa-solid fa-chevron-right"></i></div>
-            </div>
+            </a>
 
-            <div class="menu-item">
+            <a href="https://sgkhankhan.github.io/Earnflow/withdraw.html" class="menu-item">
                 <div class="menu-left">
                     <i class="fa-solid fa-file-invoice-dollar"></i>
                     <span>Withdrawal Record</span>
                 </div>
                 <div class="menu-right"><i class="fa-solid fa-chevron-right"></i></div>
-            </div>
+            </a>
 
             <div class="menu-item">
                 <div class="menu-left">
@@ -92,21 +105,13 @@
                 <div class="menu-right"><i class="fa-solid fa-chevron-right"></i></div>
             </div>
 
-            <div class="menu-item">
+            <a href="https://sgkhankhan.github.io/Earnflow/team.html" class="menu-item">
                 <div class="menu-left">
                     <i class="fa-solid fa-user-plus"></i>
                     <span>Invite Friends & Earn</span>
                 </div>
                 <div class="menu-right"><i class="fa-solid fa-chevron-right"></i></div>
-            </div>
-
-            <div class="menu-item">
-                <div class="menu-left">
-                    <i class="fa-solid fa-lock"></i>
-                    <span>Change Password</span>
-                </div>
-                <div class="menu-right"><i class="fa-solid fa-chevron-right"></i></div>
-            </div>
+            </a>
 
             <div class="menu-item">
                 <div class="menu-left">
@@ -118,37 +123,40 @@
         </div>
 
         <!-- Logout Button -->
-        <button class="logout-btn" onclick="alert('Logging out...')">
-            <i class="fa-solid fa-right-from-bracket"></i>
-            <span>Log Out</span>
-        </button>
+        <a href="https://sgkhankhan.github.io/Earnflow/login.html" style="text-decoration: none;">
+            <button class="logout-btn">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Log Out</span>
+            </button>
+        </a>
 
         <!-- Bottom Navigation Bar -->
         <div class="bottom-nav">
-            <a href="index.html" class="nav-item">
+            <a href="https://sgkhankhan.github.io/Earnflow/" class="nav-item">
                 <i class="fa-solid fa-house"></i>
                 <span>Home</span>
             </a>
-            <div class="nav-item">
+            <a href="https://sgkhankhan.github.io/Earnflow/recharge.html" class="nav-item">
                 <i class="fa-solid fa-box-archive"></i>
                 <span>Treasure</span>
-            </div>
-            <div class="nav-item wheel-btn">
+            </a>
+            <a href="https://sgkhankhan.github.io/Earnflow/wheel.html" class="nav-item wheel-btn">
                 <div class="wheel-icon">
                     <i class="fa-solid fa-dharmachakra"></i>
                 </div>
                 <span>Wheel</span>
-            </div>
-            <div class="nav-item">
+            </a>
+            <a href="https://sgkhankhan.github.io/Earnflow/team.html" class="nav-item">
                 <i class="fa-solid fa-users"></i>
                 <span>Team</span>
-            </div>
-            <div class="nav-item active">
+            </a>
+            <a href="https://sgkhankhan.github.io/Earnflow/profile.html" class="nav-item active">
                 <i class="fa-solid fa-user"></i>
                 <span>Profile</span>
-            </div>
+            </a>
         </div>
     </div>
 
 </body>
-</html>
+    </html>
+    
