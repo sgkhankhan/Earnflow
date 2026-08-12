@@ -38,6 +38,18 @@
         .stat-num { font-size: 22px; font-weight: 800; color: #16a34a; margin-top: 4px; }
         .stat-label { font-size: 12px; color: #64748b; font-weight: 600; }
 
+        /* Team Member List Styles */
+        .section-title { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .team-list { display: flex; flex-direction: column; gap: 10px; }
+        .member-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        .member-info { display: flex; align-items: center; gap: 12px; }
+        .member-icon { width: 38px; height: 38px; background: #dcfce7; color: #15803d; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .member-details p { font-size: 13px; font-weight: 800; color: #0f172a; }
+        .member-details span { font-size: 11px; color: #64748b; font-weight: 500; }
+        .status-badge { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+
+        .empty-team { text-align: center; padding: 25px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 16px; color: #64748b; font-size: 13px; font-weight: 600; }
+
         .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #f1f5f9; left: 50%; transform: translateX(-50%); }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #64748b; cursor: pointer; text-decoration: none; font-weight: 600; gap: 3px; }
         .nav-item.active { color: #16a34a; font-weight: 800; }
@@ -84,6 +96,16 @@
             </div>
         </div>
 
+        <!-- Team Member List View -->
+        <div class="section-title">
+            <i class="fa-solid fa-users-viewfinder" style="color: #16a34a;"></i>
+            <span>My Invited Members</span>
+        </div>
+
+        <div id="teamMemberList" class="team-list">
+            <div class="empty-team">Loading team members...</div>
+        </div>
+
         <!-- Bottom Nav -->
         <div class="bottom-nav">
             <a href="index.html" class="nav-item"><i class="fa-solid fa-house"></i><span>Home</span></a>
@@ -125,7 +147,6 @@
 
                 let refCode = profile ? profile.referral_code : null;
 
-                // Fallback: If referral_code is missing in DB, generate from user ID
                 if (!refCode) {
                     refCode = currentUser.id.substring(0, 8);
                     await supabaseClient.from('profiles').update({ referral_code: refCode }).eq('id', currentUser.id);
@@ -136,26 +157,47 @@
 
                 document.getElementById('referralLinkInput').value = generatedLink;
                 
-                // Set WhatsApp Direct Share Link
                 const waText = encodeURIComponent(`Join Earnflow Seeds and get daily returns on seed investments! Register using my referral link: ${generatedLink}`);
                 document.getElementById('whatsappShareBtn').href = `https://wa.me/?text=${waText}`;
 
                 document.getElementById('teamIncome').innerText = '₹' + parseFloat((profile && profile.team_income) || 0).toFixed(2);
 
-                // Fetch total referred count
-                const { count } = await supabaseClient
+                // Fetch team members list
+                const { data: members, error } = await supabaseClient
                     .from('profiles')
-                    .select('id', { count: 'exact' })
-                    .eq('referred_by', refCode);
+                    .select('email, created_at')
+                    .eq('referred_by', refCode)
+                    .order('created_at', { ascending: false });
 
-                document.getElementById('totalTeamCount').innerText = count || 0;
+                const container = document.getElementById('teamMemberList');
+                document.getElementById('totalTeamCount').innerText = members ? members.length : 0;
+
+                if (!members || members.length === 0) {
+                    container.innerHTML = `<div class="empty-team">No members joined yet. Share your referral link to earn 10% commission!</div>`;
+                    return;
+                }
+
+                container.innerHTML = members.map(m => {
+                    const rawPhone = (m.email || '').replace('@earnflow.app', '');
+                    const maskedPhone = rawPhone.length === 10 ? rawPhone.substring(0, 4) + '****' + rawPhone.substring(8) : rawPhone;
+                    const joinDate = new Date(m.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+
+                    return `
+                        <div class="member-card">
+                            <div class="member-info">
+                                <div class="member-icon"><i class="fa-solid fa-user-check"></i></div>
+                                <div class="member-details">
+                                    <p>${maskedPhone}</p>
+                                    <span>Joined: ${joinDate}</span>
+                                </div>
+                            </div>
+                            <span class="status-badge">Active</span>
+                        </div>
+                    `;
+                }).join('');
 
             } catch (err) {
-                // Fallback link on any error
-                const fallbackCode = currentUser.id.substring(0, 8);
-                const baseUrl = window.location.origin + window.location.pathname.replace('team.html', 'signup.html');
-                generatedLink = `${baseUrl}?ref=${fallbackCode}`;
-                document.getElementById('referralLinkInput').value = generatedLink;
+                document.getElementById('teamMemberList').innerHTML = `<div class="empty-team">Failed to load team data.</div>`;
             }
         }
 
@@ -167,4 +209,5 @@
         }
     </script>
 </body>
-</html>
+    </html>
+                
