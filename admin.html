@@ -3,178 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earnflow - Admin Dashboard</title>
+    <title>Earnflow - Admin Panel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        // Simple Password Protection Logic
-        (function protectAdmin() {
-            var adminPassword = "4062"; // Yahan aap apna secret password change kar sakte hain
-            var userInput = prompt("Enter Admin Security Password:");
-            
-            if (userInput !== adminPassword) {
-                alert("Access Denied! Incorrect Password.");
-                window.location.href = "https://sgkhankhan.github.io/Earnflow/";
-            }
-        })();
-    </script>
+    
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: #f1f5f9; padding: 15px; color: #334155; }
-        .dashboard-container { max-width: 900px; margin: 0 auto; }
+        body { background-color: #f4f7f4; display: none; justify-content: center; min-height: 100vh; padding: 15px; }
+        .app-container { width: 100%; max-width: 480px; background: #ffffff; min-height: 100vh; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         
-        /* Header */
-        .admin-header { display: flex; justify-content: space-between; align-items: center; background: #0f172a; color: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 20px; }
-        .admin-header h2 { font-size: 20px; }
-        .admin-header span { background: #1e293b; padding: 5px 12px; border-radius: 20px; font-size: 12px; color: #38bdf8; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
+        .header h2 { font-size: 20px; color: #1b5e20; }
 
-        /* Overview Cards */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: white; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .stat-card p { font-size: 12px; color: #64748b; font-weight: 500; }
-        .stat-card h3 { font-size: 22px; color: #0f172a; margin-top: 5px; }
-        .stat-card.accent { border-left: 4px solid #16a34a; }
-        .stat-card.warning { border-left: 4px solid #eab308; }
+        .card { background: #f9fafb; border: 1px solid #e0e0e0; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
+        .card h3 { font-size: 15px; color: #1b5e20; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
 
-        /* Tables Section */
-        .section-box { background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow-x: auto; }
-        .section-title { font-size: 16px; font-weight: bold; color: #0f172a; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }
-        
-        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
-        th, td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; }
-        th { background: #f8fafc; color: #475569; font-weight: 600; }
-        
-        /* Badges */
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; display: inline-block; }
-        .badge.pending { background: #fef9c3; color: #854d0e; }
-        .badge.success { background: #dcfce7; color: #166534; }
-        .badge.danger { background: #fee2e2; color: #991b1b; }
+        .input-group { display: flex; gap: 10px; }
+        .input-box { flex: 1; padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; outline: none; }
+        .save-btn { background: #2e7d32; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-        /* Action Buttons */
-        .btn { border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-approve { background: #16a34a; color: white; margin-right: 4px; }
-        .btn-reject { background: #dc2626; color: white; }
-        .btn:hover { opacity: 0.85; }
+        .req-list { display: flex; flex-direction: column; gap: 10px; }
+        .req-item { background: white; border: 1px solid #e0e0e0; padding: 12px; border-radius: 10px; display: flex; flex-direction: column; gap: 6px; }
+        .req-info { display: flex; justify-content: space-between; font-size: 13px; }
+        .req-info strong { color: #1b5e20; }
+
+        .action-btns { display: flex; gap: 10px; margin-top: 6px; }
+        .btn-approve { flex: 1; background: #16a34a; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .btn-reject { flex: 1; background: #dc2626; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+
+        .empty-text { font-size: 12px; color: #888; text-align: center; padding: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="dashboard-container">
-        <!-- Header -->
-        <div class="admin-header">
-            <h2>Earnflow Control Panel</h2>
-            <span>Admin Active</span>
+    <div class="app-container">
+        <div class="header">
+            <h2><i class="fa-solid fa-user-shield"></i> Admin Panel</h2>
+            <a href="index.html" style="color: #2e7d32; text-decoration: none; font-weight: bold; font-size: 14px;">Home</a>
         </div>
 
-        <!-- Quick Stats -->
-        <div class="stats-grid">
-            <div class="stat-card accent">
-                <p>Total Users</p>
-                <h3>148</h3>
-            </div>
-            <div class="stat-card accent">
-                <p>Total Deposits</p>
-                <h3>₹85,400</h3>
-            </div>
-            <div class="stat-card">
-                <p>Total Withdrawals</p>
-                <h3>₹32,100</h3>
-            </div>
-            <div class="stat-card warning">
-                <p>Pending Requests</p>
-                <h3>5</h3>
+        <!-- Dynamic UPI ID Settings -->
+        <div class="card">
+            <h3><i class="fa-solid fa-qrcode"></i> Change Recharge UPI ID</h3>
+            <div class="input-group">
+                <input type="text" id="upiInput" class="input-box" placeholder="e.g. 8937985224@ybl">
+                <button class="save-btn" onclick="saveUpiId()">Save</button>
             </div>
         </div>
 
-        <!-- Pending Deposits Table -->
-        <div class="section-box">
-            <div class="section-title">
-                <span>Pending Recharge Requests</span>
-                <i class="fa-solid fa-wallet" style="color: #16a34a;"></i>
+        <!-- Pending Recharge Requests -->
+        <div class="card">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> Pending Recharges</h3>
+            <div id="rechargeList" class="req-list">
+                <div class="empty-text">Loading requests...</div>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>User ID</th>
-                        <th>Amount</th>
-                        <th>UTR / Ref No</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="depositTable">
-                    <tr>
-                        <td>+91 9876543210</td>
-                        <td><strong>₹525</strong></td>
-                        <td><code>324156789012</code></td>
-                        <td><span class="badge pending">Pending</span></td>
-                        <td>
-                            <button class="btn btn-approve" onclick="approveReq(this)">Approve</button>
-                            <button class="btn btn-reject" onclick="rejectReq(this)">Reject</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>+91 9123456789</td>
-                        <td><strong>₹2,000</strong></td>
-                        <td><code>987654321098</code></td>
-                        <td><span class="badge pending">Pending</span></td>
-                        <td>
-                            <button class="btn btn-approve" onclick="approveReq(this)">Approve</button>
-                            <button class="btn btn-reject" onclick="rejectReq(this)">Reject</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
 
-        <!-- Pending Withdrawals Table -->
-        <div class="section-box">
-            <div class="section-title">
-                <span>Pending Withdrawal Requests</span>
-                <i class="fa-solid fa-hand-holding-dollar" style="color: #dc2626;"></i>
+        <!-- Pending Withdrawal Requests -->
+        <div class="card">
+            <h3><i class="fa-solid fa-hand-holding-dollar"></i> Pending Withdrawals</h3>
+            <div id="withdrawList" class="req-list">
+                <div class="empty-text">Loading requests...</div>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>User ID</th>
-                        <th>Amount</th>
-                        <th>Bank Details</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="withdrawTable">
-                    <tr>
-                        <td>+91 8899001122</td>
-                        <td><strong>₹1,200</strong></td>
-                        <td>A/C: 1234567890<br><small>IFSC: SBIN0001234</small></td>
-                        <td><span class="badge pending">Pending</span></td>
-                        <td>
-                            <button class="btn btn-approve" onclick="approveReq(this)">Pay & Approve</button>
-                            <button class="btn btn-reject" onclick="rejectReq(this)">Reject</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
     </div>
 
     <script>
-        function approveReq(btn) {
-            let row = btn.parentElement.parentElement;
-            let statusBadge = row.querySelector('.badge');
-            statusBadge.className = 'badge success';
-            statusBadge.innerText = 'Approved';
-            btn.parentElement.innerHTML = '<span style="color: #16a34a; font-weight: bold; font-size: 11px;">Completed</span>';
+        const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
+        let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
+        const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document.addEventListener("DOMContentLoaded", async function() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                window.location.replace('login.html');
+            } else {
+                document.body.style.display = 'flex';
+                loadUpiSettings();
+                loadPendingRecharges();
+                loadPendingWithdrawals();
+            }
+        });
+
+        // Load & Save UPI ID
+        async function loadUpiSettings() {
+            const { data } = await supabaseClient.from('app_settings').select('upi_id').eq('id', 1).single();
+            if (data) document.getElementById('upiInput').value = data.upi_id;
         }
 
-        function rejectReq(btn) {
-            let row = btn.parentElement.parentElement;
-            let statusBadge = row.querySelector('.badge');
-            statusBadge.className = 'badge danger';
-            statusBadge.innerText = 'Rejected';
-            btn.parentElement.innerHTML = '<span style="color: #dc2626; font-weight: bold; font-size: 11px;">Rejected</span>';
+        async function saveUpiId() {
+            const newUpi = document.getElementById('upiInput').value.trim();
+            if (!newUpi) return alert("Enter valid UPI ID");
+
+            const { error } = await supabaseClient.from('app_settings').update({ upi_id: newUpi }).eq('id', 1);
+            if (error) alert("Error: " + error.message);
+            else alert("UPI ID Updated Successfully!");
+        }
+
+        // Load Pending Recharges
+        async function loadPendingRecharges() {
+            const container = document.getElementById('rechargeList');
+            const { data: txs } = await supabaseClient.from('transactions').select('*').eq('type', 'recharge').eq('status', 'pending');
+
+            if (!txs || txs.length === 0) {
+                container.innerHTML = '<div class="empty-text">No pending recharges.</div>';
+                return;
+            }
+
+            container.innerHTML = txs.map(tx => `
+                <div class="req-item">
+                    <div class="req-info"><span>Amount:</span> <strong>₹${tx.amount}</strong></div>
+                    <div class="req-info"><span>Details:</span> <span>${tx.payment_details}</span></div>
+                    <div class="action-btns">
+                        <button class="btn-approve" onclick="approveRecharge('${tx.id}', '${tx.user_id}', ${tx.amount})">Approve</button>
+                        <button class="btn-reject" onclick="updateStatus('${tx.id}', 'failed')">Reject</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Approve Recharge (Adds Balance automatically)
+        async function approveRecharge(txId, userId, amount) {
+            try {
+                // Fetch User Profile
+                const { data: profile } = await supabaseClient.from('profiles').select('balance, total_recharge').eq('id', userId).single();
+                const newBal = parseFloat(profile.balance || 0) + parseFloat(amount);
+                const newTotalRec = parseFloat(profile.total_recharge || 0) + parseFloat(amount);
+
+                // Update Profile Balance
+                await supabaseClient.from('profiles').update({ balance: newBal, total_recharge: newTotalRec }).eq('id', userId);
+                
+                // Update Tx Status
+                await supabaseClient.from('transactions').update({ status: 'success' }).eq('id', txId);
+
+                alert("Recharge Approved & Balance Added!");
+                loadPendingRecharges();
+            } catch (err) {
+                alert("Error: " + err.message);
+            }
+        }
+
+        // Load Pending Withdrawals
+        async function loadPendingWithdrawals() {
+            const container = document.getElementById('withdrawList');
+            const { data: txs } = await supabaseClient.from('transactions').select('*').eq('type', 'withdraw').eq('status', 'pending');
+
+            if (!txs || txs.length === 0) {
+                container.innerHTML = '<div class="empty-text">No pending withdrawals.</div>';
+                return;
+            }
+
+            container.innerHTML = txs.map(tx => `
+                <div class="req-item">
+                    <div class="req-info"><span>Amount:</span> <strong>₹${tx.amount}</strong></div>
+                    <div class="req-info"><span>Payout Acc:</span> <span>${tx.payment_details}</span></div>
+                    <div class="action-btns">
+                        <button class="btn-approve" onclick="updateStatus('${tx.id}', 'success')">Mark Sent</button>
+                        <button class="btn-reject" onclick="updateStatus('${tx.id}', 'failed')">Reject</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function updateStatus(txId, newStatus) {
+            await supabaseClient.from('transactions').update({ status: newStatus }).eq('id', txId);
+            loadPendingRecharges();
+            loadPendingWithdrawals();
         }
     </script>
-
 </body>
 </html>
