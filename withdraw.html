@@ -150,7 +150,7 @@
             }
         }
 
-        // Handle Withdrawal Request
+        // Handle Withdrawal Request & Transaction Log
         document.getElementById('withdrawForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -163,7 +163,6 @@
                 return;
             }
 
-            // Insufficient Balance Check
             if (amount > userBalance) {
                 alert("Insufficient Balance! Your current balance is ₹" + userBalance.toFixed(2));
                 return;
@@ -174,7 +173,7 @@
             submitBtn.disabled = true;
 
             try {
-                // Fetch latest balance again to prevent race condition
+                // 1. Fetch latest balance
                 const { data: profile, error: fetchErr } = await supabaseClient
                     .from('profiles')
                     .select('balance, total_withdraw')
@@ -196,7 +195,7 @@
                 const newBalance = currentBal - amount;
                 const newTotalWithdraw = currentWithdraw + amount;
 
-                // Update profiles table
+                // 2. Update profiles balance
                 const { error: updateErr } = await supabaseClient
                     .from('profiles')
                     .update({ 
@@ -206,6 +205,19 @@
                     .eq('id', currentUser.id);
 
                 if (updateErr) throw updateErr;
+
+                // 3. Insert record into transactions table
+                const { error: txErr } = await supabaseClient
+                    .from('transactions')
+                    .insert([{
+                        user_id: currentUser.id,
+                        type: 'withdraw',
+                        amount: amount,
+                        status: 'success',
+                        payment_details: `Payout to: ${payoutAcc} (${accName})`
+                    }]);
+
+                if (txErr) throw txErr;
 
                 alert(`Withdrawal request of ₹${amount} submitted successfully!`);
                 document.getElementById('withdrawAmount').value = '';
