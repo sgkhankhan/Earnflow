@@ -17,6 +17,12 @@
         .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
         .header h2 { font-size: 20px; color: #1b5e20; }
 
+        /* Total Users Counter Widget */
+        .widget-card { background: linear-gradient(135deg, #15803d, #16a34a); color: white; border-radius: 16px; padding: 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 6px 16px rgba(22, 163, 74, 0.25); }
+        .widget-info h4 { font-size: 13px; font-weight: 600; color: #dcfce7; text-transform: uppercase; }
+        .widget-info h2 { font-size: 28px; font-weight: 800; margin-top: 4px; }
+        .widget-btn { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; backdrop-filter: blur(4px); }
+
         .card { background: #f9fafb; border: 1px solid #e0e0e0; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
         .card h3 { font-size: 15px; color: #1b5e20; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
 
@@ -45,6 +51,12 @@
         .btn-reject { flex: 1; background: #dc2626; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
 
         .empty-text { font-size: 12px; color: #888; text-align: center; padding: 10px; }
+
+        /* Modal View for All Users */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; padding: 15px; }
+        .modal-body { background: white; width: 100%; max-width: 440px; max-height: 80vh; border-radius: 18px; padding: 18px; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .user-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -53,6 +65,15 @@
         <div class="header">
             <h2><i class="fa-solid fa-user-shield"></i> Admin Panel</h2>
             <a href="index.html" style="color: #2e7d32; text-decoration: none; font-weight: bold; font-size: 14px;">Home</a>
+        </div>
+
+        <!-- Registered Users Counter Widget -->
+        <div class="widget-card">
+            <div class="widget-info">
+                <h4>Total Registered Users</h4>
+                <h2 id="totalUsersCount">0</h2>
+            </div>
+            <button class="widget-btn" onclick="openUsersModal()"><i class="fa-solid fa-users"></i> View All</button>
         </div>
 
         <!-- Dynamic UPI ID Settings -->
@@ -105,10 +126,21 @@
                 <div class="empty-text">Loading requests...</div>
             </div>
         </div>
-                </div>
-                        <script>
+    </div>
+
+    <!-- Users List Modal -->
+    <div id="usersModal" class="modal-overlay">
+        <div class="modal-body">
+            <div class="modal-header">
+                <h3 style="font-size: 16px; color: #0f172a;">All Registered Users</h3>
+                <i class="fa-solid fa-xmark" onclick="closeUsersModal()" style="cursor: pointer; font-size: 18px;"></i>
+            </div>
+            <div id="allUsersContainer">Loading users...</div>
+        </div>
+    </div>
+        <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -133,10 +165,54 @@
             }
 
             document.body.style.display = 'flex';
+            fetchTotalUsersCount();
             loadUpiSettings();
             loadPendingRecharges();
             loadPendingWithdrawals();
         });
+
+        async function fetchTotalUsersCount() {
+            const { count, error } = await supabaseClient
+                .from('profiles')
+                .select('id', { count: 'exact' });
+
+            if (!error) {
+                document.getElementById('totalUsersCount').innerText = count || 0;
+            }
+        }
+
+        async function openUsersModal() {
+            document.getElementById('usersModal').style.display = 'flex';
+            const container = document.getElementById('allUsersContainer');
+
+            const { data: users, error } = await supabaseClient
+                .from('profiles')
+                .select('email, balance, created_at')
+                .order('created_at', { ascending: false });
+
+            if (error || !users || users.length === 0) {
+                container.innerHTML = `<div class="empty-text">No registered users found.</div>`;
+                return;
+            }
+
+            container.innerHTML = users.map(u => {
+                const phone = (u.email || '').replace('@earnflow.app', '');
+                const joinDate = new Date(u.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+                return `
+                    <div class="user-list-item">
+                        <div>
+                            <strong>${phone}</strong>
+                            <div style="font-size: 11px; color: #64748b;">Joined: ${joinDate}</div>
+                        </div>
+                        <span style="color: #16a34a; font-weight: 700;">₹${parseFloat(u.balance || 0).toFixed(2)}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function closeUsersModal() {
+            document.getElementById('usersModal').style.display = 'none';
+        }
 
         async function loadUpiSettings() {
             const { data } = await supabaseClient.from('app_settings').select('upi_id').eq('id', 1).maybeSingle();
