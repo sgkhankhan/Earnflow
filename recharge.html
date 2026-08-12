@@ -110,22 +110,28 @@
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null;
 
-        // ⚠️ AAPKI UPI ID HERE (Apni UPI ID yahan daalein)
-        const MY_ADMIN_UPI_ID = "YOUR_UPI_ID@upi"; 
-
         function selectAmount(amt) {
             document.getElementById('rechargeAmount').value = amt;
         }
 
-        // Open GPay / PhonePe App Automatically
-        function openUPIApp() {
+        // Open UPI App using dynamic UPI ID from Supabase
+        async function openUPIApp() {
             const amount = document.getElementById('rechargeAmount').value;
             if (!amount || amount < 100) {
                 alert("Please enter a valid amount (Minimum ₹100)");
                 return;
             }
             
-            const upiUrl = `upi://pay?pa=${MY_ADMIN_UPI_ID}&pn=Earnflow&am=${amount}&cu=INR`;
+            // Fetch latest UPI ID from app_settings
+            const { data, error } = await supabaseClient.from('app_settings').select('upi_id').eq('id', 1).single();
+            const upiId = (data && data.upi_id) ? data.upi_id.trim() : '';
+
+            if (!upiId) {
+                alert("UPI ID set nahi hai. Kripya Admin Panel me UPI ID save karein.");
+                return;
+            }
+
+            const upiUrl = `upi://pay?pa=${upiId}&pn=Earnflow&am=${amount}&cu=INR`;
             window.location.href = upiUrl;
         }
 
@@ -202,5 +208,4 @@
     </script>
 
 </body>
-    </html>
-    
+</html>
