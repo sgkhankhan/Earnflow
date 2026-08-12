@@ -6,7 +6,7 @@
     <title>Earnflow - Login / Register</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Supabase CDN (Head me load hoga) -->
+    <!-- Supabase JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -90,24 +90,19 @@
     </div>
 
     <script>
-        // Supabase Initialization
+        // Supabase Verified Credentials
         const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6IjoyMTAyMDkxMDYwfQ.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
         
-        let supabaseClient;
-        try {
-            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        } catch (e) {
-            console.error("Supabase init error:", e);
-        }
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // DOM Elements
+        // Elements
         const loginForm = document.getElementById('loginForm');
         const signupForm = document.getElementById('signupForm');
         const loginTabBtn = document.getElementById('loginTabBtn');
         const signupTabBtn = document.getElementById('signupTabBtn');
 
-        // Tab Switching Logic
+        // Tab Switching
         loginTabBtn.addEventListener('click', function() {
             loginForm.classList.remove('hidden');
             signupForm.classList.add('hidden');
@@ -122,7 +117,7 @@
             loginTabBtn.classList.remove('active');
         });
 
-        // Signup Form Submission
+        // Signup Logic
         signupForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -147,26 +142,30 @@
 
             const email = phone + "@earnflow.app";
 
-            const { data, error } = await supabaseClient.auth.signUp({
-                email: email,
-                password: password,
-                options: {
-                    data: { phone_number: phone, referral_code: referral }
+            try {
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: { phone_number: phone, referral_code: referral }
+                    }
+                });
+
+                if (error) {
+                    alert("Signup Error: " + error.message);
+                } else {
+                    alert("Account created successfully!");
+                    window.location.href = 'index.html';
                 }
-            });
-
-            signupBtn.innerText = "Create Account";
-            signupBtn.disabled = false;
-
-            if (error) {
-                alert("Signup Error: " + error.message);
-            } else {
-                alert("Account created successfully!");
-                window.location.href = 'index.html';
+            } catch (err) {
+                alert("Connection Error: " + err.message);
+            } finally {
+                signupBtn.innerText = "Create Account";
+                signupBtn.disabled = false;
             }
         });
 
-        // Login Form Submission
+        // Login Logic
         loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -178,23 +177,27 @@
             loginBtn.innerText = "Logging in...";
             loginBtn.disabled = true;
 
-            const { data, error } = await supabaseClient.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password,
+                });
 
-            loginBtn.innerText = "Log In";
-            loginBtn.disabled = false;
-
-            if (error) {
-                alert("Login Failed: " + error.message);
-            } else {
-                alert("Login Successful!");
-                window.location.href = 'index.html';
+                if (error) {
+                    alert("Login Failed: " + error.message);
+                } else {
+                    alert("Login Successful!");
+                    window.location.href = 'index.html';
+                }
+            } catch (err) {
+                alert("Connection Error: " + err.message);
+            } finally {
+                loginBtn.innerText = "Log In";
+                loginBtn.disabled = false;
             }
         });
     </script>
 
 </body>
-                </html>
-                    
+    </html>
+    
