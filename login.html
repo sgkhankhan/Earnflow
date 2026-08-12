@@ -3,144 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earnflow Seeds - Login / Register</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Earnflow Seeds - Login</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: #f1f7f2; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; }
-        .auth-card { width: 100%; max-width: 400px; background: #ffffff; border-radius: 24px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2ebd8; }
-        .brand-logo { text-align: center; margin-bottom: 20px; }
-        .brand-logo i { font-size: 45px; color: #16a34a; }
-        .brand-logo h2 { font-size: 22px; font-weight: 800; color: #0f172a; margin-top: 6px; }
-        .tab-switch { display: flex; background: #f1f5f9; border-radius: 14px; padding: 4px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; font-size: 14px; font-weight: 700; color: #64748b; cursor: pointer; border-radius: 10px; }
-        .tab-btn.active { background: #ffffff; color: #16a34a; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .form-group { margin-bottom: 14px; }
-        .form-label { font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; display: block; }
-        .input-box { width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 14px; font-weight: 600; outline: none; }
-        .submit-btn { width: 100%; background: linear-gradient(135deg, #22c55e, #15803d); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 10px; }
-        .ref-badge { background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; margin-left: 6px; display: none; }
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f1f7f2; }
+        .box { background: white; padding: 25px; border-radius: 15px; width: 320px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; }
+        button { width: 100%; padding: 10px; background: #16a34a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <div class="auth-card">
-        <div class="brand-logo">
-            <i class="fa-solid fa-seedling"></i>
-            <h2>Earnflow Seeds</h2>
-        </div>
-
-        <div class="tab-switch">
-            <button class="tab-btn active" id="loginTabBtn" onclick="switchTab('login')">Login</button>
-            <button class="tab-btn" id="signupTabBtn" onclick="switchTab('signup')">Register</button>
-        </div>
-
-        <form id="loginForm" onsubmit="handleAuth(event, 'login')">
-            <div class="form-group">
-                <label class="form-label">Mobile Number</label>
-                <input type="tel" id="loginPhone" class="input-box" placeholder="10-digit mobile number" required pattern="[0-9]{10}">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Password</label>
-                <input type="password" id="loginPass" class="input-box" placeholder="Enter password" required>
-            </div>
-            <button type="submit" class="submit-btn">Sign In</button>
-        </form>
-
-        <form id="signupForm" onsubmit="handleAuth(event, 'signup')" style="display: none;">
-            <div class="form-group">
-                <label class="form-label">Mobile Number</label>
-                <input type="tel" id="signupPhone" class="input-box" placeholder="10-digit mobile number" required pattern="[0-9]{10}">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Create Password</label>
-                <input type="password" id="signupPass" class="input-box" placeholder="Create password" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Referral Code (Optional) <span id="refAppliedBadge" class="ref-badge"><i class="fa-solid fa-check"></i> Applied</span></label>
-                <input type="text" id="referralCodeInput" class="input-box" placeholder="Enter referral code">
-            </div>
-            <button type="submit" class="submit-btn">Create Account</button>
-        </form>
+    <div class="box">
+        <h3 style="text-align:center; color:#16a34a; margin-bottom:15px;">Earnflow Login</h3>
+        <input type="tel" id="phone" placeholder="Mobile Number (10 digit)">
+        <input type="password" id="pass" placeholder="Password">
+        <button onclick="loginUser()">Sign In / Register</button>
+        <div id="msg" style="margin-top:10px; font-size:12px; text-align:center;"></div>
     </div>
-        <script>
+
+    <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
-        const SUPABASE_ANON_KEY = "EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        document.addEventListener("DOMContentLoaded", function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const refCode = urlParams.get('ref');
+        async function loginUser() {
+            const phone = document.getElementById('phone').value.trim();
+            const pass = document.getElementById('pass').value;
+            const msg = document.getElementById('msg');
 
-            if (refCode) {
-                const refInput = document.getElementById('referralCodeInput');
-                refInput.value = refCode;
-                document.getElementById('refAppliedBadge').style.display = 'inline-block';
-                switchTab('signup');
-            }
-        });
+            if(!phone || !pass) return alert("Fill all details");
 
-        function switchTab(tab) {
-            if (tab === 'login') {
-                document.getElementById('loginForm').style.display = 'block';
-                document.getElementById('signupForm').style.display = 'none';
-                document.getElementById('loginTabBtn').classList.add('active');
-                document.getElementById('signupTabBtn').classList.remove('active');
-            } else {
-                document.getElementById('loginForm').style.display = 'none';
-                document.getElementById('signupForm').style.display = 'block';
-                document.getElementById('signupTabBtn').classList.add('active');
-                document.getElementById('loginTabBtn').classList.remove('active');
-            }
-        }
+            msg.style.color = "blue";
+            msg.innerText = "Connecting...";
 
-        async function handleAuth(e, type) {
-            e.preventDefault();
-            
-            const phone = type === 'login' ? document.getElementById('loginPhone').value.trim() : document.getElementById('signupPhone').value.trim();
-            const pass = type === 'login' ? document.getElementById('loginPass').value : document.getElementById('signupPass').value;
             const email = `${phone}@earnflow.app`;
 
-            if (type === 'signup') {
-                const refCode = document.getElementById('referralCodeInput').value.trim();
+            // Try Direct Sign In
+            let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
 
-                const { data, error } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: pass,
-                });
-
-                if (error) return alert("Registration failed: " + error.message);
-
-                if (data.user) {
-                    const myRefCode = phone;
-                    
-                    const { error: profileErr } = await supabaseClient.from('profiles').upsert([{
-                        id: data.user.id,
-                        email: email,
-                        balance: 0,
-                        referral_code: myRefCode,
-                        referred_by: refCode || null
-                    }]);
-
-                    if (profileErr) console.error("Profile save error:", profileErr);
-
+            if (error) {
+                // If account not found, auto-register
+                const signup = await supabaseClient.auth.signUp({ email, password: pass });
+                if(signup.error) {
+                    msg.style.color = "red";
+                    msg.innerText = "Error: " + signup.error.message;
+                } else {
+                    await supabaseClient.from('profiles').upsert([{ id: signup.data.user.id, email, balance: 0, referral_code: phone }]);
                     alert("Registration Successful!");
                     window.location.replace('index.html');
                 }
             } else {
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: pass,
-                });
-
-                if (error) return alert("Login failed: " + error.message);
-                if (data.session) window.location.replace('index.html');
+                alert("Login Successful!");
+                window.location.replace('index.html');
             }
         }
     </script>
 </body>
 </html>
-
-    
