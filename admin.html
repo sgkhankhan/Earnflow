@@ -2,24 +2,152 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Panel - Debug Mode</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earnflow - Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-        .card { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .input-box { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; }
-        .save-btn { background: green; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #f4f7f4; display: flex; justify-content: center; min-height: 100vh; padding: 15px; }
+        .app-container { width: 100%; max-width: 480px; background: #ffffff; min-height: 100vh; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
+        .header h2 { font-size: 20px; color: #1b5e20; }
+
+        .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+        .metric-card { background: linear-gradient(135deg, #15803d, #16a34a); color: white; border-radius: 14px; padding: 12px 10px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2); display: flex; flex-direction: column; justify-content: space-between; }
+        .metric-card.blue { background: linear-gradient(135deg, #1e40af, #2563eb); }
+        .metric-card.red { background: linear-gradient(135deg, #b91c1c, #ef4444); }
+        .metric-card h4 { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.85); text-transform: uppercase; }
+        .metric-card h2 { font-size: 15px; font-weight: 800; margin-top: 4px; }
+        .metric-btn { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; cursor: pointer; margin-top: 6px; }
+
+        .card { background: #f9fafb; border: 1px solid #e0e0e0; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
+        .card h3 { font-size: 15px; color: #1b5e20; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+
+        .input-group { display: flex; gap: 10px; margin-bottom: 10px; }
+        .input-box { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; outline: none; margin-bottom: 8px; }
+        .save-btn { background: #2e7d32; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
+
+        .user-result-box { background: #ffffff; border: 1px solid #c8e6c9; border-radius: 10px; padding: 12px; margin-top: 10px; display: none; }
+        .user-info p { font-size: 13px; color: #333; margin-bottom: 4px; }
+        .user-info strong { color: #1b5e20; }
+
+        .balance-btns { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-add { flex: 1; background: #16a34a; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-deduct { flex: 1; background: #dc2626; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        
+        .btn-block { width: 100%; background: #dc2626; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-unblock { width: 100%; background: #2563eb; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+        .req-list { display: flex; flex-direction: column; gap: 10px; }
+        .req-item { background: white; border: 1px solid #e0e0e0; padding: 12px; border-radius: 10px; display: flex; flex-direction: column; gap: 6px; }
+        .req-info { display: flex; justify-content: space-between; font-size: 13px; }
+        .req-info strong { color: #1b5e20; }
+
+        .action-btns { display: flex; gap: 10px; margin-top: 6px; }
+        .btn-approve { flex: 1; background: #16a34a; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .btn-reject { flex: 1; background: #dc2626; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+
+        .empty-text { font-size: 12px; color: #888; text-align: center; padding: 10px; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; padding: 15px; }
+        .modal-body { background: white; width: 100%; max-width: 440px; max-height: 80vh; border-radius: 18px; padding: 18px; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .user-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
     </style>
 </head>
 <body>
-    <div style="max-width: 480px; width: 100%; margin: auto;">
+
+    <div class="app-container">
+        <div class="header">
+            <h2><i class="fa-solid fa-user-shield"></i> Admin Panel</h2>
+            <a href="index.html" style="color: #2e7d32; text-decoration: none; font-weight: bold; font-size: 14px;">Home</a>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div>
+                    <h4>Users</h4>
+                    <h2 id="totalUsersCount">0</h2>
+                </div>
+                <button class="metric-btn" onclick="openUsersModal()"><i class="fa-solid fa-users"></i> View</button>
+            </div>
+
+            <div class="metric-card blue">
+                <div>
+                    <h4>Recharge</h4>
+                    <h2 id="totalRechargeVolume">₹0</h2>
+                </div>
+                <div style="font-size: 9px; color: rgba(255,255,255,0.8);"><i class="fa-solid fa-circle-check"></i> Total Rec.</div>
+            </div>
+
+            <div class="metric-card red">
+                <div>
+                    <h4>Withdrawal</h4>
+                    <h2 id="totalWithdrawVolume">₹0</h2>
+                </div>
+                <div style="font-size: 9px; color: rgba(255,255,255,0.8);"><i class="fa-solid fa-circle-check"></i> Total Paid</div>
+            </div>
+        </div>
+
         <div class="card">
-            <h3>Update UPI & QR</h3>
-            <input type="text" id="upiInput" class="input-box" placeholder="UPI ID">
-            <input type="text" id="qrInput" class="input-box" placeholder="QR Image URL">
+            <h3><i class="fa-solid fa-qrcode"></i> Update Payment Settings</h3>
+            <input type="text" id="upiInput" class="input-box" placeholder="Enter UPI ID (e.g. name@upi)">
+            <input type="text" id="qrInput" class="input-box" placeholder="Enter QR Code Image Link (URL)">
             <button class="save-btn" onclick="savePaymentSettings()">Save Settings</button>
         </div>
-        <div id="statusLog" style="color: red; font-size: 12px; margin-top: 10px;"></div>
+
+        <div class="card">
+            <h3><i class="fa-solid fa-user-gear"></i> User Search, Balance & Suspend</h3>
+            <div class="input-group">
+                <input type="text" id="searchPhone" class="input-box" placeholder="Enter Mobile Number" style="margin-bottom:0;">
+                <button class="save-btn" onclick="searchUser()" style="width: auto;">Search</button>
+            </div>
+
+            <div id="userResult" class="user-result-box">
+                <div class="user-info">
+                    <p>User: <strong id="resUserPhone">-</strong></p>
+                    <p>Current Balance: <strong id="resUserBalance">₹0.00</strong></p>
+                    <p>Status: <strong id="resUserStatus" style="color: #16a34a;">Active</strong></p>
+                </div>
+                <div style="margin-top: 10px;">
+                    <input type="number" id="manualAmount" class="input-box" placeholder="Enter Amount (₹)" style="margin-bottom:0;">
+                </div>
+                <div class="balance-btns">
+                    <button class="btn-add" onclick="updateUserBalance('add')">+ Add Money</button>
+                    <button class="btn-deduct" onclick="updateUserBalance('deduct')">- Deduct Money</button>
+                </div>
+                
+                <button id="blockToggleBtn" class="btn-block" onclick="toggleUserBlock()">Block User Account</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> Pending Recharges</h3>
+            <div id="rechargeList" class="req-list">
+                <div class="empty-text">Loading requests...</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3><i class="fa-solid fa-hand-holding-dollar"></i> Pending Withdrawals</h3>
+            <div id="withdrawList" class="req-list">
+                <div class="empty-text">Loading requests...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="usersModal" class="modal-overlay">
+        <div class="modal-body">
+            <div class="modal-header">
+                <h3 style="font-size: 16px; color: #0f172a;">All Registered Users</h3>
+                <i class="fa-solid fa-xmark" onclick="closeUsersModal()" style="cursor: pointer; font-size: 18px;"></i>
+            </div>
+            <div id="allUsersContainer">Loading users...</div>
+        </div>
     </div>
         <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
@@ -27,25 +155,376 @@
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        const ADMIN_MOBILE = "7983678835";
+        let searchedUser = null;
+
+        document.addEventListener("DOMContentLoaded", async function() {
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                
+                if (!session) {
+                    window.location.replace('login.html');
+                    return;
+                }
+
+                const userEmail = session.user.email || '';
+                const rawPhone = userEmail.replace('@earnflow.app', '');
+
+                if (rawPhone !== ADMIN_MOBILE) {
+                    alert("Access Denied: Aapke paas admin rights nahi hain.");
+                    window.location.replace('index.html');
+                    return;
+                }
+
+                fetchDashboardMetrics();
+                loadUpiSettings();
+                loadPendingRecharges();
+                loadPendingWithdrawals();
+            } catch (e) {
+                console.error("Initialization error:", e);
+            }
+        });
+
+        async function fetchDashboardMetrics() {
+            const { count } = await supabaseClient.from('profiles').select('id', { count: 'exact' });
+            if (count !== null) document.getElementById('totalUsersCount').innerText = count;
+
+            const { data: approvedRecs } = await supabaseClient.from('transactions').select('amount').eq('type', 'recharge').eq('status', 'success');
+            if (approvedRecs) {
+                const totalRec = approvedRecs.reduce((sum, tx) => sum + parseFloat(tx.amount || 0), 0);
+                document.getElementById('totalRechargeVolume').innerText = '₹' + totalRec.toFixed(0);
+            }
+
+            const { data: approvedWiths } = await supabaseClient.from('transactions').select('amount').eq('type', 'withdraw').eq('status', 'success');
+            if (approvedWiths) {
+                const totalWith = approvedWiths.reduce((sum, tx) => sum + parseFloat(tx.amount || 0), 0);
+                document.getElementById('totalWithdrawVolume').innerText = '₹' + totalWith.toFixed(0);
+            }
+        }
+
+        async function openUsersModal() {
+            document.getElementById('usersModal').style.display = 'flex';
+            const container = document.getElementById('allUsersContainer');
+
+            const { data: users, error } = await supabaseClient
+                .from('profiles')
+                .select('email, balance, created_at')
+                .order('created_at', { ascending: false });
+
+            if (error || !users || users.length === 0) {
+                container.innerHTML = `<div class="empty-text">No registered users found.</div>`;
+                return;
+            }
+
+            container.innerHTML = users.map(u => {
+                const phone = (u.email || '').replace('@earnflow.app', '');
+                const joinDate = new Date(u.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+                return `
+                    <div class="user-list-item">
+                        <div>
+                            <strong>${phone}</strong>
+                            <div style="font-size: 11px; color: #64748b;">Joined: ${joinDate}</div>
+                        </div>
+                        <span style="color: #16a34a; font-weight: 700;">₹${parseFloat(u.balance || 0).toFixed(2)}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function closeUsersModal() {
+            document.getElementById('usersModal').style.display = 'none';
+        }
+
+        async function loadUpiSettings() {
+            const { data } = await supabaseClient.from('app_settings').select('upi_id, qr_code_url').eq('id', 1).maybeSingle();
+            if (data) {
+                if (data.upi_id) document.getElementById('upiInput').value = data.upi_id;
+                if (data.qr_code_url) document.getElementById('qrInput').value = data.qr_code_url;
+            }
+        }
+
         async function savePaymentSettings() {
             const upi = document.getElementById('upiInput').value.trim();
             const qr = document.getElementById('qrInput').value.trim();
-            const log = document.getElementById('statusLog');
             
-            log.innerText = "Saving...";
+            if (!upi) return alert("Please enter UPI ID");
 
-            const { error } = await supabaseClient
-                .from('app_settings')
-                .upsert({ id: 1, upi_id: upi, qr_code_url: qr });
+            const { error } = await supabaseClient.from('app_settings').upsert({ 
+                id: 1, 
+                upi_id: upi, 
+                qr_code_url: qr 
+            });
 
             if (error) {
-                log.innerText = "Error: " + error.message;
-                alert("Database Error: " + error.message);
+                alert("Save Failed: " + error.message);
             } else {
-                log.style.color = "green";
-                log.innerText = "Saved Successfully!";
-                alert("Settings Saved!");
+                alert("Payment Settings Saved Successfully!");
             }
+        }
+
+        async function searchUser() {
+            const phoneInput = document.getElementById('searchPhone').value.trim();
+            if (!phoneInput) return alert("Please enter mobile number");
+
+            const searchEmail = phoneInput.includes('@') ? phoneInput : `${phoneInput}@earnflow.app`;
+
+            const { data: user, error } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('email', searchEmail)
+                .maybeSingle();
+
+            if (error || !user) {
+                alert("User not found!");
+                document.getElementById('userResult').style.display = 'none';
+                searchedUser = null;
+                return;
+            }
+
+            searchedUser = user;
+            document.getElementById('resUserPhone').innerText = phoneInput;
+            document.getElementById('resUserBalance').innerText = '₹' + parseFloat(user.balance || 0).toFixed(2);
+            
+            const statusElem = document.getElementById('resUserStatus');
+            const blockBtn = document.getElementById('blockToggleBtn');
+
+            if (user.is_blocked) {
+                statusElem.innerText = "Blocked / Suspended";
+                statusElem.style.color = "#dc2626";
+                blockBtn.innerText = "Unblock User Account";
+                blockBtn.className = "btn-unblock";
+            } else {
+                statusElem.innerText = "Active";
+                statusElem.style.color = "#16a34a";
+                blockBtn.innerText = "Block User Account";
+                blockBtn.className = "btn-block";
+            }
+
+            document.getElementById('userResult').style.display = 'block';
+        }
+
+        async function toggleUserBlock() {
+            if (!searchedUser) return alert("Search a user first!");
+
+            const newBlockStatus = !searchedUser.is_blocked;
+
+            try {
+                await supabaseClient.from('profiles').update({ is_blocked: newBlockStatus }).eq('id', searchedUser.id);
+                
+                searchedUser.is_blocked = newBlockStatus;
+                alert(`User account has been ${newBlockStatus ? 'BLOCKED' : 'UNBLOCKED'} successfully!`);
+                searchUser();
+
+            } catch (err) {
+                alert("Error toggling block status: " + err.message);
+            }
+        }
+
+        async function updateUserBalance(action) {
+            if (!searchedUser) return alert("Search a user first!");
+
+            const amtInput = parseFloat(document.getElementById('manualAmount').value);
+            if (!amtInput || amtInput <= 0) return alert("Enter valid amount");
+
+            let currentBal = parseFloat(searchedUser.balance || 0);
+            let newBal = action === 'add' ? currentBal + amtInput : currentBal - amtInput;
+
+            if (newBal < 0) return alert("Balance cannot be negative!");
+
+            try {
+                await supabaseClient.from('profiles').update({ balance: newBal }).eq('id', searchedUser.id);
+                
+                await supabaseClient.from('transactions').insert([{
+                    user_id: searchedUser.id,
+                    type: action === 'add' ? 'recharge' : 'withdraw',
+                    amount: amtInput,
+                    status: 'success',
+                    payment_details: `Admin Manual ${action.toUpperCase()}`
+                }]);
+
+                alert(`Balance updated successfully! New Balance: ₹${newBal.toFixed(2)}`);
+                searchedUser.balance = newBal;
+                document.getElementById('resUserBalance').innerText = '₹' + newBal.toFixed(2);
+                document.getElementById('manualAmount').value = '';
+                fetchDashboardMetrics();
+
+            } catch (err) {
+                alert("Error updating balance: " + err.message);
+            }
+        }
+
+        async function loadPendingRecharges() {
+            const container = document.getElementById('rechargeList');
+            const { data: txs } = await supabaseClient.from('transactions').select('*').eq('type', 'recharge').eq('status', 'pending');
+
+            if (!txs || txs.length === 0) {
+                container.innerHTML = '<div class="empty-text">No pending recharges.</div>';
+                return;
+            }
+
+            container.innerHTML = txs.map(tx => `
+                <div class="req-item">
+                    <div class="req-info"><span>Amount:</span> <strong>₹${tx.amount}</strong></div>
+                    <div class="req-info"><span>Details:</span> <span>${tx.payment_details}</span></div>
+                    <div class="action-btns">
+                        <button class="btn-approve" onclick="approveRecharge('${tx.id}', '${tx.user_id}', ${tx.amount})">Approve</button>
+                        <button class="btn-reject" onclick="updateStatus('${tx.id}', 'failed')">Reject</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function approveRecharge(txId, userId, amount) {
+            try {
+                const rechargeAmt = parseFloat(amount);
+
+                const { data: userProfile } = await supabaseClient
+                    .from('profiles')
+                    .select('balance, total_recharge, referred_by')
+                    .eq('id', userId)
+                    .single();
+
+                const newBal = parseFloat(userProfile.balance || 0) + rechargeAmt;
+                const newTotalRec = parseFloat(userProfile.total_recharge || 0) + rechargeAmt;
+
+                await supabaseClient.from('profiles').update({ balance: newBal, total_recharge: newTotalRec }).eq('id', userId);
+                await supabaseClient.from('transactions').update({ status: 'success' }).eq('id', txId);
+
+                if (userProfile && userProfile.referred_by) {
+                    const { data: level1Parent } = await supabaseClient
+                        .from('profiles')
+                        .select('id, balance, team_income, level1_income, referred_by')
+                        .eq('referral_code', userProfile.referred_by)
+                        .maybeSingle();
+
+                    if (level1Parent) {
+                        const l1Comm = rechargeAmt * 0.27;
+                        await supabaseClient.from('profiles').update({
+                            balance: parseFloat(level1Parent.balance || 0) + l1Comm,
+                            team_income: parseFloat(level1Parent.team_income || 0) + l1Comm,
+                            level1_income: parseFloat(level1Parent.level1_income || 0) + l1Comm
+                        }).eq('id', level1Parent.id);
+
+                        await supabaseClient.from('transactions').insert([{
+                            user_id: level1Parent.id,
+                            type: 'recharge',
+                            amount: l1Comm,
+                            status: 'success',
+                            payment_details: 'Level 1 Referral Bonus (27%)'
+                        }]);
+
+                        if (level1Parent.referred_by) {
+                            const { data: level2Parent } = await supabaseClient
+                                .from('profiles')
+                                .select('id, balance, team_income, level2_income, referred_by')
+                                .eq('referral_code', level1Parent.referred_by)
+                                .maybeSingle();
+
+                            if (level2Parent) {
+                                const l2Comm = rechargeAmt * 0.02;
+                                await supabaseClient.from('profiles').update({
+                                    balance: parseFloat(level2Parent.balance || 0) + l2Comm,
+                                    team_income: parseFloat(level2Parent.team_income || 0) + l2Comm,
+                                    level2_income: parseFloat(level2Parent.level2_income || 0) + l2Comm
+                                }).eq('id', level2Parent.id);
+
+                                await supabaseClient.from('transactions').insert([{
+                                    user_id: level2Parent.id,
+                                    type: 'recharge',
+                                    amount: l2Comm,
+                                    status: 'success',
+                                    payment_details: 'Level 2 Referral Bonus (2%)'
+                                }]);
+
+                                if (level2Parent.referred_by) {
+                                    const { data: level3Parent } = await supabaseClient
+                                        .from('profiles')
+                                        .select('id, balance, team_income, level3_income')
+                                        .eq('referral_code', level2Parent.referred_by)
+                                        .maybeSingle();
+
+                                    if (level3Parent) {
+                                        const l3Comm = rechargeAmt * 0.01;
+                                        await supabaseClient.from('profiles').update({
+                                            balance: parseFloat(level3Parent.balance || 0) + l3Comm,
+                                            team_income: parseFloat(level3Parent.team_income || 0) + l3Comm,
+                                            level3_income: parseFloat(level3Parent.level3_income || 0) + l3Comm
+                                        }).eq('id', level3Parent.id);
+
+                                        await supabaseClient.from('transactions').insert([{
+                                            user_id: level3Parent.id,
+                                            type: 'recharge',
+                                            amount: l3Comm,
+                                            status: 'success',
+                                            payment_details: 'Level 3 Referral Bonus (1%)'
+                                        }]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                alert("Recharge Approved & Commission Distributed!");
+                loadPendingRecharges();
+                fetchDashboardMetrics();
+
+            } catch (err) {
+                alert("Error approving recharge: " + err.message);
+            }
+        }
+
+        async function loadPendingWithdrawals() {
+            const container = document.getElementById('withdrawList');
+            const { data: txs } = await supabaseClient.from('transactions').select('*').eq('type', 'withdraw').eq('status', 'pending');
+
+            if (!txs || txs.length === 0) {
+                container.innerHTML = '<div class="empty-text">No pending withdrawals.</div>';
+                return;
+            }
+
+            container.innerHTML = txs.map(tx => `
+                <div class="req-item">
+                    <div class="req-info"><span>Amount:</span> <strong>₹${tx.amount}</strong></div>
+                    <div class="req-info"><span>Payout Acc:</span> <span>${tx.payment_details}</span></div>
+                    <div class="action-btns">
+                        <button class="btn-approve" onclick="updateStatus('${tx.id}', 'success')">Mark Sent</button>
+                        <button class="btn-reject" onclick="rejectWithdrawal('${tx.id}', '${tx.user_id}', ${tx.amount})">Reject & Refund</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function rejectWithdrawal(txId, userId, amount) {
+            try {
+                const { data: profile } = await supabaseClient.from('profiles').select('balance').eq('id', userId).single();
+                const refundedBal = parseFloat(profile.balance || 0) + parseFloat(amount);
+
+                await supabaseClient.from('profiles').update({ balance: refundedBal }).eq('id', userId);
+                await supabaseClient.from('transactions').update({ status: 'failed' }).eq('id', txId);
+
+                await supabaseClient.from('transactions').insert([{
+                    user_id: userId,
+                    type: 'recharge',
+                    amount: parseFloat(amount),
+                    status: 'success',
+                    payment_details: 'Withdrawal Rejected - Refunded to Wallet'
+                }]);
+
+                alert(`Withdrawal Rejected! ₹${amount} refunded back to user wallet.`);
+                loadPendingWithdrawals();
+                fetchDashboardMetrics();
+
+            } catch (err) {
+                alert("Error executing refund: " + err.message);
+            }
+        }
+
+        async function updateStatus(txId, newStatus) {
+            await supabaseClient.from('transactions').update({ status: newStatus }).eq('id', txId);
+            loadPendingRecharges();
+            loadPendingWithdrawals();
+            fetchDashboardMetrics();
         }
     </script>
 </body>
