@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earnflow - Recharge</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #f4f7f4; display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 15px; padding-bottom: 30px; position: relative; }
+        
+        /* Top Navigation Header */
+        .page-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .page-header a { color: #1b5e20; text-decoration: none; font-size: 18px; }
+        .page-header h2 { font-size: 18px; color: #1b5e20; }
+
+        /* Amount Selection Grid */
+        .section-title { font-size: 14px; font-weight: bold; color: #333; margin: 20px 0 10px; }
+        .amount-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .amount-btn { background: #f0fdf4; border: 1px solid #a7f3d0; padding: 12px; border-radius: 10px; text-align: center; font-size: 16px; font-weight: bold; color: #166534; cursor: pointer; }
+        .amount-btn.active, .amount-btn:hover { background: #2e7d32; color: white; border-color: #2e7d32; }
+
+        /* Custom Input */
+        .input-box { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 10px; font-size: 16px; margin-top: 10px; outline: none; }
+        .input-box:focus { border-color: #2e7d32; }
+
+        /* Payment Details Box */
+        .payment-box { background: #f9fafb; border: 1px dashed #2e7d32; padding: 15px; border-radius: 12px; margin-top: 20px; text-align: center; }
+        .qr-placeholder { width: 150px; height: 150px; background: #e5e7eb; margin: 10px auto; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 12px; color: #666; }
+        .upi-box { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #ddd; margin-top: 10px; font-size: 13px; font-weight: bold; }
+        .copy-btn { background: #16a34a; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 11px; }
+
+        /* UTR Form */
+        .utr-section { margin-top: 20px; }
+        .submit-btn { width: 100%; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; border: none; padding: 14px; border-radius: 25px; margin-top: 20px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Top Header -->
+        <div class="page-header">
+            <a href="index.html"><i class="fa-solid fa-arrow-left"></i></a>
+            <h2>Recharge Wallet</h2>
+            <span></span>
+        </div>
+
+        <!-- Select Amount -->
+        <div class="section-title">Select Recharge Amount</div>
+        <div class="amount-grid">
+            <div class="amount-btn active" onclick="setAmount(525)">₹525</div>
+            <div class="amount-btn" onclick="setAmount(1000)">₹1,000</div>
+            <div class="amount-btn" onclick="setAmount(2000)">₹2,000</div>
+            <div class="amount-btn" onclick="setAmount(5000)">₹5,000</div>
+            <div class="amount-btn" onclick="setAmount(10000)">₹10,000</div>
+            <div class="amount-btn" onclick="setAmount(20000)">₹20,000</div>
+        </div>
+
+        <input type="number" id="customAmount" class="input-box" value="525" placeholder="Enter custom amount">
+
+        <!-- Payment Instructions -->
+        <div class="payment-box">
+            <p style="font-size: 13px; color: #555;">Scan QR Code or copy UPI ID to pay</p>
+            <div class="qr-placeholder">
+                <i class="fa-solid fa-qrcode" style="font-size: 80px; color: #2e7d32;"></i>
+            </div>
+            <div class="upi-box">
+                <span id="upiId">earnflow@upi</span>
+                <button class="copy-btn" onclick="copyUPI()">Copy UPI</button>
+            </div>
+        </div>
+
+        <!-- UTR / Ref No Entry -->
+        <div class="utr-section">
+            <div class="section-title">Enter 12-Digit UTR / Ref No.</div>
+            <input type="text" class="input-box" placeholder="e.g. 324156789012" maxlength="12">
+            <p style="font-size: 11px; color: #888; margin-top: 5px;">* Mandatory step after completing UPI payment.</p>
+        </div>
+
+        <button class="submit-btn" onclick="alert('Recharge request submitted successfully! Pending Admin approval.')">Submit Payment</button>
+    </div>
+
+    <script>
+        function setAmount(val) {
+            document.getElementById('customAmount').value = val;
+            let btns = document.querySelectorAll('.amount-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function copyUPI() {
+            let upi = document.getElementById('upiId').innerText;
+            navigator.clipboard.writeText(upi);
+            alert('UPI ID copied: ' + upi);
+        }
+    </script>
+
+</body>
+</html>
