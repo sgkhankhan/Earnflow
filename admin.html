@@ -48,7 +48,7 @@
         <div class="card">
             <h3><i class="fa-solid fa-qrcode"></i> Change Recharge UPI ID</h3>
             <div class="input-group">
-                <input type="text" id="upiInput" class="input-box" placeholder="e.g. 8937985224@ybl">
+                <input type="text" id="upiInput" class="input-box" placeholder="e.g. yourname@upi">
                 <button class="save-btn" onclick="saveUpiId()">Save</button>
             </div>
         </div>
@@ -77,16 +77,28 @@
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // 🔒 ADMIN EMAIL SECURITY
+        const ADMIN_EMAIL = "Godsfaithora@gmail.com";
+
         document.addEventListener("DOMContentLoaded", async function() {
             const { data: { session } } = await supabaseClient.auth.getSession();
+            
+            // Security Check: Lock out non-admin users
             if (!session) {
                 window.location.replace('login.html');
-            } else {
-                document.body.style.display = 'flex';
-                loadUpiSettings();
-                loadPendingRecharges();
-                loadPendingWithdrawals();
+                return;
             }
+
+            if (session.user.email !== ADMIN_EMAIL) {
+                alert("Access Denied: Aapke paas admin rights nahi hain.");
+                window.location.replace('index.html');
+                return;
+            }
+
+            document.body.style.display = 'flex';
+            loadUpiSettings();
+            loadPendingRecharges();
+            loadPendingWithdrawals();
         });
 
         // Load & Save UPI ID
@@ -129,15 +141,11 @@
         // Approve Recharge (Adds Balance automatically)
         async function approveRecharge(txId, userId, amount) {
             try {
-                // Fetch User Profile
                 const { data: profile } = await supabaseClient.from('profiles').select('balance, total_recharge').eq('id', userId).single();
                 const newBal = parseFloat(profile.balance || 0) + parseFloat(amount);
                 const newTotalRec = parseFloat(profile.total_recharge || 0) + parseFloat(amount);
 
-                // Update Profile Balance
                 await supabaseClient.from('profiles').update({ balance: newBal, total_recharge: newTotalRec }).eq('id', userId);
-                
-                // Update Tx Status
                 await supabaseClient.from('transactions').update({ status: 'success' }).eq('id', txId);
 
                 alert("Recharge Approved & Balance Added!");
