@@ -17,7 +17,7 @@
         .app-container { width: 100%; max-width: 430px; background: #f1f7f2; min-height: 100vh; padding: 12px; padding-bottom: 95px; position: relative; }
 
         /* Top Hero Banner Carousel */
-        .hero-banner-container { width: 100%; height: 160px; border-radius: 20px; position: relative; overflow: hidden; margin-bottom: 16px; box-shadow: 0 8px 20px rgba(22, 101, 52, 0.2); border: 2px solid #bbf7d0; }
+        .hero-banner-container { width: 100%; height: 160px; border-radius: 20px; position: relative; overflow: hidden; margin-bottom: 16px; box-shadow: 0 8px 20px rgba(22, 101, 52, 0.2); border: 2px solid #bbf7d0; background: #064e3b; }
         .hero-banner-img { width: 100%; height: 100%; object-fit: cover; }
         
         .carousel-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 3; }
@@ -39,8 +39,9 @@
         .ribbon-tag { position: absolute; top: 0; right: 0; background: linear-gradient(135deg, #22c55e, #15803d); color: white; font-size: 10px; font-weight: 800; padding: 5px 14px; border-bottom-left-radius: 14px; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 5; }
 
         .card-body { display: flex; gap: 14px; margin-top: 10px; margin-bottom: 14px; }
-        .product-image-container { width: 120px; height: 120px; border-radius: 18px; overflow: hidden; position: relative; flex-shrink: 0; border: 1px solid #bbf7d0; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        .product-image-container { width: 120px; height: 120px; border-radius: 18px; overflow: hidden; position: relative; flex-shrink: 0; border: 1px solid #bbf7d0; box-shadow: 0 4px 10px rgba(0,0,0,0.08); background: linear-gradient(135deg, #14532d, #047857); display: flex; align-items: center; justify-content: center; }
         .product-image-container img { width: 100%; height: 100%; object-fit: cover; }
+        .fallback-icon { font-size: 45px; color: #a7f3d0; }
         .limit-pill { position: absolute; top: 6px; left: 6px; background: rgba(15, 23, 42, 0.85); color: white; font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 10px; backdrop-filter: blur(4px); z-index: 2; }
         .seed-name { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(15, 23, 42, 0.9)); font-size: 10px; font-weight: 800; color: #ffffff; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; padding: 8px 2px 4px; z-index: 2; }
 
@@ -66,9 +67,12 @@
 <body>
 
     <div class="app-container">
-        <!-- Hero Banner Carousel with Image -->
+        <!-- Hero Banner Carousel -->
         <div class="hero-banner-container">
-            <img src="1000522786.png" alt="Earnflow Seed" class="hero-banner-img">
+            <div style="padding: 20px; color: white; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+                <h2 style="font-size: 22px; font-weight: 800; color: #a7f3d0;"><i class="fa-solid fa-seedling"></i> EARNFLOW SEED</h2>
+                <p style="font-size: 12px; color: #dcfce7; margin-top: 4px;">Growing Quality, Harvesting Prosperity</p>
+            </div>
             <div class="carousel-dots">
                 <div class="dot active"></div>
                 <div class="dot"></div>
@@ -110,7 +114,7 @@
                 <div class="card-body">
                     <div class="product-image-container">
                         <span class="limit-pill">Limit 0/10</span>
-                        <img src="1000522786.png" alt="Maize Seed">
+                        <i class="fa-solid fa-seedling fallback-icon"></i>
                         <span class="seed-name">Maize Seed</span>
                     </div>
                     <div class="product-info-grid">
@@ -144,7 +148,7 @@
                 <div class="card-body">
                     <div class="product-image-container">
                         <span class="limit-pill">Limit 0/5</span>
-                        <img src="1000522786.png" alt="Wheat Seed">
+                        <i class="fa-solid fa-plant-wilt fallback-icon"></i>
                         <span class="seed-name">Wheat Seed</span>
                     </div>
                     <div class="product-info-grid">
@@ -178,7 +182,7 @@
                 <div class="card-body">
                     <div class="product-image-container">
                         <span class="limit-pill">Limit 0/5</span>
-                        <img src="1000522786.png" alt="Paddy Seed">
+                        <i class="fa-solid fa-bowl-rice fallback-icon"></i>
                         <span class="seed-name">Paddy Seed</span>
                     </div>
                     <div class="product-info-grid">
@@ -215,8 +219,8 @@
             <a href="team.html" class="nav-item"><i class="fa-solid fa-users"></i><span>Team</span></a>
             <a href="profile.html" class="nav-item"><i class="fa-solid fa-user"></i><span>Profile</span></a>
         </div>
-    </div>
-        <script>
+                    </div>
+                        <script>
         const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
         let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
         const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
