@@ -28,6 +28,15 @@
         
         .wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #1b5e20; position: relative; overflow: hidden; transition: transform 4s cubic-bezier(0.15, 0.9, 0.15, 1); box-shadow: 0 8px 16px rgba(0,0,0,0.15); background: conic-gradient(#16a34a 0deg 60deg, #ffffff 60deg 120deg, #16a34a 120deg 180deg, #ffffff 180deg 240deg, #16a34a 240deg 300deg, #ffffff 300deg 360deg); }
 
+        /* Slice Numbers Rendering */
+        .slice-text { position: absolute; top: 50%; left: 50%; width: 50%; height: 30px; margin-top: -15px; transform-origin: 0% 50%; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: flex-end; padding-right: 20px; }
+        .s1 { transform: rotate(30deg); color: white; }
+        .s2 { transform: rotate(90deg); color: #1b5e20; }
+        .s3 { transform: rotate(150deg); color: white; }
+        .s4 { transform: rotate(210deg); color: #1b5e20; }
+        .s5 { transform: rotate(270deg); color: white; }
+        .s6 { transform: rotate(330deg); color: #1b5e20; }
+
         .spin-btn { width: 100%; max-width: 280px; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; border: none; padding: 15px; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3); }
         .spin-btn:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
 
@@ -54,10 +63,17 @@
             <p>Get up to ₹50 bonus added directly to your wallet every 24 hours.</p>
         </div>
 
-        <!-- Wheel Visual -->
+        <!-- Wheel Visual with Amount Values -->
         <div class="wheel-container">
             <div class="wheel-pointer"></div>
-            <div class="wheel" id="wheelDisk"></div>
+            <div class="wheel" id="wheelDisk">
+                <div class="slice-text s1">₹5</div>
+                <div class="slice-text s2">₹10</div>
+                <div class="slice-text s3">₹15</div>
+                <div class="slice-text s4">₹20</div>
+                <div class="slice-text s5">₹25</div>
+                <div class="slice-text s6">₹50</div>
+            </div>
         </div>
 
         <button id="spinButton" class="spin-btn" onclick="spinWheel()">Spin Now</button>
@@ -80,7 +96,6 @@
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null;
-        let lastSpinTime = null;
 
         document.addEventListener("DOMContentLoaded", async function() {
             const { data: { session } } = await supabaseClient.auth.getSession();
@@ -102,7 +117,7 @@
                 .single();
 
             if (profile && profile.last_spin) {
-                lastSpinTime = new Date(profile.last_spin);
+                const lastSpinTime = new Date(profile.last_spin);
                 const now = new Date();
                 const hoursPassed = (now - lastSpinTime) / (1000 * 60 * 60);
 
@@ -124,36 +139,41 @@
             const btn = document.getElementById('spinButton');
             btn.disabled = true;
 
-            // Random Reward Pool (₹5 to ₹50)
-            const rewards = [5, 10, 15, 20, 25, 50];
-            const winningReward = rewards[Math.floor(Math.random() * rewards.length)];
+            const sliceRewards = [
+                { amount: 5, angle: 330 },
+                { amount: 10, angle: 270 },
+                { amount: 15, angle: 210 },
+                { amount: 20, angle: 150 },
+                { amount: 25, angle: 90 },
+                { amount: 50, angle: 30 }
+            ];
 
-            // Spin animation calculation
+            const winningIndex = Math.floor(Math.random() * sliceRewards.length);
+            const winningOutcome = sliceRewards[winningIndex];
+
             const wheelDisk = document.getElementById('wheelDisk');
-            const randomRotation = 1440 + Math.floor(Math.random() * 360); // 4 full turns + random angle
-            wheelDisk.style.transform = `rotate(${randomRotation}deg)`;
+            const totalRotation = (360 * 5) + winningOutcome.angle;
+            wheelDisk.style.transform = `rotate(${totalRotation}deg)`;
 
             setTimeout(async () => {
                 try {
-                    // Update user profile balance and last_spin
                     const { data: profile } = await supabaseClient.from('profiles').select('balance').eq('id', currentUser.id).single();
-                    const newBalance = parseFloat(profile.balance || 0) + winningReward;
+                    const newBalance = parseFloat(profile.balance || 0) + winningOutcome.amount;
 
                     await supabaseClient.from('profiles').update({
                         balance: newBalance,
                         last_spin: new Date().toISOString()
                     }).eq('id', currentUser.id);
 
-                    // Record as reward transaction
                     await supabaseClient.from('transactions').insert([{
                         user_id: currentUser.id,
                         type: 'recharge',
-                        amount: winningReward,
+                        amount: winningOutcome.amount,
                         status: 'success',
                         payment_details: 'Daily Lucky Wheel Bonus'
                     }]);
 
-                    alert(`Congratulations! You won ₹${winningReward} bonus! Added to your wallet.`);
+                    alert(`Congratulations! You won ₹${winningOutcome.amount} bonus! Added to your wallet.`);
                     disableSpin(24);
 
                 } catch (err) {
@@ -163,4 +183,5 @@
         }
     </script>
 </body>
-</html>
+            </html>
+            
