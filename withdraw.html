@@ -5,100 +5,224 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Earnflow - Withdraw</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: #f4f7f4; display: flex; justify-content: center; }
-        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 15px; padding-bottom: 30px; position: relative; }
+        body { background-color: #f4f7f4; display: none; justify-content: center; min-height: 100vh; }
+        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 20px; padding-bottom: 90px; position: relative; }
         
-        /* Top Navigation Header */
-        .page-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-        .page-header a { color: #1b5e20; text-decoration: none; font-size: 18px; }
-        .page-header h2 { font-size: 18px; color: #1b5e20; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .header h2 { font-size: 20px; color: #1b5e20; }
+        .back-btn { text-decoration: none; color: #1b5e20; font-size: 20px; }
 
-        /* Balance Display Card */
-        .balance-card { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 20px; border-radius: 15px; margin-top: 15px; text-align: center; }
+        .balance-card { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; text-align: center; }
         .balance-card p { font-size: 12px; opacity: 0.9; }
-        .balance-card h3 { font-size: 26px; margin-top: 5px; }
+        .balance-card h3 { font-size: 28px; margin-top: 5px; font-weight: bold; }
 
-        /* Form Controls */
-        .section-title { font-size: 14px; font-weight: bold; color: #333; margin: 20px 0 8px; }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; }
-        .input-box { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 10px; font-size: 15px; outline: none; }
-        .input-box:focus { border-color: #2e7d32; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: bold; color: #333; margin-bottom: 6px; }
+        .input-box-wrapper { position: relative; }
+        .input-box-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #2e7d32; font-size: 16px; }
+        .input-box { width: 100%; padding: 12px 15px 12px 45px; border: 1px solid #ccc; border-radius: 12px; font-size: 14px; outline: none; }
 
-        /* Rules Box */
-        .rules-box { background: #fefce8; border: 1px solid #fef08a; padding: 12px; border-radius: 10px; margin-top: 20px; font-size: 12px; color: #854d0e; }
-        .rules-box ul { margin-left: 18px; margin-top: 5px; }
-        .rules-box li { margin-bottom: 3px; }
+        .rules-card { background: #fffbe3; border: 1px solid #ffe58f; padding: 12px; border-radius: 10px; margin-bottom: 20px; font-size: 11px; color: #856404; }
+        .rules-card ul { margin-left: 15px; margin-top: 5px; }
 
-        .submit-btn { width: 100%; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; border: none; padding: 14px; border-radius: 25px; margin-top: 20px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .submit-btn { width: 100%; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; border: none; padding: 15px; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer; }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e0e0e0; left: 50%; transform: translateX(-50%); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #888; cursor: pointer; text-decoration: none; }
+        .nav-item.active { color: #2e7d32; font-weight: bold; }
+        .wheel-btn { position: relative; top: -20px; }
+        .wheel-icon { width: 50px; height: 50px; background: #16a34a; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 22px; border: 4px solid #ffffff; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        <!-- Top Header -->
-        <div class="page-header">
-            <a href="index.html"><i class="fa-solid fa-arrow-left"></i></a>
+        <div class="header">
+            <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
             <h2>Withdraw Funds</h2>
-            <span></span>
+            <div></div>
         </div>
 
-        <!-- Wallet Balance Card -->
         <div class="balance-card">
-            <p>Withdrawable Balance</p>
-            <h3>₹1,250.00</h3>
+            <p>Available Balance</p>
+            <h3 id="currentBalance">₹0.00</h3>
         </div>
 
-        <!-- Withdrawal Amount Input -->
-        <div class="section-title">Enter Withdrawal Amount</div>
-        <div class="form-group">
-            <input type="number" id="withdrawAmount" class="input-box" placeholder="Min. withdrawal ₹200">
-        </div>
+        <form id="withdrawForm">
+            <div class="form-group">
+                <label>Withdrawal Amount (₹)</label>
+                <div class="input-box-wrapper">
+                    <i class="fa-solid fa-indian-rupee-sign"></i>
+                    <input type="number" id="withdrawAmount" class="input-box" placeholder="Min ₹110" min="110" required>
+                </div>
+            </div>
 
-        <!-- Bank Details Section -->
-        <div class="section-title">Bank Account Details</div>
-        
-        <div class="form-group">
-            <label>Account Holder Name</label>
-            <input type="text" class="input-box" placeholder="Enter full name as per bank">
-        </div>
+            <div class="form-group">
+                <label>Bank Account Number / UPI ID</label>
+                <div class="input-box-wrapper">
+                    <i class="fa-solid fa-building-columns"></i>
+                    <input type="text" id="payoutAccount" class="input-box" placeholder="UPI ID or Bank Acc No" required>
+                </div>
+            </div>
 
-        <div class="form-group">
-            <label>Bank Account Number</label>
-            <input type="text" class="input-box" placeholder="Enter account number">
-        </div>
+            <div class="form-group">
+                <label>Account Holder Name</label>
+                <div class="input-box-wrapper">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="accountName" class="input-box" placeholder="Full Name" required>
+                </div>
+            </div>
 
-        <div class="form-group">
-            <label>IFSC Code</label>
-            <input type="text" class="input-box" placeholder="e.g. SBIN0001234">
-        </div>
+            <div class="rules-card">
+                <strong>Withdrawal Rules:</strong>
+                <ul>
+                    <li>Minimum withdrawal amount is ₹110.</li>
+                    <li>Withdrawals are processed within 24 hours.</li>
+                </ul>
+            </div>
 
-        <!-- Rules & Info -->
-        <div class="rules-box">
-            <strong>Withdrawal Instructions:</strong>
-            <ul>
-                <li>Minimum withdrawal amount is <strong>₹200</strong>.</li>
-                <li>Withdrawal timing: <strong>09:00 AM - 06:00 PM</strong> (Monday to Sunday).</li>
-                <li>Withdrawal processing fee: <strong>10% tax/gateway charge</strong>.</li>
-                <li>Funds will be credited within <strong>1 to 24 hours</strong>.</li>
-            </ul>
-        </div>
+            <button type="submit" id="submitBtn" class="submit-btn">Submit Withdrawal Request</button>
+        </form>
 
-        <button class="submit-btn" onclick="submitWithdrawal()">Request Withdrawal</button>
+        <div class="bottom-nav">
+            <a href="index.html" class="nav-item">
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </a>
+            <a href="recharge.html" class="nav-item">
+                <i class="fa-solid fa-box-archive"></i>
+                <span>Treasure</span>
+            </a>
+            <a href="wheel.html" class="nav-item wheel-btn">
+                <div class="wheel-icon">
+                    <i class="fa-solid fa-dharmachakra"></i>
+                </div>
+                <span>Wheel</span>
+            </a>
+            <a href="team.html" class="nav-item">
+                <i class="fa-solid fa-users"></i>
+                <span>Team</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <i class="fa-solid fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </div>
     </div>
 
     <script>
-        function submitWithdrawal() {
-            let amount = document.getElementById('withdrawAmount').value;
-            if(!amount || amount < 200) {
-                alert('Please enter a valid amount (Minimum ₹200)');
+        const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
+        let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
+        const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let currentUser = null;
+        let userBalance = 0;
+
+        document.addEventListener("DOMContentLoaded", async function() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+
+            if (!session) {
+                window.location.replace('login.html');
+            } else {
+                currentUser = session.user;
+                document.body.style.display = 'flex';
+                fetchUserBalance();
+            }
+        });
+
+        async function fetchUserBalance() {
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('balance')
+                .eq('id', currentUser.id)
+                .single();
+
+            if (profile) {
+                userBalance = parseFloat(profile.balance || 0);
+                document.getElementById('currentBalance').innerText = '₹' + userBalance.toFixed(2);
+            }
+        }
+
+        // Handle Withdrawal Request
+        document.getElementById('withdrawForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const payoutAcc = document.getElementById('payoutAccount').value.trim();
+            const accName = document.getElementById('accountName').value.trim();
+
+            if (!amount || amount < 110) {
+                alert("Minimum withdrawal amount is ₹110");
                 return;
             }
-            alert('Withdrawal request of ₹' + amount + ' submitted successfully!');
-        }
+
+            // Insufficient Balance Check
+            if (amount > userBalance) {
+                alert("Insufficient Balance! Your current balance is ₹" + userBalance.toFixed(2));
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerText = "Processing...";
+            submitBtn.disabled = true;
+
+            try {
+                // Fetch latest balance again to prevent race condition
+                const { data: profile, error: fetchErr } = await supabaseClient
+                    .from('profiles')
+                    .select('balance, total_withdraw')
+                    .eq('id', currentUser.id)
+                    .single();
+
+                if (fetchErr) throw fetchErr;
+
+                const currentBal = parseFloat(profile.balance || 0);
+                const currentWithdraw = parseFloat(profile.total_withdraw || 0);
+
+                if (amount > currentBal) {
+                    alert("Insufficient Balance!");
+                    submitBtn.innerText = "Submit Withdrawal Request";
+                    submitBtn.disabled = false;
+                    return;
+                }
+
+                const newBalance = currentBal - amount;
+                const newTotalWithdraw = currentWithdraw + amount;
+
+                // Update profiles table
+                const { error: updateErr } = await supabaseClient
+                    .from('profiles')
+                    .update({ 
+                        balance: newBalance,
+                        total_withdraw: newTotalWithdraw 
+                    })
+                    .eq('id', currentUser.id);
+
+                if (updateErr) throw updateErr;
+
+                alert(`Withdrawal request of ₹${amount} submitted successfully!`);
+                document.getElementById('withdrawAmount').value = '';
+                document.getElementById('payoutAccount').value = '';
+                document.getElementById('accountName').value = '';
+                
+                fetchUserBalance();
+
+            } catch (err) {
+                alert("Withdrawal Failed: " + err.message);
+            } finally {
+                submitBtn.innerText = "Submit Withdrawal Request";
+                submitBtn.disabled = false;
+            }
+        });
     </script>
 
 </body>
-</html>
+    </html>
+    
