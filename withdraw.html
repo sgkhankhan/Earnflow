@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earnflow - Withdraw</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #f4f7f4; display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 15px; padding-bottom: 30px; position: relative; }
+        
+        /* Top Navigation Header */
+        .page-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .page-header a { color: #1b5e20; text-decoration: none; font-size: 18px; }
+        .page-header h2 { font-size: 18px; color: #1b5e20; }
+
+        /* Balance Display Card */
+        .balance-card { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 20px; border-radius: 15px; margin-top: 15px; text-align: center; }
+        .balance-card p { font-size: 12px; opacity: 0.9; }
+        .balance-card h3 { font-size: 26px; margin-top: 5px; }
+
+        /* Form Controls */
+        .section-title { font-size: 14px; font-weight: bold; color: #333; margin: 20px 0 8px; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; }
+        .input-box { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 10px; font-size: 15px; outline: none; }
+        .input-box:focus { border-color: #2e7d32; }
+
+        /* Rules Box */
+        .rules-box { background: #fefce8; border: 1px solid #fef08a; padding: 12px; border-radius: 10px; margin-top: 20px; font-size: 12px; color: #854d0e; }
+        .rules-box ul { margin-left: 18px; margin-top: 5px; }
+        .rules-box li { margin-bottom: 3px; }
+
+        .submit-btn { width: 100%; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; border: none; padding: 14px; border-radius: 25px; margin-top: 20px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Top Header -->
+        <div class="page-header">
+            <a href="index.html"><i class="fa-solid fa-arrow-left"></i></a>
+            <h2>Withdraw Funds</h2>
+            <span></span>
+        </div>
+
+        <!-- Wallet Balance Card -->
+        <div class="balance-card">
+            <p>Withdrawable Balance</p>
+            <h3>₹1,250.00</h3>
+        </div>
+
+        <!-- Withdrawal Amount Input -->
+        <div class="section-title">Enter Withdrawal Amount</div>
+        <div class="form-group">
+            <input type="number" id="withdrawAmount" class="input-box" placeholder="Min. withdrawal ₹200">
+        </div>
+
+        <!-- Bank Details Section -->
+        <div class="section-title">Bank Account Details</div>
+        
+        <div class="form-group">
+            <label>Account Holder Name</label>
+            <input type="text" class="input-box" placeholder="Enter full name as per bank">
+        </div>
+
+        <div class="form-group">
+            <label>Bank Account Number</label>
+            <input type="text" class="input-box" placeholder="Enter account number">
+        </div>
+
+        <div class="form-group">
+            <label>IFSC Code</label>
+            <input type="text" class="input-box" placeholder="e.g. SBIN0001234">
+        </div>
+
+        <!-- Rules & Info -->
+        <div class="rules-box">
+            <strong>Withdrawal Instructions:</strong>
+            <ul>
+                <li>Minimum withdrawal amount is <strong>₹200</strong>.</li>
+                <li>Withdrawal timing: <strong>09:00 AM - 06:00 PM</strong> (Monday to Sunday).</li>
+                <li>Withdrawal processing fee: <strong>10% tax/gateway charge</strong>.</li>
+                <li>Funds will be credited within <strong>1 to 24 hours</strong>.</li>
+            </ul>
+        </div>
+
+        <button class="submit-btn" onclick="submitWithdrawal()">Request Withdrawal</button>
+    </div>
+
+    <script>
+        function submitWithdrawal() {
+            let amount = document.getElementById('withdrawAmount').value;
+            if(!amount || amount < 200) {
+                alert('Please enter a valid amount (Minimum ₹200)');
+                return;
+            }
+            alert('Withdrawal request of ₹' + amount + ' submitted successfully!');
+        }
+    </script>
+
+</body>
+</html>
