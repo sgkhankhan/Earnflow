@@ -20,9 +20,17 @@
         .card { background: #f9fafb; border: 1px solid #e0e0e0; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
         .card h3 { font-size: 15px; color: #1b5e20; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
 
-        .input-group { display: flex; gap: 10px; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 10px; }
         .input-box { flex: 1; padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; outline: none; }
         .save-btn { background: #2e7d32; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        .user-result-box { background: #ffffff; border: 1px solid #c8e6c9; border-radius: 10px; padding: 12px; margin-top: 10px; display: none; }
+        .user-info p { font-size: 13px; color: #333; margin-bottom: 4px; }
+        .user-info strong { color: #1b5e20; }
+
+        .balance-btns { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-add { flex: 1; background: #16a34a; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-deduct { flex: 1; background: #dc2626; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
         .req-list { display: flex; flex-direction: column; gap: 10px; }
         .req-item { background: white; border: 1px solid #e0e0e0; padding: 12px; border-radius: 10px; display: flex; flex-direction: column; gap: 6px; }
@@ -53,6 +61,29 @@
             </div>
         </div>
 
+        <!-- User Search & Manual Balance Adjustment -->
+        <div class="card">
+            <h3><i class="fa-solid fa-user-gear"></i> User Search & Balance Edit</h3>
+            <div class="input-group">
+                <input type="text" id="searchPhone" class="input-box" placeholder="Enter Mobile Number">
+                <button class="save-btn" onclick="searchUser()">Search</button>
+            </div>
+
+            <div id="userResult" class="user-result-box">
+                <div class="user-info">
+                    <p>User: <strong id="resUserPhone">-</strong></p>
+                    <p>Current Balance: <strong id="resUserBalance">₹0.00</strong></p>
+                </div>
+                <div class="input-group" style="margin-top: 10px; margin-bottom: 0;">
+                    <input type="number" id="manualAmount" class="input-box" placeholder="Enter Amount (₹)">
+                </div>
+                <div class="balance-btns">
+                    <button class="btn-add" onclick="updateUserBalance('add')">+ Add Money</button>
+                    <button class="btn-deduct" onclick="updateUserBalance('deduct')">- Deduct Money</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Pending Recharge Requests -->
         <div class="card">
             <h3><i class="fa-solid fa-clock-rotate-left"></i> Pending Recharges</h3>
@@ -77,8 +108,9 @@
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // 🔒 ADMIN EMAIL SECURITY
-        const ADMIN_EMAIL = "Godsfaithora@gmail.com";
+        // 🔒 ADMIN MOBILE SECURITY
+        const ADMIN_MOBILE = "7983678835";
+        let searchedUser = null;
 
         document.addEventListener("DOMContentLoaded", async function() {
             const { data: { session } } = await supabaseClient.auth.getSession();
@@ -88,7 +120,10 @@
                 return;
             }
 
-            if (session.user.email !== ADMIN_EMAIL) {
+            const userEmail = session.user.email || '';
+            const rawPhone = userEmail.replace('@earnflow.app', '');
+
+            if (rawPhone !== ADMIN_MOBILE) {
                 alert("Access Denied: Aapke paas admin rights nahi hain.");
                 window.location.replace('index.html');
                 return;
@@ -114,6 +149,63 @@
             else alert("UPI ID Updated Successfully!");
         }
 
+        async function searchUser() {
+            const phoneInput = document.getElementById('searchPhone').value.trim();
+            if (!phoneInput) return alert("Please enter mobile number");
+
+            const searchEmail = phoneInput.includes('@') ? phoneInput : `${phoneInput}@earnflow.app`;
+
+            const { data: user, error } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('email', searchEmail)
+                .single();
+
+            if (error || !user) {
+                alert("User not found!");
+                document.getElementById('userResult').style.display = 'none';
+                searchedUser = null;
+                return;
+            }
+
+            searchedUser = user;
+            document.getElementById('resUserPhone').innerText = phoneInput;
+            document.getElementById('resUserBalance').innerText = '₹' + parseFloat(user.balance || 0).toFixed(2);
+            document.getElementById('userResult').style.display = 'block';
+        }
+
+        async function updateUserBalance(action) {
+            if (!searchedUser) return alert("Search a user first!");
+
+            const amtInput = parseFloat(document.getElementById('manualAmount').value);
+            if (!amtInput || amtInput <= 0) return alert("Enter valid amount");
+
+            let currentBal = parseFloat(searchedUser.balance || 0);
+            let newBal = action === 'add' ? currentBal + amtInput : currentBal - amtInput;
+
+            if (newBal < 0) return alert("Balance cannot be negative!");
+
+            try {
+                await supabaseClient.from('profiles').update({ balance: newBal }).eq('id', searchedUser.id);
+                
+                await supabaseClient.from('transactions').insert([{
+                    user_id: searchedUser.id,
+                    type: action === 'add' ? 'recharge' : 'withdraw',
+                    amount: amtInput,
+                    status: 'success',
+                    payment_details: `Admin Manual ${action.toUpperCase()}`
+                }]);
+
+                alert(`Balance updated successfully! New Balance: ₹${newBal.toFixed(2)}`);
+                searchedUser.balance = newBal;
+                document.getElementById('resUserBalance').innerText = '₹' + newBal.toFixed(2);
+                document.getElementById('manualAmount').value = '';
+
+            } catch (err) {
+                alert("Error updating balance: " + err.message);
+            }
+        }
+
         async function loadPendingRecharges() {
             const container = document.getElementById('rechargeList');
             const { data: txs } = await supabaseClient.from('transactions').select('*').eq('type', 'recharge').eq('status', 'pending');
@@ -135,57 +227,36 @@
             `).join('');
         }
 
-        // Approve Recharge & Distribute Referral Commission (10%)
         async function approveRecharge(txId, userId, amount) {
             try {
-                // 1. Fetch User Profile
-                const { data: profile } = await supabaseClient
-                    .from('profiles')
-                    .select('balance, total_recharge, referred_by')
-                    .eq('id', userId)
-                    .single();
-
+                const { data: profile } = await supabaseClient.from('profiles').select('balance, total_recharge, referred_by').eq('id', userId).single();
                 const newBal = parseFloat(profile.balance || 0) + parseFloat(amount);
                 const newTotalRec = parseFloat(profile.total_recharge || 0) + parseFloat(amount);
 
-                // Update User Balance & Total Recharge
                 await supabaseClient.from('profiles').update({ balance: newBal, total_recharge: newTotalRec }).eq('id', userId);
                 await supabaseClient.from('transactions').update({ status: 'success' }).eq('id', txId);
 
-                // 2. Check & Calculate Referral Commission (10%)
                 if (profile && profile.referred_by) {
-                    const commissionRate = 0.10; // 10% Commission
-                    const commissionAmt = parseFloat(amount) * commissionRate;
-
-                    // Fetch Inviter Profile by referral code
-                    const { data: inviter } = await supabaseClient
-                        .from('profiles')
-                        .select('id, balance, team_income')
-                        .eq('referral_code', profile.referred_by)
-                        .single();
+                    const commissionAmt = parseFloat(amount) * 0.10;
+                    const { data: inviter } = await supabaseClient.from('profiles').select('id, balance, team_income').eq('referral_code', profile.referred_by).single();
 
                     if (inviter) {
-                        const inviterNewBal = parseFloat(inviter.balance || 0) + commissionAmt;
-                        const inviterNewTeamInc = parseFloat(inviter.team_income || 0) + commissionAmt;
-
-                        // Credit Commission to Inviter
                         await supabaseClient.from('profiles').update({
-                            balance: inviterNewBal,
-                            team_income: inviterNewTeamInc
+                            balance: parseFloat(inviter.balance || 0) + commissionAmt,
+                            team_income: parseFloat(inviter.team_income || 0) + commissionAmt
                         }).eq('id', inviter.id);
 
-                        // Record Commission Transaction
                         await supabaseClient.from('transactions').insert([{
                             user_id: inviter.id,
                             type: 'recharge',
                             amount: commissionAmt,
                             status: 'success',
-                            payment_details: `10% Referral Reward from Team Member`
+                            payment_details: '10% Referral Reward'
                         }]);
                     }
                 }
 
-                alert("Recharge Approved! Balance & Referral Commission Credited.");
+                alert("Recharge Approved!");
                 loadPendingRecharges();
 
             } catch (err) {
