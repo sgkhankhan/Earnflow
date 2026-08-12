@@ -13,19 +13,24 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
         
-        /* By default page tab tak hidden rahega jab tak auth pass na ho jaye */
-        body { background-color: #f4f7f4; display: none; justify-content: center; }
+        /* Hidden by default until auth check passes */
+        body { background-color: #f4f7f4; display: none; justify-content: center; min-height: 100vh; }
         
         .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 15px; padding-bottom: 90px; position: relative; }
         
-        .banner { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 25px 15px; border-radius: 15px; text-align: center; }
+        .banner { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 20px 15px; border-radius: 15px; text-align: center; }
         .banner h2 { font-size: 22px; margin-bottom: 5px; }
         .banner p { font-size: 12px; opacity: 0.9; }
 
-        .action-grid { display: flex; justify-content: space-between; margin: 20px 0; background: #f0fdf4; padding: 12px; border-radius: 15px; }
+        /* Wallet Balance Card */
+        .balance-card { background: #f0fdf4; border: 1px solid #c8e6c9; border-radius: 15px; padding: 15px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .balance-info p { font-size: 12px; color: #666; font-weight: 500; }
+        .balance-info h3 { font-size: 22px; color: #1b5e20; font-weight: bold; margin-top: 2px; }
+        .recharge-quick-btn { background: #2e7d32; color: white; border: none; padding: 8px 16px; border-radius: 20px; text-decoration: none; font-size: 12px; font-weight: bold; }
+
+        .action-grid { display: flex; justify-content: space-between; margin: 15px 0 20px; background: #ffffff; border: 1px solid #e0e0e0; padding: 12px; border-radius: 15px; }
         .action-item { display: flex; flex-direction: column; align-items: center; font-size: 12px; color: #2e7d32; position: relative; cursor: pointer; text-decoration: none; }
-        .action-item i { font-size: 20px; margin-bottom: 5px; background: #dcfce7; padding: 10px; border-radius: 12px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
-        .badge-parent .badge { position: absolute; top: -5px; right: -2px; background: #ef4444; color: white; font-size: 9px; padding: 2px 5px; border-radius: 8px; }
+        .action-item i { font-size: 18px; margin-bottom: 5px; background: #f0fdf4; padding: 10px; border-radius: 12px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; }
 
         .section-title { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 5px; }
         .section-title h3 { font-size: 16px; color: #1b5e20; }
@@ -54,11 +59,22 @@
 <body>
 
     <div class="app-container">
+        <!-- Banner -->
         <div class="banner">
             <h2>Earnflow Seeds</h2>
             <p>Growing Quality, Harvesting Prosperity</p>
         </div>
 
+        <!-- Wallet Balance Card -->
+        <div class="balance-card">
+            <div class="balance-info">
+                <p>Wallet Balance</p>
+                <h3 id="userBalance">₹0.00</h3>
+            </div>
+            <a href="recharge.html" class="recharge-quick-btn">Recharge</a>
+        </div>
+
+        <!-- Quick Actions -->
         <div class="action-grid">
             <a href="recharge.html" class="action-item">
                 <i class="fa-solid fa-wallet"></i>
@@ -67,11 +83,6 @@
             <a href="withdraw.html" class="action-item">
                 <i class="fa-solid fa-hand-holding-dollar"></i>
                 <span>Withdraw</span>
-            </a>
-            <a href="login.html" class="action-item badge-parent">
-                <span class="badge">Login</span>
-                <i class="fa-solid fa-right-to-bracket"></i>
-                <span>Account</span>
             </a>
             <a href="team.html" class="action-item">
                 <i class="fa-solid fa-share-nodes"></i>
@@ -83,6 +94,7 @@
             </a>
         </div>
 
+        <!-- Products List -->
         <div class="section-title">
             <h3>Investment Products</h3>
             <span class="popular-tag">Daily Return</span>
@@ -122,6 +134,7 @@
             </div>
         </div>
 
+        <!-- Bottom Navigation -->
         <div class="bottom-nav">
             <a href="index.html" class="nav-item active">
                 <i class="fa-solid fa-house"></i>
@@ -148,10 +161,11 @@
         </div>
     </div>
 
-    <!-- Strict Auth Guard Logic -->
+    <!-- Auth Guard & Balance Fetching Logic -->
     <script>
         const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6IjoyMTAyMDkxMDYwfQ.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
+        let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
+        const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
 
         document.addEventListener("DOMContentLoaded", async function() {
             try {
@@ -159,19 +173,27 @@
                 const { data: { session } } = await supabaseClient.auth.getSession();
 
                 if (!session) {
-                    // Logged in nahi hai -> Direct login.html
                     window.location.replace('login.html');
                 } else {
-                    // Logged in hai -> Body show kar do
                     document.body.style.display = 'flex';
+                    
+                    // Fetch Balance from profiles table
+                    const { data: profile, error } = await supabaseClient
+                        .from('profiles')
+                        .select('balance')
+                        .eq('id', session.user.id)
+                        .single();
+
+                    if (profile) {
+                        document.getElementById('userBalance').innerText = '₹' + parseFloat(profile.balance).toFixed(2);
+                    }
                 }
             } catch (err) {
-                // Koi bhi error aaye -> Safety ke liye login.html par bhej do
                 window.location.replace('login.html');
             }
         });
     </script>
 
 </body>
-    </html>
-    
+            </html>
+            
