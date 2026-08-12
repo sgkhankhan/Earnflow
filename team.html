@@ -116,14 +116,21 @@
         });
 
         async function loadTeamData() {
-            const { data: profile } = await supabaseClient
-                .from('profiles')
-                .select('referral_code, team_income')
-                .eq('id', currentUser.id)
-                .single();
+            try {
+                let { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('referral_code, team_income')
+                    .eq('id', currentUser.id)
+                    .maybeSingle();
 
-            if (profile) {
-                const refCode = profile.referral_code || currentUser.id.substring(0, 8);
+                let refCode = profile ? profile.referral_code : null;
+
+                // Fallback: If referral_code is missing in DB, generate from user ID
+                if (!refCode) {
+                    refCode = currentUser.id.substring(0, 8);
+                    await supabaseClient.from('profiles').update({ referral_code: refCode }).eq('id', currentUser.id);
+                }
+
                 const baseUrl = window.location.origin + window.location.pathname.replace('team.html', 'signup.html');
                 generatedLink = `${baseUrl}?ref=${refCode}`;
 
@@ -133,7 +140,7 @@
                 const waText = encodeURIComponent(`Join Earnflow Seeds and get daily returns on seed investments! Register using my referral link: ${generatedLink}`);
                 document.getElementById('whatsappShareBtn').href = `https://wa.me/?text=${waText}`;
 
-                document.getElementById('teamIncome').innerText = '₹' + parseFloat(profile.team_income || 0).toFixed(2);
+                document.getElementById('teamIncome').innerText = '₹' + parseFloat((profile && profile.team_income) || 0).toFixed(2);
 
                 // Fetch total referred count
                 const { count } = await supabaseClient
@@ -142,6 +149,13 @@
                     .eq('referred_by', refCode);
 
                 document.getElementById('totalTeamCount').innerText = count || 0;
+
+            } catch (err) {
+                // Fallback link on any error
+                const fallbackCode = currentUser.id.substring(0, 8);
+                const baseUrl = window.location.origin + window.location.pathname.replace('team.html', 'signup.html');
+                generatedLink = `${baseUrl}?ref=${fallbackCode}`;
+                document.getElementById('referralLinkInput').value = generatedLink;
             }
         }
 
@@ -153,5 +167,4 @@
         }
     </script>
 </body>
-    </html>
-    
+</html>
