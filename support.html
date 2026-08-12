@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earnflow - Customer Support</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #f4f7f4; display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; display: flex; flex-direction: column; position: relative; }
+        
+        /* Top Navigation Header */
+        .page-header { display: flex; align-items: center; justify-content: space-between; padding: 15px; border-bottom: 1px solid #eee; background: #ffffff; }
+        .page-header a { color: #1b5e20; text-decoration: none; font-size: 18px; }
+        .page-header h2 { font-size: 18px; color: #1b5e20; }
+
+        /* Support Banner */
+        .support-banner { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 15px; text-align: center; }
+        .support-banner h3 { font-size: 16px; margin-bottom: 4px; }
+        .support-banner p { font-size: 11px; opacity: 0.9; }
+
+        /* Official Channel Buttons */
+        .official-links { display: flex; gap: 10px; padding: 12px 15px; background: #f0fdf4; border-bottom: 1px solid #e0e0e0; }
+        .link-btn { flex: 1; padding: 8px; border-radius: 8px; border: none; font-size: 12px; font-weight: bold; color: white; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; }
+        .telegram-btn { background: #0088cc; }
+        .whatsapp-btn { background: #25d366; }
+
+        /* Chat Area */
+        .chat-box { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #f9fafb; padding-bottom: 80px; }
+        
+        .message { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.4; }
+        .bot-msg { background: #ffffff; color: #333; border: 1px solid #e5e7eb; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .user-msg { background: #16a34a; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+
+        /* Quick Topics */
+        .quick-topics { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
+        .topic-btn { background: #e8f5e9; border: 1px solid #a7f3d0; color: #166534; padding: 6px 10px; border-radius: 15px; font-size: 11px; cursor: pointer; font-weight: 500; }
+
+        /* Chat Input Bar */
+        .input-bar { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; padding: 10px 15px; border-top: 1px solid #e0e0e0; display: flex; gap: 8px; align-items: center; left: 50%; transform: translateX(-50%); }
+        .chat-input { flex: 1; padding: 10px 14px; border: 1px solid #ccc; border-radius: 20px; font-size: 13px; outline: none; }
+        .chat-input:focus { border-color: #2e7d32; }
+        .send-btn { background: #16a34a; color: white; border: none; width: 38px; height: 38px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Top Header -->
+        <div class="page-header">
+            <a href="https://sgkhankhan.github.io/Earnflow/profile.html"><i class="fa-solid fa-arrow-left"></i></a>
+            <h2>Customer Support</h2>
+            <i class="fa-solid fa-headset" style="color: #1b5e20;"></i>
+        </div>
+
+        <!-- Support Header Banner -->
+        <div class="support-banner">
+            <h3>Online Live Agent Help</h3>
+            <p>24/7 Support Available for Recharge & Withdrawal Issues</p>
+        </div>
+
+        <!-- Direct Social Help -->
+        <div class="official-links">
+            <a href="https://telegram.org" target="_blank" class="link-btn telegram-btn">
+                <i class="fa-brands fa-telegram"></i> Telegram Help
+            </a>
+            <a href="https://whatsapp.com" target="_blank" class="link-btn whatsapp-btn">
+                <i class="fa-brands fa-whatsapp"></i> WhatsApp Help
+            </a>
+        </div>
+
+        <!-- Chat Conversation Area -->
+        <div class="chat-box" id="chatBox">
+            <div class="message bot-msg">
+                Hello! Welcome to Earnflow Support. How can we help you today?
+                <div class="quick-topics">
+                    <button class="topic-btn" onclick="sendQuickQuery('Recharge Not Credited')">Recharge Issue</button>
+                    <button class="topic-btn" onclick="sendQuickQuery('Withdrawal Pending')">Withdrawal Issue</button>
+                    <button class="topic-btn" onclick="sendQuickQuery('Account Details Help')">Bank Details</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Box -->
+        <div class="input-bar">
+            <input type="text" id="userInput" class="chat-input" placeholder="Type your query..." onkeypress="handleKeyPress(event)">
+            <button class="send-btn" onclick="sendMessage()">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function sendMessage() {
+            let input = document.getElementById('userInput');
+            let text = input.value.trim();
+            if (text === '') return;
+
+            appendMessage(text, 'user-msg');
+            input.value = '';
+
+            setTimeout(() => {
+                botReply(text);
+            }, 1000);
+        }
+
+        function sendQuickQuery(query) {
+            appendMessage(query, 'user-msg');
+            setTimeout(() => {
+                botReply(query);
+            }, 1000);
+        }
+
+        function appendMessage(text, type) {
+            let chatBox = document.getElementById('chatBox');
+            let msgDiv = document.createElement('div');
+            msgDiv.className = 'message ' + type;
+            msgDiv.innerText = text;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function botReply(userQuery) {
+            let replyText = "Thank you for reaching out. Please share your registered Mobile Number and 12-digit UTR/Ref No. Our support team will verify and resolve it within 15 minutes.";
+            
+            if (userQuery.includes('Withdrawal')) {
+                replyText = "Withdrawals are processed automatically between 09:00 AM to 06:00 PM. Please check if your bank account details are correctly updated in your profile.";
+            } else if (userQuery.includes('Bank')) {
+                replyText = "You can update your bank details directly on the Withdraw page before requesting a cashout.";
+            }
+
+            appendMessage(replyText, 'bot-msg');
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+    </script>
+
+</body>
+</html>
