@@ -30,7 +30,7 @@
 
         .quick-amounts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 25px; }
         .amt-btn { background: #f0fdf4; border: 1px solid #c8e6c9; padding: 12px; border-radius: 10px; color: #2e7d32; font-weight: bold; font-size: 14px; cursor: pointer; text-align: center; }
-        .amt-btn.active { background: #2e7d32; color: white; border-color: #2e7d32; }
+        .amt-btn:active { background: #2e7d32; color: white; }
 
         .submit-btn { width: 100%; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; border: none; padding: 15px; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer; }
 
@@ -104,7 +104,7 @@
 
     <script>
         const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
-        let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
+        let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
         const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -134,11 +134,11 @@
                 .single();
 
             if (profile) {
-                document.getElementById('currentBalance').innerText = '₹' + parseFloat(profile.balance).toFixed(2);
+                document.getElementById('currentBalance').innerText = '₹' + parseFloat(profile.balance || 0).toFixed(2);
             }
         }
 
-        // Handle Balance Addition
+        // Handle Recharge & Transaction Record
         document.getElementById('rechargeForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -153,7 +153,7 @@
             submitBtn.disabled = true;
 
             try {
-                // Get current balance first
+                // 1. Fetch current profile balance
                 const { data: profile, error: fetchErr } = await supabaseClient
                     .from('profiles')
                     .select('balance, total_recharge')
@@ -168,7 +168,7 @@
                 const newBalance = currentBal + amount;
                 const newTotalRecharge = currentRecharge + amount;
 
-                // Update profiles table
+                // 2. Update profiles balance
                 const { error: updateErr } = await supabaseClient
                     .from('profiles')
                     .update({ 
@@ -178,6 +178,19 @@
                     .eq('id', currentUser.id);
 
                 if (updateErr) throw updateErr;
+
+                // 3. Insert record in transactions table
+                const { error: txErr } = await supabaseClient
+                    .from('transactions')
+                    .insert([{
+                        user_id: currentUser.id,
+                        type: 'recharge',
+                        amount: amount,
+                        status: 'success',
+                        payment_details: 'Wallet Topup'
+                    }]);
+
+                if (txErr) throw txErr;
 
                 alert(`Success! ₹${amount} added to your wallet.`);
                 document.getElementById('rechargeAmount').value = '';
@@ -193,5 +206,4 @@
     </script>
 
 </body>
-    </html>
-    
+</html>
