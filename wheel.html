@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earnflow - Lucky Wheel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #f4f7f4; display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 15px; padding-bottom: 90px; position: relative; text-align: center; }
+        
+        /* Top Navigation Header */
+        .page-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .page-header a { color: #1b5e20; text-decoration: none; font-size: 18px; }
+        .page-header h2 { font-size: 18px; color: #1b5e20; }
+
+        /* Banner */
+        .wheel-banner { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 20px; border-radius: 15px; margin-top: 15px; }
+        .wheel-banner h3 { font-size: 20px; }
+        .wheel-banner p { font-size: 12px; opacity: 0.9; margin-top: 4px; }
+
+        /* Wheel Outer Section */
+        .wheel-container { position: relative; width: 280px; height: 280px; margin: 30px auto 20px; display: flex; align-items: center; justify-content: center; }
+        
+        /* Wheel Pointer */
+        .pointer { position: absolute; top: -15px; z-index: 10; font-size: 32px; color: #dc2626; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+
+        /* Spinning Wheel Graphic */
+        .wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #15803d; background: conic-gradient(#16a34a 0deg 45deg, #22c55e 45deg 90deg, #16a34a 90deg 135deg, #22c55e 135deg 180deg, #16a34a 180deg 225deg, #22c55e 225deg 270deg, #16a34a 270deg 315deg, #22c55e 315deg 360deg); transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); box-shadow: 0 6px 15px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+
+        /* Wheel Center Spin Button */
+        .spin-center-btn { position: absolute; width: 70px; height: 70px; background: #ffffff; border: 4px solid #15803d; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: #1b5e20; cursor: pointer; z-index: 5; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+
+        /* Chances Remaining Box */
+        .chances-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px; border-radius: 10px; font-size: 14px; color: #166534; font-weight: bold; margin-bottom: 20px; }
+
+        /* Rules Box */
+        .rules-card { background: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; border-radius: 12px; text-align: left; font-size: 12px; color: #4b5563; }
+        .rules-card h4 { color: #1b5e20; margin-bottom: 6px; }
+        .rules-card ul { margin-left: 18px; }
+        .rules-card li { margin-bottom: 4px; }
+
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e0e0e0; left: 50%; transform: translateX(-50%); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #888; cursor: pointer; text-decoration: none; }
+        .nav-item.active { color: #2e7d32; font-weight: bold; }
+        .wheel-btn { position: relative; top: -20px; }
+        .wheel-icon { width: 50px; height: 50px; background: #16a34a; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 22px; border: 4px solid #ffffff; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Top Header -->
+        <div class="page-header">
+            <a href="https://sgkhankhan.github.io/Earnflow/"><i class="fa-solid fa-arrow-left"></i></a>
+            <h2>Lucky Wheel</h2>
+            <span></span>
+        </div>
+
+        <!-- Banner -->
+        <div class="wheel-banner">
+            <h3>Spin & Win Cash Rewards</h3>
+            <p>Try your luck and win up to ₹500 instant bonus!</p>
+        </div>
+
+        <!-- Wheel Display Section -->
+        <div class="wheel-container">
+            <div class="pointer">
+                <i class="fa-solid fa-caret-down"></i>
+            </div>
+            
+            <div class="wheel" id="wheelGraphic">
+                <span style="color: white; font-weight: bold; font-size: 12px;">₹50 | ₹10 | ₹100 | ₹5 | ₹200 | ₹20 | ₹500 | Try Again</span>
+            </div>
+
+            <div class="spin-center-btn" onclick="startSpin()">
+                <span>SPIN</span>
+            </div>
+        </div>
+
+        <!-- Remaining Spins -->
+        <div class="chances-box">
+            Remaining Spins: <span id="spinCount">3</span>
+        </div>
+
+        <!-- Rules -->
+        <div class="rules-card">
+            <h4>Lucky Draw Rules:</h4>
+            <ul>
+                <li>Get 1 free spin on every investment plan purchase.</li>
+                <li>Cash rewards are credited directly to your wallet.</li>
+                <li>Daily bonus spins reset every night at 12:00 AM.</li>
+            </ul>
+        </div>
+
+        <!-- Bottom Navigation Bar -->
+        <div class="bottom-nav">
+            <a href="https://sgkhankhan.github.io/Earnflow/" class="nav-item">
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </a>
+            <a href="https://sgkhankhan.github.io/Earnflow/recharge.html" class="nav-item">
+                <i class="fa-solid fa-box-archive"></i>
+                <span>Treasure</span>
+            </a>
+            <a href="https://sgkhankhan.github.io/Earnflow/wheel.html" class="nav-item wheel-btn active">
+                <div class="wheel-icon">
+                    <i class="fa-solid fa-dharmachakra"></i>
+                </div>
+                <span>Wheel</span>
+            </a>
+            <a href="https://sgkhankhan.github.io/Earnflow/team.html" class="nav-item">
+                <i class="fa-solid fa-users"></i>
+                <span>Team</span>
+            </a>
+            <a href="https://sgkhankhan.github.io/Earnflow/profile.html" class="nav-item">
+                <i class="fa-solid fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        let currentRotation = 0;
+        let spinsLeft = 3;
+
+        function startSpin() {
+            if (spinsLeft <= 0) {
+                alert('No spins remaining today! Invite friends to earn more spins.');
+                return;
+            }
+
+            spinsLeft--;
+            document.getElementById('spinCount').innerText = spinsLeft;
+
+            const randomDegrees = Math.floor(1440 + Math.random() * 360);
+            currentRotation += randomDegrees;
+
+            const wheel = document.getElementById('wheelGraphic');
+            wheel.style.transform = `rotate(${currentRotation}deg)`;
+
+            setTimeout(() => {
+                const rewards = ['₹10', '₹50', '₹20', '₹100', '₹5'];
+                const won = rewards[Math.floor(Math.random() * rewards.length)];
+                alert('Congratulations! You won ' + won + ' cash reward!');
+            }, 4000);
+        }
+    </script>
+
+</body>
+</html>
