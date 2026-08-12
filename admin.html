@@ -105,11 +105,10 @@
                 <div class="empty-text">Loading requests...</div>
             </div>
         </div>
-    </div>
-        <script>
-        const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
-        let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
-        const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
+                </div>
+                        <script>
+        const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -140,7 +139,7 @@
         });
 
         async function loadUpiSettings() {
-            const { data } = await supabaseClient.from('app_settings').select('upi_id').eq('id', 1).single();
+            const { data } = await supabaseClient.from('app_settings').select('upi_id').eq('id', 1).maybeSingle();
             if (data) document.getElementById('upiInput').value = data.upi_id;
         }
 
@@ -148,7 +147,7 @@
             const newUpi = document.getElementById('upiInput').value.trim();
             if (!newUpi) return alert("Enter valid UPI ID");
 
-            const { error } = await supabaseClient.from('app_settings').update({ upi_id: newUpi }).eq('id', 1);
+            const { error } = await supabaseClient.from('app_settings').upsert({ id: 1, upi_id: newUpi });
             if (error) alert("Error: " + error.message);
             else alert("UPI ID Updated Successfully!");
         }
@@ -163,7 +162,7 @@
                 .from('profiles')
                 .select('*')
                 .eq('email', searchEmail)
-                .single();
+                .maybeSingle();
 
             if (error || !user) {
                 alert("User not found!");
@@ -264,12 +263,10 @@
             `).join('');
         }
 
-        // Multi-Level Referral Commission Logic (Level 1: 27%, Level 2: 2%, Level 3: 1%)
         async function approveRecharge(txId, userId, amount) {
             try {
                 const rechargeAmt = parseFloat(amount);
 
-                // 1. Update user account balance
                 const { data: userProfile } = await supabaseClient
                     .from('profiles')
                     .select('balance, total_recharge, referred_by')
@@ -282,7 +279,7 @@
                 await supabaseClient.from('profiles').update({ balance: newBal, total_recharge: newTotalRec }).eq('id', userId);
                 await supabaseClient.from('transactions').update({ status: 'success' }).eq('id', txId);
 
-                // 2. LEVEL 1 COMMISSION (27%)
+                // Level 1 Commission (27%)
                 if (userProfile && userProfile.referred_by) {
                     const { data: level1Parent } = await supabaseClient
                         .from('profiles')
@@ -291,7 +288,7 @@
                         .maybeSingle();
 
                     if (level1Parent) {
-                        const l1Comm = rechargeAmt * 0.27; // 27%
+                        const l1Comm = rechargeAmt * 0.27;
                         await supabaseClient.from('profiles').update({
                             balance: parseFloat(level1Parent.balance || 0) + l1Comm,
                             team_income: parseFloat(level1Parent.team_income || 0) + l1Comm,
@@ -306,7 +303,7 @@
                             payment_details: 'Level 1 Referral Bonus (27%)'
                         }]);
 
-                        // 3. LEVEL 2 COMMISSION (2%)
+                        // Level 2 Commission (2%)
                         if (level1Parent.referred_by) {
                             const { data: level2Parent } = await supabaseClient
                                 .from('profiles')
@@ -315,7 +312,7 @@
                                 .maybeSingle();
 
                             if (level2Parent) {
-                                const l2Comm = rechargeAmt * 0.02; // 2%
+                                const l2Comm = rechargeAmt * 0.02;
                                 await supabaseClient.from('profiles').update({
                                     balance: parseFloat(level2Parent.balance || 0) + l2Comm,
                                     team_income: parseFloat(level2Parent.team_income || 0) + l2Comm,
@@ -330,7 +327,7 @@
                                     payment_details: 'Level 2 Referral Bonus (2%)'
                                 }]);
 
-                                // 4. LEVEL 3 COMMISSION (1%)
+                                // Level 3 Commission (1%)
                                 if (level2Parent.referred_by) {
                                     const { data: level3Parent } = await supabaseClient
                                         .from('profiles')
@@ -339,7 +336,7 @@
                                         .maybeSingle();
 
                                     if (level3Parent) {
-                                        const l3Comm = rechargeAmt * 0.01; // 1%
+                                        const l3Comm = rechargeAmt * 0.01;
                                         await supabaseClient.from('profiles').update({
                                             balance: parseFloat(level3Parent.balance || 0) + l3Comm,
                                             team_income: parseFloat(level3Parent.team_income || 0) + l3Comm,
@@ -360,7 +357,7 @@
                     }
                 }
 
-                alert("Recharge Approved and Multi-Level Commission (27%, 2%, 1%) Distributed!");
+                alert("Recharge Approved & Multi-Level Commission Distributed!");
                 loadPendingRecharges();
 
             } catch (err) {
@@ -420,5 +417,4 @@
         }
     </script>
 </body>
-    </html>
-    
+</html>
