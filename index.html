@@ -14,15 +14,13 @@
         
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Instant Session Check (Page Render Hone Se Pehle Check Karega)
-        async function enforceAuth() {
+        // Instant Auth Guard - Body render hone se pehle hi redirect kar dega
+        (async function checkAuth() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
-                // Agar session nahi hai toh page render hi nahi hone dega, direct login page!
                 window.location.replace('login.html');
             }
-        }
-        enforceAuth();
+        })();
     </script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
