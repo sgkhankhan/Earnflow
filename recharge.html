@@ -3,51 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earnflow - Recharge</title>
+    <title>Earnflow Seeds - Recharge Wallet</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: #f4f7f4; display: none; justify-content: center; min-height: 100vh; }
-        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 20px; padding-bottom: 90px; position: relative; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f1f7f2; display: flex; justify-content: center; min-height: 100vh; padding: 15px; }
+        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 20px; padding-bottom: 90px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         
         .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-        .header h2 { font-size: 20px; color: #1b5e20; }
-        .back-btn { text-decoration: none; color: #1b5e20; font-size: 20px; }
+        .header h2 { font-size: 18px; font-weight: 800; color: #0f172a; }
+        .back-btn { text-decoration: none; color: #0f172a; font-size: 18px; }
 
-        .balance-card { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; text-align: center; }
-        .balance-card p { font-size: 12px; opacity: 0.9; }
-        .balance-card h3 { font-size: 28px; margin-top: 5px; font-weight: bold; }
+        .payment-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 18px; padding: 20px; text-align: center; margin-bottom: 20px; }
+        .qr-box { width: 180px; height: 180px; margin: 0 auto 15px; background: #ffffff; border: 2px dashed #16a34a; border-radius: 16px; padding: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .qr-box img { width: 100%; height: 100%; object-fit: contain; border-radius: 10px; }
 
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 13px; font-weight: bold; color: #333; margin-bottom: 8px; }
-        .amount-input-box { position: relative; }
-        .amount-input-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #2e7d32; font-size: 18px; }
-        .amount-input { width: 100%; padding: 14px 15px 14px 45px; border: 1px solid #ccc; border-radius: 12px; font-size: 18px; font-weight: bold; outline: none; }
+        .upi-box { display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 10px 14px; margin-top: 10px; }
+        .upi-text { font-size: 14px; font-weight: 700; color: #0f172a; word-break: break-all; }
+        .copy-btn { background: #dcfce7; color: #15803d; border: none; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; }
 
-        .quick-amounts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-        .amt-btn { background: #f0fdf4; border: 1px solid #c8e6c9; padding: 12px; border-radius: 10px; color: #2e7d32; font-weight: bold; font-size: 14px; cursor: pointer; text-align: center; }
-        .amt-btn:active { background: #2e7d32; color: white; }
+        .form-group { margin-bottom: 16px; }
+        .form-label { font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; display: block; }
+        .input-box { width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 14px; font-weight: 600; outline: none; }
+        .input-box:focus { border-color: #16a34a; }
 
-        .pay-upi-btn { width: 100%; background: #16a34a; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; text-decoration: none; }
-        
-        .utr-section { background: #f9fafb; border: 1px dashed #2e7d32; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
-        .utr-section label { display: block; font-size: 12px; font-weight: bold; color: #1b5e20; margin-bottom: 6px; }
-
-        .submit-btn { width: 100%; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; border: none; padding: 15px; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer; }
-
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e0e0e0; left: 50%; transform: translateX(-50%); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #888; cursor: pointer; text-decoration: none; }
-        .nav-item.active { color: #2e7d32; font-weight: bold; }
-        .wheel-btn { position: relative; top: -20px; }
-        .wheel-icon { width: 50px; height: 50px; background: #16a34a; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 22px; border: 4px solid #ffffff; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .submit-btn { width: 100%; background: linear-gradient(135deg, #22c55e, #15803d); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); }
+        .instructions { font-size: 12px; color: #64748b; margin-top: 15px; line-height: 1.5; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px; border-radius: 12px; }
     </style>
 </head>
 <body>
-
     <div class="app-container">
         <div class="header">
             <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
@@ -55,157 +42,89 @@
             <div></div>
         </div>
 
-        <div class="balance-card">
-            <p>Current Balance</p>
-            <h3 id="currentBalance">₹0.00</h3>
+        <div class="payment-card">
+            <p style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 10px;">SCAN QR CODE TO PAY</p>
+            <div class="qr-box">
+                <img id="qrCodeImage" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=5326807QJ1@mairtel%26pn=Earnflow" alt="Payment QR Code">
+            </div>
+
+            <p style="font-size: 12px; font-weight: 700; color: #64748b;">OR PAY TO UPI ID</p>
+            <div class="upi-box">
+                <span id="upiDisplay" class="upi-text">5326807QJ1@mairtel</span>
+                <button class="copy-btn" onclick="copyUpiId()"><i class="fa-regular fa-copy"></i> Copy</button>
+            </div>
         </div>
 
-        <form id="rechargeForm">
+        <form id="rechargeForm" onsubmit="submitRecharge(event)">
             <div class="form-group">
-                <label>1. Select / Enter Amount (₹)</label>
-                <div class="amount-input-box">
-                    <i class="fa-solid fa-indian-rupee-sign"></i>
-                    <input type="number" id="rechargeAmount" class="amount-input" placeholder="525" min="100" required>
-                </div>
+                <label class="form-label">Amount (₹)</label>
+                <input type="number" id="rechargeAmount" class="input-box" placeholder="Enter amount (Min ₹100)" required min="100">
             </div>
-
-            <div class="quick-amounts">
-                <div class="amt-btn" onclick="selectAmount(525)">₹525</div>
-                <div class="amt-btn" onclick="selectAmount(1500)">₹1,500</div>
-                <div class="amt-btn" onclick="selectAmount(3000)">₹3,000</div>
+            <div class="form-group">
+                <label class="form-label">UTR / Transaction ID / Reference No.</label>
+                <input type="text" id="utrInput" class="input-box" placeholder="12-digit UTR or Txn Ref No." required>
             </div>
-
-            <!-- UPI Deep Link Button -->
-            <button type="button" class="pay-upi-btn" onclick="openUPIApp()">
-                <i class="fa-solid fa-mobile-screen-button"></i>
-                <span>2. Pay via PhonePe / GPay / Paytm</span>
-            </button>
-
-            <!-- UTR / Ref No Entry -->
-            <div class="utr-section">
-                <label>3. Enter 12-Digit UTR / Transaction Ref No.</label>
-                <div class="amount-input-box">
-                    <i class="fa-solid fa-receipt"></i>
-                    <input type="text" id="utrNumber" class="amount-input" style="font-size: 14px;" placeholder="e.g. 423819203812" maxlength="12" minlength="12" required>
-                </div>
-            </div>
-
-            <button type="submit" id="submitBtn" class="submit-btn">Submit Request</button>
+            <button type="submit" class="submit-btn">Submit Recharge Request</button>
         </form>
 
-        <div class="bottom-nav">
-            <a href="index.html" class="nav-item"><i class="fa-solid fa-house"></i><span>Home</span></a>
-            <a href="recharge.html" class="nav-item active"><i class="fa-solid fa-box-archive"></i><span>Treasure</span></a>
-            <a href="wheel.html" class="nav-item wheel-btn"><div class="wheel-icon"><i class="fa-solid fa-dharmachakra"></i></div><span>Wheel</span></a>
-            <a href="team.html" class="nav-item"><i class="fa-solid fa-users"></i><span>Team</span></a>
-            <a href="profile.html" class="nav-item"><i class="fa-solid fa-user"></i><span>Profile</span></a>
+        <div class="instructions">
+            <i class="fa-solid fa-circle-info" style="color: #16a34a;"></i> <b>Instructions:</b><br>
+            1. QR code scan karke ya UPI ID par payment karein.<br>
+            2. Payment ke baad 12-digit UTR/Txn ID yahan daal kar submit karein.<br>
+            3. Admin verification ke baad balance aapke wallet me add ho jayega.
         </div>
     </div>
-
-    <script>
-        const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
-        let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
-        const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
+        <script>
+        const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null;
 
-        function selectAmount(amt) {
-            document.getElementById('rechargeAmount').value = amt;
-        }
-
-        // Open UPI App using dynamic UPI ID from Supabase
-        async function openUPIApp() {
-            const amount = document.getElementById('rechargeAmount').value;
-            if (!amount || amount < 100) {
-                alert("Please enter a valid amount (Minimum ₹100)");
-                return;
-            }
-            
-            // Fetch latest UPI ID from app_settings
-            const { data, error } = await supabaseClient.from('app_settings').select('upi_id').eq('id', 1).single();
-            const upiId = (data && data.upi_id) ? data.upi_id.trim() : '';
-
-            if (!upiId) {
-                alert("UPI ID set nahi hai. Kripya Admin Panel me UPI ID save karein.");
-                return;
-            }
-
-            const upiUrl = `upi://pay?pa=${upiId}&pn=Earnflow&am=${amount}&cu=INR`;
-            window.location.href = upiUrl;
-        }
-
         document.addEventListener("DOMContentLoaded", async function() {
             const { data: { session } } = await supabaseClient.auth.getSession();
-
+            
             if (!session) {
                 window.location.replace('login.html');
-            } else {
-                currentUser = session.user;
-                document.body.style.display = 'flex';
-                fetchUserBalance();
+                return;
             }
+
+            currentUser = session.user;
         });
 
-        async function fetchUserBalance() {
-            const { data: profile } = await supabaseClient
-                .from('profiles')
-                .select('balance')
-                .eq('id', currentUser.id)
-                .single();
-
-            if (profile) {
-                document.getElementById('currentBalance').innerText = '₹' + parseFloat(profile.balance || 0).toFixed(2);
-            }
+        function copyUpiId() {
+            const upiText = document.getElementById('upiDisplay').innerText;
+            navigator.clipboard.writeText(upiText);
+            alert("UPI ID copied: " + upiText);
         }
 
-        // Submit Pending Recharge Request
-        document.getElementById('rechargeForm').addEventListener('submit', async function(e) {
+        async function submitRecharge(e) {
             e.preventDefault();
 
             const amount = parseFloat(document.getElementById('rechargeAmount').value);
-            const utr = document.getElementById('utrNumber').value.trim();
+            const utr = document.getElementById('utrInput').value.trim();
 
-            if (!amount || amount < 100) {
-                alert("Minimum recharge amount is ₹100");
-                return;
-            }
-
-            if (utr.length !== 12) {
-                alert("Please enter valid 12-digit UTR number");
-                return;
-            }
-
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.innerText = "Submitting...";
-            submitBtn.disabled = true;
+            if (!amount || amount < 100) return alert("Minimum recharge amount is ₹100");
+            if (!utr) return alert("Please enter UTR / Transaction ID");
 
             try {
-                // Insert as Pending status for Admin Approval
-                const { error: txErr } = await supabaseClient
-                    .from('transactions')
-                    .insert([{
-                        user_id: currentUser.id,
-                        type: 'recharge',
-                        amount: amount,
-                        status: 'pending',
-                        payment_details: `UTR: ${utr}`
-                    }]);
+                const { error } = await supabaseClient.from('transactions').insert([{
+                    user_id: currentUser.id,
+                    type: 'recharge',
+                    amount: amount,
+                    status: 'pending',
+                    payment_details: `UTR: ${utr}`
+                }]);
 
-                if (txErr) throw txErr;
+                if (error) throw error;
 
-                alert(`Recharge request for ₹${amount} submitted! It will be verified and approved shortly.`);
-                document.getElementById('rechargeAmount').value = '';
-                document.getElementById('utrNumber').value = '';
+                alert("Recharge request submitted successfully! Pending admin approval.");
+                window.location.replace('index.html');
 
             } catch (err) {
-                alert("Failed to submit request: " + err.message);
-            } finally {
-                submitBtn.innerText = "Submit Request";
-                submitBtn.disabled = false;
+                alert("Error submitting recharge: " + err.message);
             }
-        });
+        }
     </script>
-
 </body>
 </html>
