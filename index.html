@@ -10,230 +10,208 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background-color: #f1f5f9; display: none; justify-content: center; min-height: 100vh; }
-        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 16px; padding-bottom: 95px; position: relative; }
+        body { background-color: #f1f7f2; display: none; justify-content: center; min-height: 100vh; }
+        .app-container { width: 100%; max-width: 430px; background: #f1f7f2; min-height: 100vh; padding: 12px; padding-bottom: 95px; position: relative; }
+
+        /* Top Hero Banner Carousel */
+        .hero-banner-container { width: 100%; height: 160px; background: linear-gradient(135deg, #14532d, #15803d, #22c55e); border-radius: 20px; position: relative; overflow: hidden; margin-bottom: 16px; box-shadow: 0 8px 20px rgba(22, 101, 52, 0.15); display: flex; align-items: center; justify-content: space-between; padding: 20px; color: white; }
+        .hero-banner-container::before { content: ''; position: absolute; right: -20px; bottom: -20px; width: 140px; height: 140px; background: rgba(255,255,255,0.1); border-radius: 50%; }
+        .banner-content { z-index: 2; max-width: 60%; }
+        .banner-content h2 { font-size: 18px; font-weight: 800; line-height: 1.2; margin-bottom: 4px; color: #ffffff; }
+        .banner-content p { font-size: 11px; color: #dcfce7; font-weight: 600; }
+        .banner-img { font-size: 65px; color: #86efac; z-index: 2; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.2)); }
         
-        /* Top Brand Header */
-        .brand-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-top: 4px; }
-        .brand-info { display: flex; align-items: center; gap: 10px; }
-        .brand-logo { width: 38px; height: 38px; background: linear-gradient(135deg, #15803d, #16a34a); color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 10px rgba(22, 163, 74, 0.25); }
-        .brand-title h2 { font-size: 16px; font-weight: 800; color: #0f172a; letter-spacing: -0.3px; display: flex; align-items: center; gap: 5px; }
-        .brand-title span { font-size: 11px; color: #64748b; font-weight: 500; }
-        .verified-badge { color: #2563eb; font-size: 13px; }
-        .header-icon-btn { width: 36px; height: 36px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #475569; font-size: 15px; cursor: pointer; }
+        .carousel-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 3; }
+        .dot { width: 8px; height: 8px; background: rgba(255,255,255,0.5); border-radius: 50%; }
+        .dot.active { width: 22px; background: #ffffff; border-radius: 10px; }
 
-        /* Banner Card */
-        .hero-banner { background: linear-gradient(135deg, #064e3b, #047857); color: white; padding: 18px; border-radius: 18px; margin-bottom: 16px; position: relative; overflow: hidden; box-shadow: 0 8px 20px rgba(6, 78, 59, 0.2); }
-        .hero-banner::after { content: ''; position: absolute; right: -20px; bottom: -20px; width: 110px; height: 110px; background: rgba(255,255,255,0.06); border-radius: 50%; }
-        .hero-banner h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
-        .hero-banner p { font-size: 12px; color: #a7f3d0; font-weight: 500; }
-
-        /* Wallet Balance Card */
-        .wallet-card { background: linear-gradient(135deg, #0f172a, #1e293b); color: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25); position: relative; overflow: hidden; }
-        .wallet-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 60%); pointer-events: none; }
-        .wallet-label { font-size: 12px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
-        .wallet-amount { font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; }
-        .recharge-quick-btn { background: linear-gradient(135deg, #16a34a, #15803d); color: white; text-decoration: none; padding: 10px 18px; border-radius: 12px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35); transition: transform 0.2s; }
-
-        /* Quick Action Grid */
-        .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
-        .action-item { background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 16px; padding: 14px 8px; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: all 0.2s; }
-        .action-item:active { transform: scale(0.96); background: #f1f5f9; }
-        .action-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-        .icon-rec { background: #dcfce7; color: #15803d; }
-        .icon-wit { background: #dbeafe; color: #1d4ed8; }
-        .icon-inv { background: #fef3c7; color: #b45309; }
-        .icon-sup { background: #f3e8ff; color: #6b21a8; }
-        .action-item span { font-size: 11px; font-weight: 700; color: #334155; }
-
-        /* Section Header */
-        .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-        .section-header h3 { font-size: 16px; font-weight: 800; color: #0f172a; letter-spacing: -0.2px; }
-        .section-tag { background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+        /* Quick Action Bar (5 Buttons) */
+        .quick-action-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 20px; }
+        .q-btn { background: #ffffff; border-radius: 18px; padding: 12px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid #e2ebd8; }
+        .q-icon-box { width: 40px; height: 40px; border-radius: 12px; background: #eaf5eb; color: #16a34a; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 6px; }
+        .q-btn span { font-size: 11px; font-weight: 700; color: #1e293b; }
+        .badge-new { position: absolute; top: -5px; right: 8px; background: #ef4444; color: white; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 10px; border: 2px solid #ffffff; }
 
         /* Product Cards */
+        .products-title-bar { font-size: 17px; font-weight: 800; color: #0f172a; margin-bottom: 14px; padding-left: 4px; }
         .product-list { display: flex; flex-direction: column; gap: 16px; }
-        .product-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 16px; display: flex; gap: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.03); position: relative; transition: transform 0.2s; }
         
-        .product-img-box { width: 110px; background: linear-gradient(135deg, #f0fdf4, #dcfce7); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; text-align: center; border: 1px solid #bbf7d0; flex-shrink: 0; }
-        .product-img-box i { font-size: 38px; color: #15803d; margin-bottom: 8px; filter: drop-shadow(0 4px 6px rgba(21, 128, 61, 0.2)); }
-        .product-name { font-size: 11px; font-weight: 800; color: #14532d; text-transform: uppercase; letter-spacing: 0.5px; }
-        .purchase-limit { position: absolute; top: 12px; left: 12px; background: rgba(15, 23, 42, 0.75); color: white; font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 10px; backdrop-filter: blur(4px); }
+        .product-card { background: #ffffff; border-radius: 24px; padding: 16px; position: relative; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.04); border: 1px solid #e2ebd8; }
+        .ribbon-tag { position: absolute; top: 0; right: 0; background: linear-gradient(135deg, #22c55e, #15803d); color: white; font-size: 10px; font-weight: 800; padding: 5px 14px; border-bottom-left-radius: 14px; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
 
-        .product-details { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .product-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-        .metric-item { background: #f8fafc; padding: 6px 10px; border-radius: 10px; border: 1px solid #f1f5f9; }
-        .metric-label { font-size: 10px; color: #64748b; font-weight: 600; }
-        .metric-value { font-size: 13px; font-weight: 800; color: #0f172a; }
-        .metric-value.highlight { color: #16a34a; }
+        .card-body { display: flex; gap: 14px; margin-top: 10px; margin-bottom: 14px; }
+        .product-image-container { width: 120px; height: 120px; background: linear-gradient(135deg, #eaf5eb, #dcfce7); border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #cbe4ce; position: relative; flex-shrink: 0; }
+        .product-image-container i { font-size: 50px; color: #16a34a; filter: drop-shadow(0 4px 8px rgba(22, 163, 74, 0.25)); }
+        .limit-pill { position: absolute; top: 8px; left: 8px; background: rgba(15, 23, 42, 0.7); color: white; font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 10px; backdrop-filter: blur(4px); }
+        .seed-name { position: absolute; bottom: 8px; font-size: 10px; font-weight: 800; color: #14532d; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .buy-now-btn { width: 100%; background: linear-gradient(135deg, #16a34a, #15803d); color: white; border: none; padding: 11px; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 10px rgba(22, 163, 74, 0.25); transition: background 0.2s; }
-        .buy-now-btn:active { transform: scale(0.98); }
+        .product-info-grid { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+        .info-row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 700; color: #475569; }
+        .row-left { display: flex; align-items: center; gap: 6px; }
+        .dot-green { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; }
+        .info-val { font-size: 14px; font-weight: 800; color: #16a34a; }
+        .info-val.dark { color: #0f172a; }
+
+        .buy-now-bar { width: 100%; background: linear-gradient(135deg, #22c55e, #15803d); color: white; border: none; padding: 12px 18px; border-radius: 25px; font-size: 15px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); transition: transform 0.2s; }
+        .buy-now-bar:active { transform: scale(0.98); }
+        .arrow-circle { width: 28px; height: 28px; background: rgba(255,255,255,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
 
         /* Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #f1f5f9; left: 50%; transform: translateX(-50%); box-shadow: 0 -4px 20px rgba(0,0,0,0.05); }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e2ebd8; left: 50%; transform: translateX(-50%); box-shadow: 0 -4px 20px rgba(0,0,0,0.05); }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #64748b; cursor: pointer; text-decoration: none; font-weight: 600; gap: 3px; }
         .nav-item.active { color: #16a34a; font-weight: 800; }
-        .wheel-btn { position: relative; top: -20px; }
-        .wheel-icon { width: 52px; height: 52px; background: linear-gradient(135deg, #16a34a, #15803d); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 22px; border: 4px solid #ffffff; box-shadow: 0 6px 14px rgba(22, 163, 74, 0.35); }
+        .wheel-btn { position: relative; top: -22px; }
+        .wheel-icon { width: 56px; height: 56px; background: radial-gradient(circle, #22c55e, #15803d); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; border: 4px solid #ffffff; box-shadow: 0 6px 16px rgba(22, 163, 74, 0.4); }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        <!-- Top Brand Header -->
-        <div class="brand-header">
-            <div class="brand-info">
-                <div class="brand-logo"><i class="fa-solid fa-seedling"></i></div>
-                <div class="brand-title">
-                    <h2>Earnflow Seeds <i class="fa-solid fa-circle-check verified-badge"></i></h2>
-                    <span>Agri-Investment Platform</span>
-                </div>
+        <!-- Hero Banner Carousel -->
+        <div class="hero-banner-container">
+            <div class="banner-content">
+                <h2>RASHI SEEDS</h2>
+                <p>Growing Quality, Harvesting Prosperity</p>
             </div>
-            <div class="header-icon-btn"><i class="fa-regular fa-bell"></i></div>
-        </div>
-
-        <!-- Banner -->
-        <div class="hero-banner">
-            <h3><i class="fa-solid fa-wheat-awn"></i> Sustainable Harvest Yields</h3>
-            <p>High return agricultural seed plans verified by Earnflow Protocol.</p>
-        </div>
-
-        <!-- Wallet Balance Card -->
-        <div class="wallet-card">
-            <div>
-                <div class="wallet-label"><i class="fa-solid fa-wallet"></i> Available Balance</div>
-                <div class="wallet-amount" id="userBalance">₹0.00</div>
+            <i class="fa-solid fa-wheat-awn banner-img"></i>
+            <div class="carousel-dots">
+                <div class="dot active"></div>
+                <div class="dot"></div>
             </div>
-            <a href="recharge.html" class="recharge-quick-btn">
-                <i class="fa-solid fa-plus"></i> Deposit
-            </a>
         </div>
 
-        <!-- Quick Action Grid -->
-        <div class="action-grid">
-            <a href="recharge.html" class="action-item">
-                <div class="action-icon icon-rec"><i class="fa-solid fa-wallet"></i></div>
-                <span>Deposit</span>
+        <!-- 5 Quick Action Buttons -->
+        <div class="quick-action-bar">
+            <a href="recharge.html" class="q-btn">
+                <div class="q-icon-box"><i class="fa-solid fa-wallet"></i></div>
+                <span>Recharge</span>
             </a>
-            <a href="withdraw.html" class="action-item">
-                <div class="action-icon icon-wit"><i class="fa-solid fa-money-bill-transfer"></i></div>
+            <a href="withdraw.html" class="q-btn">
+                <div class="q-icon-box"><i class="fa-solid fa-download"></i></div>
                 <span>Withdraw</span>
             </a>
-            <a href="team.html" class="action-item">
-                <div class="action-icon icon-inv"><i class="fa-solid fa-user-plus"></i></div>
+            <a href="wheel.html" class="q-btn">
+                <span class="badge-new">New</span>
+                <div class="q-icon-box"><i class="fa-solid fa-list-check"></i></div>
+                <span>Mission</span>
+            </a>
+            <a href="team.html" class="q-btn">
+                <div class="q-icon-box"><i class="fa-solid fa-share-nodes"></i></div>
                 <span>Invite</span>
             </a>
-            <a href="https://t.me/" target="_blank" class="action-item">
-                <div class="action-icon icon-sup"><i class="fa-solid fa-headset"></i></div>
-                <span>Support</span>
+            <a href="about.html" class="q-btn">
+                <div class="q-icon-box"><i class="fa-solid fa-comments"></i></div>
+                <span>Online</span>
             </a>
         </div>
 
-        <!-- Investment Products Section -->
-        <div class="section-header">
-            <h3>Investment Seed Plans</h3>
-            <span class="section-tag">Daily Returns</span>
-        </div>
+        <!-- Product List Header -->
+        <div class="products-title-bar">Product Plans – Daily withdrawal</div>
 
         <div class="product-list">
-            <!-- Product 1: Maize Seed -->
+            <!-- Product A: Maize Seed -->
             <div class="product-card">
-                <span class="purchase-limit">Limit 0/10</span>
-                <div class="product-img-box">
-                    <i class="fa-solid fa-plant-wilt"></i>
-                    <span class="product-name">Maize Seed</span>
-                </div>
-                <div class="product-details">
-                    <div class="product-metrics">
-                        <div class="metric-item">
-                            <div class="metric-label">Price</div>
-                            <div class="metric-value">₹525</div>
+                <div class="ribbon-tag"><i class="fa-solid fa-star"></i> Popular</div>
+                <div class="card-body">
+                    <div class="product-image-container">
+                        <span class="limit-pill">Limit 0/10</span>
+                        <i class="fa-solid fa-seedling"></i>
+                        <span class="seed-name">Maize Seed</span>
+                    </div>
+                    <div class="product-info-grid">
+                        <div class="info-row">
+                            <div class="row-left"><div class="dot-green"></div> Price</div>
+                            <div class="info-val">₹525</div>
                         </div>
-                        <div class="metric-item">
-                            <div class="metric-label">Daily Income</div>
-                            <div class="metric-value highlight">₹125</div>
+                        <div class="info-row">
+                            <div class="row-left"><div class="dot-green"></div> Daily</div>
+                            <div class="info-val">₹125</div>
                         </div>
-                        <div class="metric-item">
-                            <div class="metric-label">Total Return</div>
-                            <div class="metric-value">₹18,750</div>
+                        <div class="info-row">
+                            <div class="row-left"><div class="dot-green"></div> Total</div>
+                            <div class="info-val">₹18,750</div>
                         </div>
-                        <div class="metric-item">
-                            <div class="metric-label">Validity</div>
-                            <div class="metric-value">150 Days</div>
+                        <div class="info-row">
+                            <div class="row-left"><div class="dot-green"></div> End day</div>
+                            <div class="info-val dark">150 day</div>
                         </div>
                     </div>
-                    <button class="buy-now-btn" onclick="buyProduct('Maize Seed', 525, 125)">
-                        Buy Plan <i class="fa-solid fa-cart-shopping"></i>
-                    </button>
                 </div>
+                <button class="buy-now-bar" onclick="buyProduct('Maize Seed', 525, 125)">
+                    <span>Buy Now <i class="fa-solid fa-cart-shopping"></i></span>
+                    <div class="arrow-circle"><i class="fa-solid fa-chevron-right"></i></div>
+                </button>
             </div>
 
-            <!-- Product 2: Wheat Seed -->
+            <!-- Product B: Wheat Seed -->
             <div class="product-card">
-                <span class="purchase-limit">Limit 0/5</span>
-                <div class="product-img-box">
-                    <i class="fa-solid fa-seedling"></i>
-                    <span class="product-name">Wheat Seed</span>
-                </div>
-                <div class="product-details">
-                    <div class="product-metrics">
-                        <div class="metric-item">
-                            <div class="metric-label">Price</div>
-                            <div class="metric-value">₹1,500</div>
+                <div class="ribbon-tag"><i class="fa-solid fa-crown"></i> Best Value</div>
+                <div class="card-body">
+                    <div class="product-image-container">
+                        <span class="limit-pill">Limit 0/5</span>
+                        <i class="fa-solid fa-plant-wilt"></i>
+                        <span class="seed-name">Wheat Seed</span>
+                    </div>
+                    <div class="product-info-grid">
+                        <div class="info-row">
+                            <div class="row-left"><div class="dot-green"></div> Price</div>
+                            <div class="info-val">₹1,500</div>
                         </div>
-                        <div class="metric-item">
-                            <div class="metric-label">Daily Income</div>
-                            <div class="metric-value highlight">₹375</div>
+                        <div class="info-row">
+                            <div class="row-left"><div class="dot-green"></div> Daily</div>
+                            <div class="info-val">₹375</div>
                         </div>
-                        <div class="metric-item">
-                            <div class="metric-label">Total Return</div>
-                            <div class="metric-value">₹56,250</div>
+                        <div class="info-row">
+                            <div class="row-left"><div class="dot-green"></div> Total</div>
+                            <div class="info-val">₹56,250</div>
                         </div>
-                        <div class="metric-item">
-                            <div class="metric-label">Validity</div>
-                            <div class="metric-value">150 Days</div>
+                        <div class="info-row">
+                            <div class="row-left"><div class="dot-green"></div> End day</div>
+                            <div class="info-val dark">150 day</div>
                         </div>
                     </div>
-                    <button class="buy-now-btn" onclick="buyProduct('Wheat Seed', 1500, 375)">
-                        Buy Plan <i class="fa-solid fa-cart-shopping"></i>
-                    </button>
                 </div>
+                <button class="buy-now-bar" onclick="buyProduct('Wheat Seed', 1500, 375)">
+                    <span>Buy Now <i class="fa-solid fa-cart-shopping"></i></span>
+                    <div class="arrow-circle"><i class="fa-solid fa-chevron-right"></i></div>
+                </button>
             </div>
 
-            <!-- Product 3: Paddy Rice Seed -->
+            <!-- Product C: Paddy Seed -->
             <div class="product-card">
-                <span class="purchase-limit">Limit 0/5</span>
-                <div class="product-img-box">
-                    <i class="fa-solid fa-bowl-rice"></i>
-                    <span class="product-name">Paddy Seed</span>
-                </div>
-                <div class="product-details">
-                    <div class="product-metrics">
-                        <div class="metric-item">
-                            <div class="metric-label">Price</div>
-                            <div class="metric-value">₹3,000</div>
+                <div class="ribbon-tag"><i class="fa-solid fa-gem"></i> VIP Plan</div>
+                <div class="card-body">
+                    <div class="product-image-container">
+                        <span class="limit-pill">Limit 0/5</span>
+                        <i class="fa-solid fa-bowl-rice"></i>
+                        <span class="seed-name">Paddy Seed</span>
+                    </div>
+                    <div class="product-info-grid">
+                        <div class="info-row">
+                            <div class="row-left"><div class="dot-green"></div> Price</div>
+                            <div class="info-val">₹3,000</div>
                         </div>
-                        <div class="metric-item">
-                            <div class="metric-label">Daily Income</div>
-                            <div class="metric-value highlight">₹780</div>
+                        <div class="info-row">
+                            <div class="row-left"><div class="dot-green"></div> Daily</div>
+                            <div class="info-val">₹780</div>
                         </div>
-                        <div class="metric-item">
-                            <div class="metric-label">Total Return</div>
-                            <div class="metric-value">₹1,17,000</div>
+                        <div class="info-row">
+                            <div class="row-left"><div class="dot-green"></div> Total</div>
+                            <div class="info-val">₹1,17,000</div>
                         </div>
-                        <div class="metric-item">
-                            <div class="metric-label">Validity</div>
-                            <div class="metric-value">150 Days</div>
+                        <div class="info-row">
+                            <div class="row-left"><div class="dot-green"></div> End day</div>
+                            <div class="info-val dark">150 day</div>
                         </div>
                     </div>
-                    <button class="buy-now-btn" onclick="buyProduct('Paddy Seed', 3000, 780)">
-                        Buy Plan <i class="fa-solid fa-cart-shopping"></i>
-                    </button>
                 </div>
+                <button class="buy-now-bar" onclick="buyProduct('Paddy Seed', 3000, 780)">
+                    <span>Buy Now <i class="fa-solid fa-cart-shopping"></i></span>
+                    <div class="arrow-circle"><i class="fa-solid fa-chevron-right"></i></div>
+                </button>
             </div>
         </div>
 
@@ -246,8 +224,7 @@
             <a href="profile.html" class="nav-item"><i class="fa-solid fa-user"></i><span>Profile</span></a>
         </div>
     </div>
-
-    <script>
+        <script>
         const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
         let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
         const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
@@ -277,13 +254,12 @@
 
             if (profile) {
                 currentBalance = parseFloat(profile.balance || 0);
-                document.getElementById('userBalance').innerText = '₹' + currentBalance.toFixed(2);
             }
         }
 
         async function buyProduct(productName, price, dailyIncome) {
             if (currentBalance < price) {
-                alert(`Insufficient balance! Please recharge ₹${price - currentBalance} more.`);
+                alert(`Insufficient balance! Please recharge ₹${(price - currentBalance).toFixed(0)} more.`);
                 window.location.href = 'recharge.html';
                 return;
             }
@@ -312,5 +288,4 @@
         }
     </script>
 </body>
-    </html>
-                        
+</html>
