@@ -106,8 +106,7 @@
             </div>
         </div>
     </div>
-
-    <script>
+        <script>
         const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
         let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
         const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
@@ -385,5 +384,41 @@
                     <div class="action-btns">
                         <button class="btn-approve" onclick="updateStatus('${tx.id}', 'success')">Mark Sent</button>
                         <button class="btn-reject" onclick="rejectWithdrawal('${tx.id}', '${tx.user_id}', ${tx.amount})">Reject & Refund</button>
-    </div>
-        
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function rejectWithdrawal(txId, userId, amount) {
+            try {
+                const { data: profile } = await supabaseClient.from('profiles').select('balance').eq('id', userId).single();
+                const refundedBal = parseFloat(profile.balance || 0) + parseFloat(amount);
+
+                await supabaseClient.from('profiles').update({ balance: refundedBal }).eq('id', userId);
+                await supabaseClient.from('transactions').update({ status: 'failed' }).eq('id', txId);
+
+                await supabaseClient.from('transactions').insert([{
+                    user_id: userId,
+                    type: 'recharge',
+                    amount: parseFloat(amount),
+                    status: 'success',
+                    payment_details: 'Withdrawal Rejected - Refunded to Wallet'
+                }]);
+
+                alert(`Withdrawal Rejected! ₹${amount} refunded back to user wallet.`);
+                loadPendingWithdrawals();
+
+            } catch (err) {
+                alert("Error executing refund: " + err.message);
+            }
+        }
+
+        async function updateStatus(txId, newStatus) {
+            await supabaseClient.from('transactions').update({ status: newStatus }).eq('id', txId);
+            loadPendingRecharges();
+            loadPendingWithdrawals();
+        }
+    </script>
+</body>
+    </html>
+    
