@@ -74,27 +74,23 @@
             </div>
             <button type="submit" class="submit-btn">Create Account</button>
         </form>
-                                                                </div>
-                                                                    <script>
+    </div>
+        <script>
         const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
-        let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
-        const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         document.addEventListener("DOMContentLoaded", function() {
-            // URL se referral code detect karna
             const urlParams = new URLSearchParams(window.location.search);
             const refCode = urlParams.get('ref');
 
             if (refCode) {
-                // Auto-fill referral code input
                 const refInput = document.getElementById('referralCodeInput');
                 refInput.value = refCode;
-                refInput.readOnly = true; // Code lock karna
+                refInput.readOnly = true;
                 document.getElementById('refAppliedBadge').style.display = 'inline-block';
 
-                // Switch to Register Tab automatically if referral code present in URL
                 switchTab('signup');
             }
         });
@@ -136,7 +132,6 @@
                 if (data.user) {
                     const myRefCode = data.user.id.substring(0, 8);
                     
-                    // Profile creation with referred_by
                     await supabaseClient.from('profiles').insert([{
                         id: data.user.id,
                         email: email,
@@ -166,4 +161,5 @@
         }
     </script>
 </body>
-</html>
+    </html>
+    
