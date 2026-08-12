@@ -31,6 +31,9 @@
         .balance-btns { display: flex; gap: 10px; margin-top: 10px; }
         .btn-add { flex: 1; background: #16a34a; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .btn-deduct { flex: 1; background: #dc2626; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        
+        .btn-block { width: 100%; background: #dc2626; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-unblock { width: 100%; background: #2563eb; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
         .req-list { display: flex; flex-direction: column; gap: 10px; }
         .req-item { background: white; border: 1px solid #e0e0e0; padding: 12px; border-radius: 10px; display: flex; flex-direction: column; gap: 6px; }
@@ -61,9 +64,9 @@
             </div>
         </div>
 
-        <!-- User Search & Manual Balance Adjustment -->
+        <!-- User Search, Balance Edit & Account Suspend -->
         <div class="card">
-            <h3><i class="fa-solid fa-user-gear"></i> User Search & Balance Edit</h3>
+            <h3><i class="fa-solid fa-user-gear"></i> User Search, Balance & Suspend</h3>
             <div class="input-group">
                 <input type="text" id="searchPhone" class="input-box" placeholder="Enter Mobile Number">
                 <button class="save-btn" onclick="searchUser()">Search</button>
@@ -73,6 +76,7 @@
                 <div class="user-info">
                     <p>User: <strong id="resUserPhone">-</strong></p>
                     <p>Current Balance: <strong id="resUserBalance">₹0.00</strong></p>
+                    <p>Status: <strong id="resUserStatus" style="color: #16a34a;">Active</strong></p>
                 </div>
                 <div class="input-group" style="margin-top: 10px; margin-bottom: 0;">
                     <input type="number" id="manualAmount" class="input-box" placeholder="Enter Amount (₹)">
@@ -81,6 +85,9 @@
                     <button class="btn-add" onclick="updateUserBalance('add')">+ Add Money</button>
                     <button class="btn-deduct" onclick="updateUserBalance('deduct')">- Deduct Money</button>
                 </div>
+                
+                <!-- Block/Unblock Toggle Button -->
+                <button id="blockToggleBtn" class="btn-block" onclick="toggleUserBlock()">Block User Account</button>
             </div>
         </div>
 
@@ -108,7 +115,6 @@
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // 🔒 ADMIN MOBILE SECURITY
         const ADMIN_MOBILE = "7983678835";
         let searchedUser = null;
 
@@ -171,7 +177,40 @@
             searchedUser = user;
             document.getElementById('resUserPhone').innerText = phoneInput;
             document.getElementById('resUserBalance').innerText = '₹' + parseFloat(user.balance || 0).toFixed(2);
+            
+            const statusElem = document.getElementById('resUserStatus');
+            const blockBtn = document.getElementById('blockToggleBtn');
+
+            if (user.is_blocked) {
+                statusElem.innerText = "Blocked / Suspended";
+                statusElem.style.color = "#dc2626";
+                blockBtn.innerText = "Unblock User Account";
+                blockBtn.className = "btn-unblock";
+            } else {
+                statusElem.innerText = "Active";
+                statusElem.style.color = "#16a34a";
+                blockBtn.innerText = "Block User Account";
+                blockBtn.className = "btn-block";
+            }
+
             document.getElementById('userResult').style.display = 'block';
+        }
+
+        async function toggleUserBlock() {
+            if (!searchedUser) return alert("Search a user first!");
+
+            const newBlockStatus = !searchedUser.is_blocked;
+
+            try {
+                await supabaseClient.from('profiles').update({ is_blocked: newBlockStatus }).eq('id', searchedUser.id);
+                
+                searchedUser.is_blocked = newBlockStatus;
+                alert(`User account has been ${newBlockStatus ? 'BLOCKED' : 'UNBLOCKED'} successfully!`);
+                searchUser(); // Refresh UI
+
+            } catch (err) {
+                alert("Error toggling block status: " + err.message);
+            }
         }
 
         async function updateUserBalance(action) {
@@ -279,10 +318,34 @@
                     <div class="req-info"><span>Payout Acc:</span> <span>${tx.payment_details}</span></div>
                     <div class="action-btns">
                         <button class="btn-approve" onclick="updateStatus('${tx.id}', 'success')">Mark Sent</button>
-                        <button class="btn-reject" onclick="updateStatus('${tx.id}', 'failed')">Reject</button>
+                        <button class="btn-reject" onclick="rejectWithdrawal('${tx.id}', '${tx.user_id}', ${tx.amount})">Reject & Refund</button>
                     </div>
                 </div>
             `).join('');
+        }
+
+        async function rejectWithdrawal(txId, userId, amount) {
+            try {
+                const { data: profile } = await supabaseClient.from('profiles').select('balance').eq('id', userId).single();
+                const refundedBal = parseFloat(profile.balance || 0) + parseFloat(amount);
+
+                await supabaseClient.from('profiles').update({ balance: refundedBal }).eq('id', userId);
+                await supabaseClient.from('transactions').update({ status: 'failed' }).eq('id', txId);
+
+                await supabaseClient.from('transactions').insert([{
+                    user_id: userId,
+                    type: 'recharge',
+                    amount: parseFloat(amount),
+                    status: 'success',
+                    payment_details: 'Withdrawal Rejected - Refunded to Wallet'
+                }]);
+
+                alert(`Withdrawal Rejected! ₹${amount} refunded back to user wallet.`);
+                loadPendingWithdrawals();
+
+            } catch (err) {
+                alert("Error executing refund: " + err.message);
+            }
         }
 
         async function updateStatus(txId, newStatus) {
@@ -292,5 +355,5 @@
         }
     </script>
 </body>
-    </html>
+                                                                     </html>
     
