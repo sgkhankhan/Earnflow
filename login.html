@@ -24,22 +24,21 @@
 
     <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
-        // Cleaned ANON KEY without linebreaks
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA".trim();
+        // Fixed Small 'e' Correct Key
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
 
         const log = document.getElementById('log');
 
         async function testConnection() {
-            log.innerText = "Testing connection to Supabase...\nURL: " + SUPABASE_URL + "\nKey Length: " + SUPABASE_ANON_KEY.length + " chars";
+            log.innerText = "Testing connection to Supabase...\nURL: " + SUPABASE_URL;
 
             try {
                 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 
-                // Fetch simple response from profiles table
                 const { data, error } = await supabaseClient.from('profiles').select('id').limit(1);
 
                 if (error) {
-                    log.innerHTML = `<span style="color:#ef4444;">❌ ERROR: ${error.message}</span>\nDetails: ${JSON.stringify(error)}`;
+                    log.innerHTML = `<span style="color:#ef4444;">❌ ERROR: ${error.message}</span>`;
                 } else {
                     log.innerHTML = `<span style="color:#4ade80;">✅ SUCCESS! Connected to Supabase Database successfully!</span>\nProfiles found: ${data.length}`;
                 }
