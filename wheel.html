@@ -18,27 +18,30 @@
         .header h2 { font-size: 20px; color: #1b5e20; }
         .back-btn { text-decoration: none; color: #1b5e20; font-size: 20px; }
 
-        .banner { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 15px; border-radius: 12px; margin-bottom: 25px; }
+        .banner { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 15px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .banner h3 { font-size: 16px; margin-bottom: 4px; }
         .banner p { font-size: 12px; opacity: 0.9; }
 
-        /* Wheel Container Styles */
-        .wheel-container { position: relative; width: 280px; height: 280px; margin: 0 auto 30px; }
-        .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid #dc2626; z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+        /* Premium Wheel Container */
+        .wheel-box { position: relative; width: 290px; height: 290px; margin: 10px auto 30px; border-radius: 50%; padding: 8px; background: linear-gradient(145deg, #ffd700, #b8860b); box-shadow: 0 8px 20px rgba(0,0,0,0.25); }
+        .wheel-pointer { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 16px solid transparent; border-right: 16px solid transparent; border-top: 28px solid #dc2626; z-index: 20; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.4)); }
         
-        .wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #1b5e20; position: relative; overflow: hidden; transition: transform 4s cubic-bezier(0.15, 0.9, 0.15, 1); box-shadow: 0 8px 16px rgba(0,0,0,0.15); background: conic-gradient(#16a34a 0deg 60deg, #ffffff 60deg 120deg, #16a34a 120deg 180deg, #ffffff 180deg 240deg, #16a34a 240deg 300deg, #ffffff 300deg 360deg); }
+        .wheel { width: 100%; height: 100%; border-radius: 50%; position: relative; overflow: hidden; transition: transform 4s cubic-bezier(0.15, 0.9, 0.15, 1); background: conic-gradient(#16a34a 0deg 60deg, #f59e0b 60deg 120deg, #2563eb 120deg 180deg, #dc2626 180deg 240deg, #8b5cf6 240deg 300deg, #10b981 300deg 360deg); border: 4px solid #ffffff; }
 
-        /* Slice Numbers Rendering */
-        .slice-text { position: absolute; top: 50%; left: 50%; width: 50%; height: 30px; margin-top: -15px; transform-origin: 0% 50%; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: flex-end; padding-right: 20px; }
-        .s1 { transform: rotate(30deg); color: white; }
-        .s2 { transform: rotate(90deg); color: #1b5e20; }
-        .s3 { transform: rotate(150deg); color: white; }
-        .s4 { transform: rotate(210deg); color: #1b5e20; }
-        .s5 { transform: rotate(270deg); color: white; }
-        .s6 { transform: rotate(330deg); color: #1b5e20; }
+        /* Wheel Center Gold Cap */
+        .wheel-center-cap { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: radial-gradient(circle, #ffe259, #ffa751); border-radius: 50%; z-index: 15; border: 3px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: #78350f; font-size: 18px; }
 
-        .spin-btn { width: 100%; max-width: 280px; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; border: none; padding: 15px; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3); }
-        .spin-btn:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
+        /* Clear Readable Labels */
+        .slice-label { position: absolute; top: 0; left: 50%; width: 60px; height: 50%; margin-left: -30px; transform-origin: 50% 100%; text-align: center; padding-top: 15px; font-weight: 800; font-size: 16px; color: #ffffff; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
+        .l1 { transform: rotate(30deg); }
+        .l2 { transform: rotate(90deg); }
+        .l3 { transform: rotate(150deg); }
+        .l4 { transform: rotate(210deg); }
+        .l5 { transform: rotate(270deg); }
+        .l6 { transform: rotate(330deg); }
+
+        .spin-btn { width: 100%; max-width: 290px; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; border: none; padding: 15px; border-radius: 25px; font-size: 17px; font-weight: bold; cursor: pointer; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(46, 125, 50, 0.4); }
+        .spin-btn:disabled { background: #9ca3af; cursor: not-allowed; box-shadow: none; }
 
         .timer-msg { font-size: 13px; color: #dc2626; font-weight: bold; }
 
@@ -63,23 +66,24 @@
             <p>Get up to ₹50 bonus added directly to your wallet every 24 hours.</p>
         </div>
 
-        <!-- Wheel Visual with Amount Values -->
-        <div class="wheel-container">
+        <!-- Lucky Wheel -->
+        <div class="wheel-box">
             <div class="wheel-pointer"></div>
+            <div class="wheel-center-cap"><i class="fa-solid fa-crown"></i></div>
             <div class="wheel" id="wheelDisk">
-                <div class="slice-text s1">₹5</div>
-                <div class="slice-text s2">₹10</div>
-                <div class="slice-text s3">₹15</div>
-                <div class="slice-text s4">₹20</div>
-                <div class="slice-text s5">₹25</div>
-                <div class="slice-text s6">₹50</div>
+                <div class="slice-label l1">₹5</div>
+                <div class="slice-label l2">₹10</div>
+                <div class="slice-label l3">₹15</div>
+                <div class="slice-label l4">₹20</div>
+                <div class="slice-label l5">₹25</div>
+                <div class="slice-label l6">₹50</div>
             </div>
         </div>
 
         <button id="spinButton" class="spin-btn" onclick="spinWheel()">Spin Now</button>
         <p id="timerMessage" class="timer-msg"></p>
 
-        <!-- Bottom Nav -->
+        <!-- Bottom Navigation -->
         <div class="bottom-nav">
             <a href="index.html" class="nav-item"><i class="fa-solid fa-house"></i><span>Home</span></a>
             <a href="recharge.html" class="nav-item"><i class="fa-solid fa-box-archive"></i><span>Treasure</span></a>
@@ -183,5 +187,4 @@
         }
     </script>
 </body>
-            </html>
-            
+</html>
