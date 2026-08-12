@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earnflow - Login / Register</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #f4f7f4; display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 25px 20px; position: relative; display: flex; flex-direction: column; justify-content: center; }
+        
+        /* Logo Section */
+        .logo-box { text-align: center; margin-bottom: 25px; }
+        .logo-icon { width: 70px; height: 70px; background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px; margin: 0 auto 10px; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3); }
+        .logo-box h2 { font-size: 24px; color: #1b5e20; font-weight: bold; }
+        .logo-box p { font-size: 12px; color: #666; margin-top: 2px; }
+
+        /* Form Tab Switcher */
+        .tab-box { display: flex; background: #f0fdf4; border: 1px solid #c8e6c9; border-radius: 25px; padding: 4px; margin-bottom: 25px; }
+        .tab-btn { flex: 1; border: none; background: transparent; padding: 10px; border-radius: 20px; font-weight: bold; color: #2e7d32; cursor: pointer; transition: 0.3s; }
+        .tab-btn.active { background: #2e7d32; color: white; }
+
+        /* Form Inputs */
+        .form-container { display: flex; flex-direction: column; gap: 15px; }
+        .input-group { position: relative; }
+        .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #2e7d32; font-size: 16px; }
+        .input-box { width: 100%; padding: 12px 15px 12px 45px; border: 1px solid #ccc; border-radius: 12px; font-size: 14px; outline: none; transition: 0.3s; }
+        .input-box:focus { border-color: #2e7d32; box-shadow: 0 0 5px rgba(46, 125, 50, 0.2); }
+
+        /* Submit Button */
+        .submit-btn { width: 100%; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; border: none; padding: 14px; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+        .form-footer { text-align: center; font-size: 12px; color: #666; margin-top: 15px; }
+        .form-footer a { color: #1b5e20; text-decoration: none; font-weight: bold; }
+
+        /* Hidden Class */
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Logo Banner -->
+        <div class="logo-box">
+            <div class="logo-icon">
+                <i class="fa-solid fa-wheat-awn"></i>
+            </div>
+            <h2>Earnflow</h2>
+            <p>Growing Quality, Harvesting Prosperity</p>
+        </div>
+
+        <!-- Tab Switcher -->
+        <div class="tab-box">
+            <button class="tab-btn active" id="loginTabBtn" onclick="switchForm('login')">Log In</button>
+            <button class="tab-btn" id="signupTabBtn" onclick="switchForm('signup')">Register</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="form-container" onsubmit="handleLogin(event)">
+            <div class="input-group">
+                <i class="fa-solid fa-mobile-screen"></i>
+                <input type="tel" class="input-box" placeholder="Phone Number" maxlength="10" required>
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" class="input-box" placeholder="Password" required>
+            </div>
+            <button type="submit" class="submit-btn">Log In</button>
+            <div class="form-footer">
+                <a href="#">Forgot Password?</a>
+            </div>
+        </form>
+
+        <!-- Signup Form -->
+        <form id="signupForm" class="form-container hidden" onsubmit="handleSignup(event)">
+            <div class="input-group">
+                <i class="fa-solid fa-mobile-screen"></i>
+                <input type="tel" class="input-box" placeholder="Phone Number" maxlength="10" required>
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" class="input-box" placeholder="Set Password" required>
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-shield-halved"></i>
+                <input type="password" class="input-box" placeholder="Confirm Password" required>
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-user-plus"></i>
+                <input type="text" class="input-box" placeholder="Referral Code (Optional)">
+            </div>
+            <button type="submit" class="submit-btn">Create Account</button>
+            <div class="form-footer">
+                By registering, you agree to our Terms & Conditions.
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function switchForm(type) {
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const loginTabBtn = document.getElementById('loginTabBtn');
+            const signupTabBtn = document.getElementById('signupTabBtn');
+
+            if (type === 'login') {
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                loginTabBtn.classList.add('active');
+                signupTabBtn.classList.remove('active');
+            } else {
+                signupForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+                signupTabBtn.classList.add('active');
+                loginTabBtn.classList.remove('active');
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            alert('Login successful! Redirecting to Home...');
+            window.location.href = 'index.html';
+        }
+
+        function handleSignup(e) {
+            e.preventDefault();
+            alert('Account created successfully! Redirecting to Home...');
+            window.location.href = 'index.html';
+        }
+    </script>
+
+</body>
+</html>
