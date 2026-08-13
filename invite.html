@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earnflow Seeds - Invite Friends</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f1f7f2; display: flex; justify-content: center; min-height: 100vh; padding: 15px; }
+        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 20px; padding-bottom: 90px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .header h2 { font-size: 18px; font-weight: 800; color: #0f172a; }
+        .back-btn { text-decoration: none; color: #0f172a; font-size: 18px; }
+
+        .invite-card { background: linear-gradient(135deg, #16a34a, #15803d); color: white; border-radius: 20px; padding: 25px; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(22, 163, 74, 0.2); }
+        .invite-card i { font-size: 45px; margin-bottom: 12px; }
+        .invite-card h3 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+        .invite-card p { font-size: 13px; opacity: 0.9; line-height: 1.4; }
+
+        .info-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-bottom: 15px; }
+        .info-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px; }
+        .code-display { font-size: 18px; font-weight: 800; color: #0f172a; letter-spacing: 1px; word-break: break-all; }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        .action-btn { flex: 1; padding: 14px; border-radius: 12px; border: none; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .copy-btn { background: #dcfce7; color: #15803d; }
+        .share-btn { background: #25d366; color: white; }
+
+        .commission-card { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 16px; padding: 16px; margin-top: 20px; }
+        .commission-title { font-size: 13px; font-weight: 800; color: #16a34a; margin-bottom: 10px; }
+        .comm-item { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #334155; padding: 6px 0; border-bottom: 1px dashed #cbd5e1; }
+        .comm-item:last-child { border-bottom: none; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+            <h2>Invite & Earn</h2>
+            <div></div>
+        </div>
+
+        <div class="invite-card">
+            <i class="fa-solid fa-gift"></i>
+            <h3>Invite Friends</h3>
+            <p>Earn big commissions when your friends join and recharge!</p>
+        </div>
+
+        <div class="info-box">
+            <div class="info-label">Your Referral Code</div>
+            <div id="refCode" class="code-display">Loading...</div>
+        </div>
+
+        <div class="info-box">
+            <div class="info-label">Your Invitation Link</div>
+            <div id="refLink" class="code-display" style="font-size: 13px;">Loading...</div>
+        </div>
+
+        <div class="btn-group">
+            <button class="action-btn copy-btn" onclick="copyLink()"><i class="fa-regular fa-copy"></i> Copy Link</button>
+            <button class="action-btn share-btn" onclick="shareWhatsapp()"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+        </div>
+
+        <div class="commission-card">
+            <div class="commission-title"><i class="fa-solid fa-chart-line"></i> Commission Rewards</div>
+            <div class="comm-item"><span>Level 1 (Direct Refer)</span><span style="color:#16a34a;">27%</span></div>
+            <div class="comm-item"><span>Level 2 Referrals</span><span style="color:#16a34a;">2%</span></div>
+            <div class="comm-item"><span>Level 3 Referrals</span><span style="color:#16a34a;">1%</span></div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let myReferralLink = "";
+
+        document.addEventListener("DOMContentLoaded", async function() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) return window.location.replace('login.html');
+
+            const phone = session.user.email ? session.user.email.split('@')[0] : '';
+            
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('referral_code')
+                .eq('id', session.user.id)
+                .maybeSingle();
+
+            const myCode = (profile && profile.referral_code) ? profile.referral_code : phone;
+            
+            document.getElementById('refCode').innerText = myCode;
+
+            const baseUrl = window.location.origin + window.location.pathname.replace('invite.html', 'login.html');
+            myReferralLink = `${baseUrl}?ref=${myCode}`;
+            
+            document.getElementById('refLink').innerText = myReferralLink;
+        });
+
+        function copyLink() {
+            if (!myReferralLink) return;
+            navigator.clipboard.writeText(myReferralLink);
+            alert("Referral link copied!");
+        }
+
+        function shareWhatsapp() {
+            if (!myReferralLink) return;
+            const text = encodeURIComponent(`Join Earnflow Seeds today and earn daily returns! Register using my link:\n${myReferralLink}`);
+            window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+        }
+    </script>
+</body>
+  </html>
+  
