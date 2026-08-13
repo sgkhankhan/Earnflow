@@ -354,24 +354,44 @@
         }
 
         async function loadPendingRecharges() {
-            const container = document.getElementById('rechargeList');
-            const { data: txs } = await supabaseClient.from('transactions').select('*').eq('type', 'recharge').eq('status', 'pending');
+    const container = document.getElementById('rechargeList');
+    // 'transactions' ki jagah 'recharges' table se fetch karein
+    const { data: txs, error } = await supabaseClient
+        .from('recharges')
+        .select('*')
+        .eq('status', 'pending');
 
-            if (!txs || txs.length === 0) {
-                container.innerHTML = '<div class="empty-text">No pending recharges.</div>';
-                return;
-            }
+    if (!txs || txs.length === 0) {
+        container.innerHTML = `<div class="empty-text">No pending recharges.</div>`;
+        return;
+    }
 
-            container.innerHTML = txs.map(tx => `
-                <div class="req-item">
-                    <div class="req-info"><span>Amount:</span> <strong>₹${tx.amount}</strong></div>
-                    <div class="req-info"><span>Details:</span> <span>${tx.payment_details}</span></div>
-                    <div class="action-btns">
-                        <button class="btn-approve" onclick="approveRecharge('${tx.id}', '${tx.user_id}', ${tx.amount})">Approve</button>
-                        <button class="btn-reject" onclick="updateStatus('${tx.id}', 'failed')">Reject</button>
-                    </div>
-                </div>
-            `).join('');
+    container.innerHTML = txs.map(tx => `
+        <div class="req-item">
+            <div class="req-info"><span>Phone:</span> <strong>+91 ${tx.user_phone || 'User'}</strong></div>
+            <div class="req-info"><span>Amount:</span> <strong>₹${tx.amount}</strong></div>
+            <div class="req-info"><span>UTR Number:</span> <strong>${tx.utr || 'N/A'}</strong></div>
+            <div class="action-btns">
+                <button class="btn-approve" onclick="approveRecharge('${tx.id}', '${tx.user_id}', ${tx.amount})">Approve</button>
+                <button class="btn-reject" onclick="rejectRecharge('${tx.id}')">Reject</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function rejectRecharge(rechargeId) {
+    const { error } = await supabaseClient
+        .from('recharges')
+        .update({ status: 'rejected' })
+        .eq('id', rechargeId);
+
+    if (error) alert("Error rejecting recharge: " + error.message);
+    else {
+        alert("Recharge request rejected!");
+        loadPendingRecharges();
+    }
+}
+            
         }
 
         async function approveRecharge(txId, userId, amount) {
