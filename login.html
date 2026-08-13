@@ -104,38 +104,40 @@
             const pass = type === 'login' ? document.getElementById('loginPass').value : document.getElementById('signupPass').value;
             const email = `${phone}@earnflow.app`;
 
-if (type === 'signup') {
-    const refCode = document.getElementById('referralCodeInput').value.trim();
+        if (type === 'signup') {
+            const refCode = document.getElementById('referralCodeInput').value.trim();
 
-    if (!refCode) {
-        return alert('Referral code is required to register!');
-    }
-    
-                const { data, error } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: pass,
-                });
+            if (!refCode) {
+                return alert('Referral code required hai! Bina referral code ke account nahi ban sakta.');
+            }
 
-                if (error) return alert("Registration failed: " + error.message);
+            const { data, error } = await supabaseClient.auth.signUp({
+                email: email,
+                password: pass,
+            });
 
-                if (data.user) {
-                    const myRefCode = phone;
-                    
-                    const { error: profileErr } = await supabaseClient.from('profiles').upsert([{
-                        id: data.user.id,
-                        balance: 0,
-                        referral_code: myRefCode,
-                        referred_by: refCode
-                    }], { onConflict: 'id' });
+            if (error) return alert("Registration failed: " + error.message);
 
-                    if (profileErr) {
-                        console.error("Profile save error:", profileErr);
-                        alert("Profile Creation Error: " + profileErr.message);
-                    } else {
-                        alert("Registration Successful!");
-                        window.location.replace('index.html');
-                    }
+            if (data.user) {
+                // Mobile number hi user ka referral code banega
+                const myRefCode = phone;
+
+                const { error: profileErr } = await supabaseClient.from('profiles').upsert([{
+                    id: data.user.id,
+                    balance: 0,
+                    referral_code: myRefCode,
+                    referred_by: refCode
+                }], { onConflict: 'id' });
+
+                if (profileErr) {
+                    console.error('Profile save error:', profileErr);
+                    alert("Profile Creation Error: " + profileErr.message);
+                } else {
+                    alert("Registration Successful!");
+                    window.location.replace('index.html');
                 }
+            }
+            
             } else {
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: email,
