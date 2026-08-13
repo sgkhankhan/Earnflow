@@ -77,30 +77,27 @@
         let activeTab = 1;
 
         document.addEventListener("DOMContentLoaded", async function() {
-            try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                if (!session) return window.location.replace('login.html');
+    try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) return window.location.replace('login.html');
 
-                const myPhone = session.user.email ? session.user.email.split('@')[0] : '';
+        // Profile fetch karein
+        let { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .maybeSingle();
 
-                // Profile fetch
-                let { data: profile } = await supabaseClient
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .maybeSingle();
-
-                if (!profile) {
-                    profile = { id: session.user.id, referral_code: myPhone };
-                }
-
-                currentUserProfile = profile;
-                const myRef = profile.referral_code || myPhone;
-
-                await loadTeamData(myRef);
-            } catch (err) {
-                console.error("Team load error:", err);
-                document.getElementById('membersList').innerHTML = `<div class="no-data">Error loading team data</div>`;
+        if (profile) {
+            currentUserProfile = profile;
+            // Direct profile me se referral_code use karein
+            await loadTeamData(profile.referral_code);
+        } else {
+            document.getElementById('membersList').innerHTML = '<div class="no-data">Profile not found</div>';
+        }
+    } catch (err) {
+        console.error("Team load error:", err);
+        document.getElementById('membersList').innerHTML = '<div class="no-data">Error loading team data</div>';
             }
         });
 
