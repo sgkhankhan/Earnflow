@@ -64,10 +64,10 @@
             <button type="submit" class="submit-btn">Create Account</button>
         </form>
     </div>
-        <script>
+
+    <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
-        // Exact 100% original key with fixed small 'e'
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -122,13 +122,16 @@
                         email: email,
                         balance: 0,
                         referral_code: myRefCode,
-                        referred_by: refCode || null
-                    }]);
+                        referred_by: refCode ? refCode : null
+                    }], { onConflict: 'id' });
 
-                    if (profileErr) console.error("Profile save error:", profileErr);
-
-                    alert("Registration Successful!");
-                    window.location.replace('index.html');
+                    if (profileErr) {
+                        console.error("Profile save error:", profileErr);
+                        alert("Profile Creation Error: " + profileErr.message);
+                    } else {
+                        alert("Registration Successful!");
+                        window.location.replace('index.html');
+                    }
                 }
             } else {
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
@@ -142,4 +145,5 @@
         }
     </script>
 </body>
-</html>
+    </html>
+                                                                       
