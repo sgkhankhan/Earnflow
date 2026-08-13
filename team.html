@@ -81,6 +81,9 @@
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) return window.location.replace('login.html');
 
+        // Session me se direct mobile number nikalen
+        const userPhone = session.user.email ? session.user.email.split('@')[0] : '';
+
         // Profile fetch karein
         let { data: profile } = await supabaseClient
             .from('profiles')
@@ -88,18 +91,20 @@
             .eq('id', session.user.id)
             .maybeSingle();
 
-        if (profile) {
-            currentUserProfile = profile;
-            // Direct profile me se referral_code use karein
-            await loadTeamData(profile.referral_code);
+        // Agar profile na mile toh phone number ko hi referral_code maanein
+        const myRefCode = (profile && profile.referral_code) ? profile.referral_code : userPhone;
+
+        if (myRefCode) {
+            await loadTeamData(myRefCode);
         } else {
-            document.getElementById('membersList').innerHTML = '<div class="no-data">Profile not found</div>';
+            document.getElementById('membersList').innerHTML = '<div class="no-data">No Referral Code Found</div>';
         }
+
     } catch (err) {
         console.error("Team load error:", err);
         document.getElementById('membersList').innerHTML = '<div class="no-data">Error loading team data</div>';
-            }
-        });
+    }
+});
 
         async function loadTeamData(myRef) {
             if (!myRef) {
