@@ -119,7 +119,6 @@
                     
                     const { error: profileErr } = await supabaseClient.from('profiles').upsert([{
                         id: data.user.id,
-                        email: email,
                         balance: 0,
                         referral_code: myRefCode,
                         referred_by: refCode ? refCode : null
