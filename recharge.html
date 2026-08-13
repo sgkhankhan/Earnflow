@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earnflow Seeds - Recharge Wallet</title>
+    <title>Earnflow Seeds - Recharge</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -17,112 +16,124 @@
         .header h2 { font-size: 18px; font-weight: 800; color: #0f172a; }
         .back-btn { text-decoration: none; color: #0f172a; font-size: 18px; }
 
-        .payment-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 18px; padding: 20px; text-align: center; margin-bottom: 20px; }
-        .qr-box { width: 180px; height: 180px; margin: 0 auto 15px; background: #ffffff; border: 2px dashed #16a34a; border-radius: 16px; padding: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .qr-box img { width: 100%; height: 100%; object-fit: contain; border-radius: 10px; }
+        .qr-card { background: #f8fafc; border: 1px dashed #16a34a; border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 20px; }
+        .qr-img { width: 180px; height: 180px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #cbd5e1; }
+        
+        .upi-box { display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px solid #cbd5e1; padding: 10px 14px; border-radius: 12px; font-weight: 700; font-size: 13px; margin-top: 8px; }
+        .copy-btn { background: #dcfce7; color: #15803d; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 12px; }
 
-        .upi-box { display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 10px 14px; margin-top: 10px; }
-        .upi-text { font-size: 14px; font-weight: 700; color: #0f172a; word-break: break-all; }
-        .copy-btn { background: #dcfce7; color: #15803d; border: none; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; }
+        .upi-apps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .upi-app-btn { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px 6px; text-align: center; text-decoration: none; color: #0f172a; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .upi-app-btn i { font-size: 22px; }
+        .upi-app-btn.gpay i { color: #4285f4; }
+        .upi-app-btn.phonepe i { color: #5f259f; }
+        .upi-app-btn.paytm i { color: #00baf2; }
 
-        .form-group { margin-bottom: 16px; }
+        .form-group { margin-bottom: 15px; }
         .form-label { font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; display: block; }
         .input-box { width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 14px; font-weight: 600; outline: none; }
-        .input-box:focus { border-color: #16a34a; }
 
-        .submit-btn { width: 100%; background: linear-gradient(135deg, #22c55e, #15803d); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); }
-        .instructions { font-size: 12px; color: #64748b; margin-top: 15px; line-height: 1.5; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px; border-radius: 12px; }
+        .submit-btn { width: 100%; background: linear-gradient(135deg, #22c55e, #15803d); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="app-container">
         <div class="header">
             <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
-            <h2>Recharge Wallet</h2>
+            <h2>Account Recharge</h2>
             <div></div>
         </div>
 
-        <div class="payment-card">
-            <p style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 10px;">SCAN QR CODE TO PAY</p>
-            <div class="qr-box">
-                <img id="qrCodeImage" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=5326807QJ1@mairtel%26pn=Earnflow" alt="Payment QR Code">
-            </div>
-
-            <p style="font-size: 12px; font-weight: 700; color: #64748b;">OR PAY TO UPI ID</p>
+        <div class="qr-card">
+            <p style="font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 10px;">SCAN QR CODE TO PAY</p>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=5326807QJ1@mairtel%26pn=Earnflow" class="qr-img" alt="QR Code">
+            
             <div class="upi-box">
-                <span id="upiDisplay" class="upi-text">5326807QJ1@mairtel</span>
-                <button class="copy-btn" onclick="copyUpiId()"><i class="fa-regular fa-copy"></i> Copy</button>
+                <span id="upiIdText">5326807QJ1@mairtel</span>
+                <button class="copy-btn" onclick="copyUpi()"><i class="fa-regular fa-copy"></i> Copy</button>
             </div>
         </div>
 
-        <form id="rechargeForm" onsubmit="submitRecharge(event)">
+        <label class="form-label" style="text-align:center; display:block; margin-bottom:10px;">DIRECT PAY WITH UPI APPS</label>
+        <div class="upi-apps-grid">
+            <div class="upi-app-btn gpay" onclick="payViaUpi()">
+                <i class="fa-brands fa-google-pay"></i>
+                <span>GPay</span>
+            </div>
+            <div class="upi-app-btn phonepe" onclick="payViaUpi()">
+                <i class="fa-solid fa-mobile-screen-button"></i>
+                <span>PhonePe</span>
+            </div>
+            <div class="upi-app-btn paytm" onclick="payViaUpi()">
+                <i class="fa-solid fa-wallet"></i>
+                <span>Paytm / UPI</span>
+            </div>
+        </div>
+
+        <form onsubmit="submitRecharge(event)">
             <div class="form-group">
                 <label class="form-label">Amount (₹)</label>
-                <input type="number" id="rechargeAmount" class="input-box" placeholder="Enter amount (Min ₹100)" required min="100">
+                <input type="number" id="rechargeAmount" class="input-box" placeholder="Enter amount (Min ₹100)" min="100" required>
             </div>
+
             <div class="form-group">
                 <label class="form-label">UTR / Transaction ID / Reference No.</label>
-                <input type="text" id="utrInput" class="input-box" placeholder="12-digit UTR or Txn Ref No." required>
+                <input type="text" id="utrNumber" class="input-box" placeholder="12-digit UTR or Txn Ref No." pattern="[0-9]{12}" title="Enter 12-digit UTR number" required>
             </div>
-            <button type="submit" class="submit-btn">Submit Recharge Request</button>
-        </form>
 
-        <div class="instructions">
-            <i class="fa-solid fa-circle-info" style="color: #16a34a;"></i> <b>Instructions:</b><br>
-            1. QR code scan karke ya UPI ID par payment karein.<br>
-            2. Payment ke baad 12-digit UTR/Txn ID yahan daal kar submit karein.<br>
-            3. Admin verification ke baad balance aapke wallet me add ho jayega.
-        </div>
+            <button type="submit" class="submit-btn"><i class="fa-solid fa-paper-plane"></i> Submit Recharge Request</button>
+        </form>
     </div>
         <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        let currentUser = null;
+        const UPI_ID = "5326807QJ1@mairtel";
 
-        document.addEventListener("DOMContentLoaded", async function() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            
-            if (!session) {
-                window.location.replace('login.html');
+        function copyUpi() {
+            navigator.clipboard.writeText(UPI_ID);
+            alert("UPI ID copied!");
+        }
+
+        function payViaUpi() {
+            const amount = document.getElementById('rechargeAmount').value;
+            if (!amount || amount < 100) {
+                alert("Please enter amount first (Min ₹100)");
+                document.getElementById('rechargeAmount').focus();
                 return;
             }
-
-            currentUser = session.user;
-        });
-
-        function copyUpiId() {
-            const upiText = document.getElementById('upiDisplay').innerText;
-            navigator.clipboard.writeText(upiText);
-            alert("UPI ID copied: " + upiText);
+            const upiUrl = `upi://pay?pa=${UPI_ID}&pn=Earnflow%20Seeds&am=${amount}&cu=INR`;
+            window.location.href = upiUrl;
         }
 
         async function submitRecharge(e) {
             e.preventDefault();
+            
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) return window.location.replace('login.html');
 
             const amount = parseFloat(document.getElementById('rechargeAmount').value);
-            const utr = document.getElementById('utrInput').value.trim();
+            const utr = document.getElementById('utrNumber').value.trim();
 
             if (!amount || amount < 100) return alert("Minimum recharge amount is ₹100");
-            if (!utr) return alert("Please enter UTR / Transaction ID");
+            if (utr.length !== 12) return alert("Please enter valid 12-digit UTR number");
 
-            try {
-                const { error } = await supabaseClient.from('transactions').insert([{
-                    user_id: currentUser.id,
-                    type: 'recharge',
-                    amount: amount,
-                    status: 'pending',
-                    payment_details: `UTR: ${utr}`
-                }]);
+            const phone = session.user.email ? session.user.email.split('@')[0] : '';
 
-                if (error) throw error;
+            const { error } = await supabaseClient.from('recharges').insert([{
+                user_id: session.user.id,
+                user_phone: phone,
+                amount: amount,
+                utr: utr,
+                status: 'pending'
+            }]);
 
-                alert("Recharge request submitted successfully! Pending admin approval.");
+            if (error) {
+                alert("Error submitting recharge: " + error.message);
+            } else {
+                alert("Recharge request submitted successfully! Admin will verify and add balance soon.");
                 window.location.replace('index.html');
-
-            } catch (err) {
-                alert("Error submitting recharge: " + err.message);
             }
         }
     </script>
