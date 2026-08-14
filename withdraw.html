@@ -83,103 +83,110 @@
             <p>• Minimum withdrawal amount: ₹200.<br>• Payout requests are approved within 1 to 24 hours.<br>• Please verify bank details carefully before submitting.</p>
         </div>
     </div>
+<script>
+    const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
 
-    <script>
-        const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentUser = null;
+    let availableBalance = 0;
 
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        let currentUser = null;
-        let availableBalance = 0;
+    document.addEventListener("DOMContentLoaded", async function() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) return window.location.replace('login.html');
 
-        document.addEventListener("DOMContentLoaded", async function() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) return window.location.replace('login.html');
+        currentUser = session.user;
+        await loadUserDataAndBank();
+    });
 
-            currentUser = session.user;
-            await loadUserBalance();
-        });
+    async function loadUserDataAndBank() {
+        try {
+            // 1. Fetch available balance
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('balance')
+                .eq('id', currentUser.id)
+                .single();
 
-        async function loadUserBalance() {
-            try {
-                const { data: profile, error } = await supabaseClient
-                    .from('profiles')
-                    .select('balance')
-                    .eq('id', currentUser.id)
-                    .single();
-
-                if (profile) {
-                    availableBalance = parseFloat(profile.balance || 0);
-                    document.getElementById('currentBalanceDisplay').innerText = '₹' + availableBalance.toFixed(2);
-                }
-            } catch (err) {
-                console.error("Balance fetch error:", err);
+            if (profile) {
+                availableBalance = parseFloat(profile.balance || 0);
+                document.getElementById('currentBalanceDisplay').innerText = '₹' + availableBalance.toFixed(2);
             }
+
+            // 2. Fetch saved bank details & auto-fill form
+            const { data: card } = await supabaseClient
+                .from('bank_cards')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .maybeSingle();
+
+            if (card) {
+                if (card.holder_name) document.getElementById('holderName').value = card.holder_name;
+                if (card.account_number) document.getElementById('accountNumber').value = card.account_number;
+                if (card.ifsc_code) document.getElementById('ifscCode').value = card.ifsc_code;
+                if (card.upi_id) document.getElementById('upiId').value = card.upi_id;
+            }
+        } catch (err) {
+            console.error("Data load error:", err);
         }
+    }
 
-        async function handleWithdrawal(e) {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const amount = parseFloat(document.getElementById('withdrawAmount').value);
-            const holderName = document.getElementById('holderName').value.trim();
-            const accountNumber = document.getElementById('accountNumber').value.trim();
-            const ifscCode = document.getElementById('ifscCode').value.trim().toUpperCase();
-            const upiId = document.getElementById('upiId').value.trim();
+    async function handleWithdrawal(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        const amount = parseFloat(document.getElementById('withdrawAmount').value);
+        const holderName = document.getElementById('holderName').value.trim();
+        const accountNumber = document.getElementById('accountNumber').value.trim();
+        const ifscCode = document.getElementById('ifscCode').value.trim().toUpperCase();
+        const upiId = document.getElementById('upiId').value.trim();
 
-            if (amount < 200) return alert("Minimum withdrawal amount is ₹200");
-            if (amount > availableBalance) return alert(`Insufficient balance! Your current balance is ₹${availableBalance.toFixed(2)}`);
+        if (amount < 200) return alert("Minimum withdrawal amount is ₹200");
+        if (amount > availableBalance) return alert(`Insufficient balance! Available: ₹${availableBalance.toFixed(2)}`);
 
-            if (!confirm(`Are you sure you want to withdraw ₹${amount.toFixed(2)}?`)) return;
+        if (!confirm(`Are you sure you want to withdraw ₹${amount.toFixed(2)}?`)) return;
 
-            btn.disabled = true;
-            btn.innerText = "Processing...";
+        btn.disabled = true;
+        btn.innerText = "Processing...";
 
-            try {
-                const userPhone = currentUser.email ? currentUser.email.split('@')[0] : 'User';
+        try {
+            const userPhone = currentUser.email ? currentUser.email.split('@')[0] : 'User';
 
-                // 1. Deduct balance from profile
-                const newBal = availableBalance - amount;
-                const { error: balErr } = await supabaseClient
-                    .from('profiles')
-                    .update({ balance: newBal })
-                    .eq('id', currentUser.id);
+            // Deduct balance
+            const newBal = availableBalance - amount;
+            const { error: balErr } = await supabaseClient
+                .from('profiles')
+                .update({ balance: newBal })
+                .eq('id', currentUser.id);
 
-                if (balErr) throw balErr;
+            if (balErr) throw balErr;
 
-                // 2. Insert into withdrawals table
-                const { error: wErr } = await supabaseClient
-                    .from('withdrawals')
-                    .insert([{
-                        user_id: currentUser.id,
-                        user_phone: userPhone,
-                        amount: amount,
-                        holder_name: holderName,
-                        account_number: accountNumber,
-                        ifsc_code: ifscCode,
-                        upi_id: upiId,
-                        status: 'pending'
-                    }]);
-
-                if (wErr) throw wErr;
-
-                // 3. Log transaction
-                await supabaseClient.from('transactions').insert([{
+            // Submit withdrawal request
+            const { error: wErr } = await supabaseClient
+                .from('withdrawals')
+                .insert([{
                     user_id: currentUser.id,
-                    type: 'withdraw',
+                    user_phone: userPhone,
                     amount: amount,
-                    status: 'pending',
-                    payment_details: `Withdrawal to A/C: ${accountNumber.slice(-4)}`
+                    holder_name: holderName,
+                    account_number: accountNumber,
+                    ifsc_code: ifscCode,
+                    upi_id: upiId,
+                    status: 'pending'
                 }]);
 
-                alert(`Withdrawal request of ₹${amount.toFixed(2)} submitted successfully!`);
-                window.location.replace('profile.html');
+            if (wErr) throw wErr;
 
-            } catch (err) {
-                alert("Withdrawal failed: " + err.message);
-                btn.disabled = false;
-                btn.innerText = "Request Payout";
-            }
+            alert(`Withdrawal request of ₹${amount.toFixed(2)} submitted successfully!`);
+            window.location.replace('profile.html');
+
+        } catch (err) {
+            alert("Withdrawal failed: " + err.message);
+            btn.disabled = false;
+            btn.innerText = "Request Payout";
         }
-    </script>
+    }
+                        </script>
+    
+
 </body>
 </html>
