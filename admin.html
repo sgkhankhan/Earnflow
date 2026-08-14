@@ -421,7 +421,8 @@ async function rejectRecharge(rechargeId) {
                 const newTotalRec = parseFloat(userProfile.total_recharge || 0) + rechargeAmt;
 
                 await supabaseClient.from('profiles').update({ balance: newBal, total_recharge: newTotalRec }).eq('id', userId);
-                await supabaseClient.from('transactions').update({ status: 'success' }).eq('id', txId);
+                await supabaseClient.from('recharges').update({ status: 'approved' }).eq('id', txId);
+
 
                 if (userProfile && userProfile.referred_by) {
                     const { data: level1Parent } = await supabaseClient
