@@ -226,85 +226,72 @@
         }
 
 async function approveRecharge(txId, userId, amount) {
-    if (!confirm("Confirm recharge approval and release commission?")) return;
+    if (!confirm("Approve this recharge and release referral commission?")) return;
 
     try {
         const rechargeAmt = parseFloat(amount);
 
-        // 1. Child user ki profile fetch karein
-        const { data: userProfile, error: uErr } = await supabaseClient
+        // 1. Child user get karein
+        const { data: child, error: cErr } = await supabaseClient
             .from('profiles')
             .select('id, balance, total_recharge, referred_by, phone')
             .eq('id', userId)
             .single();
 
-        if (uErr || !userProfile) throw new Error("User profile not found!");
+        if (cErr || !child) throw new Error("User record not found");
 
-        // 2. Child user ka balance & total recharge update karein
-        const newBal = parseFloat(userProfile.balance || 0) + rechargeAmt;
-        const newTotalRec = parseFloat(userProfile.total_recharge || 0) + rechargeAmt;
+        // 2. Child balance badhayein
+        const newBal = parseFloat(child.balance || 0) + rechargeAmt;
+        const newTotRec = parseFloat(child.total_recharge || 0) + rechargeAmt;
 
-        const { error: updErr } = await supabaseClient
-            .from('profiles')
-            .update({ balance: newBal, total_recharge: newTotalRec })
-            .eq('id', userId);
+        await supabaseClient.from('profiles').update({
+            balance: newBal,
+            total_recharge: newTotRec
+        }).eq('id', userId);
 
-        if (updErr) throw updErr;
+        // 3. Mark recharge approved
+        await supabaseClient.from('recharges').update({ status: 'approved' }).eq('id', txId);
 
-        // 3. Recharge request status approved karein
-        await supabaseClient
-            .from('recharges')
-            .update({ status: 'approved' })
-            .eq('id', txId);
-
-        // 4. Referral Commission Distribution (Level 1: 27%)
-        const parentIdentifier = userProfile.referred_by;
-        if (parentIdentifier) {
-            // Parent dhoondein (referral_code ya phone number se match karein)
+        // 4. Inviter (Parent) ko 27% Commission Credit
+        if (child.referred_by) {
+            const parentCode = child.referred_by.trim();
             const { data: parent } = await supabaseClient
                 .from('profiles')
-                .select('id, balance, team_income, referral_code, phone')
-                .or(`referral_code.eq.${parentIdentifier},phone.eq.${parentIdentifier}`)
+                .select('id, balance, team_income, level1_income')
+                .or(`referral_code.eq.${parentCode},phone.eq.${parentCode}`)
                 .maybeSingle();
 
             if (parent) {
-                const commission = rechargeAmt * 0.27; // 27% Commission
-                const parentNewBal = parseFloat(parent.balance || 0) + commission;
-                const parentNewTeamInc = parseFloat(parent.team_income || 0) + commission;
+                const commAmt = rechargeAmt * 0.27; // 27% Level 1
+                const parentBal = parseFloat(parent.balance || 0) + commAmt;
+                const parentTeam = parseFloat(parent.team_income || 0) + commAmt;
+                const parentL1 = parseFloat(parent.level1_income || 0) + commAmt;
 
-                // Parent ka wallet update karein
-                await supabaseClient
-                    .from('profiles')
-                    .update({ 
-                        balance: parentNewBal, 
-                        team_income: parentNewTeamInc 
-                    })
-                    .eq('id', parent.id);
+                await supabaseClient.from('profiles').update({
+                    balance: parentBal,
+                    team_income: parentTeam,
+                    level1_income: parentL1
+                }).eq('id', parent.id);
 
-                // Parent ki passbook me transaction entry banayein
-                await supabaseClient
-                    .from('transactions')
-                    .insert([{
-                        user_id: parent.id,
-                        type: 'deposit',
-                        amount: commission,
-                        status: 'success',
-                        payment_details: `Referral Commission (Level 1) from ${userProfile.phone || 'User'}`
-                    }]);
-
-                console.log("Commission sent to parent ID:", parent.id);
+                await supabaseClient.from('transactions').insert([{
+                    user_id: parent.id,
+                    type: 'deposit',
+                    amount: commAmt,
+                    status: 'success',
+                    payment_details: `Referral Commission (27%) from ${child.phone}`
+                }]);
             }
         }
 
-        alert("🎉 Recharge Approved & 27% Referral Commission successfully sent!");
+        alert("✅ Recharge Approved & Commission Successfully Credited!");
         loadPendingRecharges();
         fetchDashboardMetrics();
 
     } catch (err) {
-        console.error("Approve error:", err);
-        alert("Action failed: " + err.message);
+        console.error(err);
+        alert("Approval Failed: " + err.message);
     }
-                        }
+}
             
             
         async function loadPendingWithdrawals() {
