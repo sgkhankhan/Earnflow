@@ -28,7 +28,6 @@
         .section-title { font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 
         .form-group { margin-bottom: 12px; }
-        .form-label { font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px; display: block; }
         .input-box { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13px; font-weight: 600; outline: none; }
 
         .btn-action { width: 100%; background: #16a34a; color: white; border: none; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; }
@@ -100,7 +99,8 @@
                 <div class="empty-text">Loading requests...</div>
             </div>
         </div>
-         <script>
+    </div>
+        <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
 
@@ -163,24 +163,37 @@
 
         async function loadPendingRecharges() {
             const container = document.getElementById('rechargeList');
-            const { data: txs, error } = await supabaseClient.from('recharges').select('*').eq('status', 'pending');
+            try {
+                const { data: txs, error } = await supabaseClient
+                    .from('recharges')
+                    .select('*')
+                    .eq('status', 'pending');
 
-            if (error || !txs || txs.length === 0) {
-                container.innerHTML = `<div class="empty-text">No pending recharges.</div>`;
-                return;
-            }
+                if (error) {
+                    console.error("Fetch Error:", error);
+                    container.innerHTML = `<div class="empty-text" style="color:#ef4444;">Error: ${error.message}</div>`;
+                    return;
+                }
 
-            container.innerHTML = txs.map(tx => `
-                <div class="req-item">
-                    <div class="req-info"><span>Phone:</span> <strong>+91 ${tx.user_phone || 'User'}</strong></div>
-                    <div class="req-info"><span>Amount:</span> <strong>₹${tx.amount}</strong></div>
-                    <div class="req-info"><span>UTR Number:</span> <strong>${tx.utr || 'N/A'}</strong></div>
-                    <div class="action-btns">
-                        <button class="btn-approve" onclick="approveRecharge('${tx.id}', '${tx.user_id}', ${tx.amount})">Approve</button>
-                        <button class="btn-reject" onclick="rejectRecharge('${tx.id}')">Reject</button>
+                if (!txs || txs.length === 0) {
+                    container.innerHTML = `<div class="empty-text">No pending recharges.</div>`;
+                    return;
+                }
+
+                container.innerHTML = txs.map(tx => `
+                    <div class="req-item">
+                        <div class="req-info"><span>Phone:</span> <strong>+91 ${tx.user_phone || 'User'}</strong></div>
+                        <div class="req-info"><span>Amount:</span> <strong>₹${tx.amount}</strong></div>
+                        <div class="req-info"><span>UTR Number:</span> <strong>${tx.utr || 'N/A'}</strong></div>
+                        <div class="action-btns">
+                            <button class="btn-approve" onclick="approveRecharge('${tx.id}', '${tx.user_id}', ${tx.amount})">Approve</button>
+                            <button class="btn-reject" onclick="rejectRecharge('${tx.id}')">Reject</button>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
+            } catch (err) {
+                container.innerHTML = `<div class="empty-text" style="color:#ef4444;">Error loading data</div>`;
+            }
         }
 
         async function approveRecharge(txId, userId, amount) {
@@ -194,10 +207,10 @@
                 // 1. Update user balance
                 await supabaseClient.from('profiles').update({ balance: newBal, total_recharge: newTotalRec }).eq('id', userId);
                 
-                // 2. Mark recharge approved
+                // 2. Mark recharge approved in 'recharges' table
                 await supabaseClient.from('recharges').update({ status: 'approved' }).eq('id', txId);
 
-                // 3. Level 1 Referral Bonus (27%)
+                // 3. Give Level 1 Referral Bonus (27%) if inviter exists
                 if (userProfile && userProfile.referred_by) {
                     const { data: level1Parent } = await supabaseClient.from('profiles').select('id, balance, team_income, level1_income').eq('referral_code', userProfile.referred_by).maybeSingle();
                     if (level1Parent) {
@@ -231,4 +244,3 @@
     </script>
 </body>
 </html>
-
