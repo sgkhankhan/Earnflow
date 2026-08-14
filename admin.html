@@ -103,7 +103,7 @@
         <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
-            
+
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let searchedUser = null;
 
@@ -114,54 +114,58 @@
         });
 
         async function fetchDashboardMetrics() {
-            const { count: usersCount } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true });
-            if (usersCount !== null) document.getElementById('totalUsersCount').innerText = usersCount;
+            try {
+                const { count: usersCount } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true });
+                if (usersCount !== null && usersCount !== undefined) {
+                    document.getElementById('totalUsersCount').innerText = usersCount;
+                }
 
-            const { data: recs } = await supabaseClient.from('recharges').select('amount').eq('status', 'approved');
-            if (recs) {
-                const totalRec = recs.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-                document.getElementById('totalRechargeSum').innerText = '₹' + totalRec.toFixed(2);
+                const { data: recs } = await supabaseClient.from('recharges').select('amount').eq('status', 'approved');
+                if (recs) {
+                    const totalRec = recs.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+                    document.getElementById('totalRechargeSum').innerText = '₹' + totalRec.toFixed(2);
+                }
+            } catch (e) {
+                console.error("Metrics error:", e);
             }
         }
 
         async function searchUser() {
-    const input = document.getElementById('searchPhone').value.trim();
-    if (!input) return alert("Please enter mobile number");
+            const input = document.getElementById('searchPhone').value.trim();
+            if (!input) return alert("Please enter mobile number");
 
-    const email = `${input}@earnflow.app`;
+            const email = `${input}@earnflow.app`;
 
-    // Phone, Email ya Referral Code teeno me se match dhundhega
-    const { data, error } = await supabaseClient
-        .from('profiles')
-        .select('*')
-        .or(`email.eq.${email},referral_code.eq.${input},id.eq.${input}`)
-        .maybeSingle();
+            const { data, error } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .or(`email.eq.${email},referral_code.eq.${input}`)
+                .maybeSingle();
 
-    if (error || !data) {
-        // Fallback: ILIKE search agar email me match ho
-        const { data: fallbackData } = await supabaseClient
-            .from('profiles')
-            .select('*')
-            .ilike('email', `%${input}%`)
-            .maybeSingle();
+            let targetUser = data;
 
-        if (!fallbackData) {
-            alert("User not found!");
-            document.getElementById('searchResult').style.display = 'none';
-            searchedUser = null;
-            return;
-        }
-        searchedUser = fallbackData;
-    } else {
-        searchedUser = data;
-    }
+            if (!targetUser) {
+                const { data: fallbackData } = await supabaseClient
+                    .from('profiles')
+                    .select('*')
+                    .ilike('email', `%${input}%`)
+                    .maybeSingle();
 
-    const displayPhone = searchedUser.email ? searchedUser.email.split('@')[0] : (searchedUser.referral_code || 'User');
-    document.getElementById('resUserPhone').innerText = '+91 ' + displayPhone;
-    document.getElementById('resUserBalance').innerText = parseFloat(searchedUser.balance || 0).toFixed(2);
-    document.getElementById('searchResult').style.display = 'block';
+                targetUser = fallbackData;
             }
-                                             
+
+            if (!targetUser) {
+                alert("User not found!");
+                document.getElementById('searchResult').style.display = 'none';
+                searchedUser = null;
+                return;
+            }
+
+            searchedUser = targetUser;
+            const displayPhone = searchedUser.email ? searchedUser.email.split('@')[0] : (searchedUser.referral_code || 'User');
+            document.getElementById('resUserPhone').innerText = '+91 ' + displayPhone;
+            document.getElementById('resUserBalance').innerText = parseFloat(searchedUser.balance || 0).toFixed(2);
+            document.getElementById('searchResult').style.display = 'block';
         }
 
         async function updateUserBalance(action) {
@@ -184,6 +188,8 @@
 
         async function loadPendingRecharges() {
             const container = document.getElementById('rechargeList');
+            if (!container) return;
+
             try {
                 const { data: txs, error } = await supabaseClient
                     .from('recharges')
@@ -218,62 +224,49 @@
         }
 
         async function approveRecharge(txId, userId, amount) {
-    try {
-        const rechargeAmt = parseFloat(amount);
+            try {
+                const rechargeAmt = parseFloat(amount);
 
-        // 1. User profile fetch karein
-        const { data: userProfile, error: profErr } = await supabaseClient
-            .from('profiles')
-            .select('id, balance, total_recharge, referred_by')
-            .eq('id', userId)
-            .single();
+                const { data: userProfile, error: profErr } = await supabaseClient
+                    .from('profiles')
+                    .select('id, balance, total_recharge, referred_by')
+                    .eq('id', userId)
+                    .single();
 
-        if (profErr) return alert("User profile error: " + profErr.message);
+                if (profErr) return alert("User profile error: " + profErr.message);
 
-        const currentBal = parseFloat(userProfile.balance || 0);
-        const currentTotal = parseFloat(userProfile.total_recharge || 0);
+                const newBal = parseFloat(userProfile.balance || 0) + rechargeAmt;
+                const newTotalRec = parseFloat(userProfile.total_recharge || 0) + rechargeAmt;
 
-        // 2. Balance aur total recharge update karein
-        const { error: updateErr } = await supabaseClient
-            .from('profiles')
-            .update({ 
-                balance: currentBal + rechargeAmt, 
-                total_recharge: currentTotal + rechargeAmt 
-            })
-            .eq('id', userId);
+                // 1. Credit balance to profile
+                await supabaseClient.from('profiles').update({ balance: newBal, total_recharge: newTotalRec }).eq('id', userId);
+                
+                // 2. Mark recharge as approved
+                await supabaseClient.from('recharges').update({ status: 'approved' }).eq('id', txId);
 
-        if (updateErr) return alert("Balance credit failed: " + updateErr.message);
+                // 3. Level 1 Referral Bonus (27%)
+                if (userProfile.referred_by) {
+                    const { data: level1Parent } = await supabaseClient
+                        .from('profiles')
+                        .select('id, balance, team_income, level1_income')
+                        .eq('referral_code', userProfile.referred_by)
+                        .maybeSingle();
 
-        // 3. Recharge request ko approved mark karein
-        await supabaseClient
-            .from('recharges')
-            .update({ status: 'approved' })
-            .eq('id', txId);
+                    if (level1Parent) {
+                        const l1Comm = rechargeAmt * 0.27;
+                        await supabaseClient.from('profiles').update({
+                            balance: parseFloat(level1Parent.balance || 0) + l1Comm,
+                            team_income: parseFloat(level1Parent.team_income || 0) + l1Comm,
+                            level1_income: parseFloat(level1Parent.level1_income || 0) + l1Comm
+                        }).eq('id', level1Parent.id);
+                    }
+                }
 
-        // 4. Referral Commission (27%) Parent user ko dein
-        if (userProfile.referred_by) {
-            const { data: parentUser } = await supabaseClient
-                .from('profiles')
-                .select('id, balance, team_income, level1_income')
-                .eq('referral_code', userProfile.referred_by)
-                .maybeSingle();
-
-            if (parentUser) {
-                const comm = rechargeAmt * 0.27;
-                await supabaseClient.from('profiles').update({
-                    balance: parseFloat(parentUser.balance || 0) + comm,
-                    team_income: parseFloat(parentUser.team_income || 0) + comm,
-                    level1_income: parseFloat(parentUser.level1_income || 0) + comm
-                }).eq('id', parentUser.id);
-            }
-        }
-
-        alert("Recharge approved & ₹" + rechargeAmt + " credited successfully!");
-        loadPendingRecharges();
-        fetchDashboardMetrics();
-    } catch (err) {
-        alert("Action error: " + err.message);
-            
+                alert("Recharge Approved & ₹" + rechargeAmt + " added successfully!");
+                loadPendingRecharges();
+                fetchDashboardMetrics();
+            } catch (err) {
+                alert("Action failed: " + err.message);
             }
         }
 
@@ -285,7 +278,9 @@
 
         async function loadPendingWithdrawals() {
             const container = document.getElementById('withdrawalList');
-            container.innerHTML = `<div class="empty-text">No pending withdrawals.</div>`;
+            if (container) {
+                container.innerHTML = `<div class="empty-text">No pending withdrawals.</div>`;
+            }
         }
     </script>
 </body>
