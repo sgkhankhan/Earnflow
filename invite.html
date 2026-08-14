@@ -73,9 +73,9 @@
         </div>
     </div>
 
-    <script>
+        <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let myReferralLink = "";
@@ -85,7 +85,7 @@
             if (!session) return window.location.replace('login.html');
 
             const phone = session.user.email ? session.user.email.split('@')[0] : '';
-            
+
             const { data: profile } = await supabaseClient
                 .from('profiles')
                 .select('referral_code')
@@ -93,27 +93,32 @@
                 .maybeSingle();
 
             const myCode = (profile && profile.referral_code) ? profile.referral_code : phone;
-            
-            document.getElementById('refCode').innerText = myCode;
 
-            const baseUrl = window.location.origin + window.location.pathname.replace('invite.html', 'login.html');
+            if (document.getElementById('refCode')) document.getElementById('refCode').innerText = myCode;
+
+            // Direct register page link with ref parameter
+            const baseUrl = window.location.origin + window.location.pathname.replace('invite.html', 'register.html');
             myReferralLink = `${baseUrl}?ref=${myCode}`;
-            
-            document.getElementById('refLink').innerText = myReferralLink;
+
+            if (document.getElementById('refLink')) document.getElementById('refLink').innerText = myReferralLink;
         });
 
         function copyLink() {
             if (!myReferralLink) return;
-            navigator.clipboard.writeText(myReferralLink);
-            alert("Referral link copied!");
+            navigator.clipboard.writeText(myReferralLink).then(() => {
+                alert("Referral link copied to clipboard:\n" + myReferralLink);
+            }).catch(() => {
+                alert("Copy: " + myReferralLink);
+            });
         }
 
         function shareWhatsapp() {
             if (!myReferralLink) return;
-            const text = encodeURIComponent(`Join Earnflow Seeds today and earn daily returns! Register using my link:\n${myReferralLink}`);
+            const text = encodeURIComponent(`Join Earnflow Seeds today and earn daily guaranteed returns! Register now: ${myReferralLink}`);
             window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
         }
     </script>
 </body>
-  </html>
-  
+</html>
+
+
