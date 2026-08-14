@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earnflow Seeds - Bank Card Details</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f1f7f2; display: flex; justify-content: center; min-height: 100vh; padding: 15px; }
+        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 20px; padding-bottom: 90px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0; }
+        .header h2 { font-size: 18px; font-weight: 800; color: #0f172a; }
+        .back-btn { text-decoration: none; color: #0f172a; font-size: 18px; }
+
+        .card-preview { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; padding: 20px; border-radius: 18px; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
+        .card-preview::after { content: ''; position: absolute; right: -20px; bottom: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.05); border-radius: 50%; }
+        .card-chip { font-size: 24px; color: #fbbf24; margin-bottom: 15px; }
+        .card-num { font-size: 16px; font-weight: 700; letter-spacing: 2px; margin-bottom: 15px; }
+        .card-footer { display: flex; justify-content: space-between; font-size: 11px; text-transform: uppercase; color: #94a3b8; }
+        .card-holder { font-size: 13px; font-weight: 700; color: white; margin-top: 2px; }
+
+        .form-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-bottom: 20px; }
+        .input-group { margin-bottom: 14px; }
+        .input-group label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; }
+        .input-box { width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; font-weight: 600; outline: none; background: #ffffff; }
+        .input-box:focus { border-color: #16a34a; }
+
+        .btn-save { width: 100%; background: #16a34a; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .btn-save:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <a href="profile.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+            <h2>My Bank Details</h2>
+            <div></div>
+        </div>
+
+        <div class="card-preview">
+            <div class="card-chip"><i class="fa-solid fa-microchip"></i></div>
+            <div class="card-num" id="prevCardNum">•••• •••• •••• ••••</div>
+            <div class="card-footer">
+                <div>
+                    <div>Card Holder</div>
+                    <div class="card-holder" id="prevHolder">YOUR NAME</div>
+                </div>
+                <div style="text-align: right;">
+                    <div>IFSC Code</div>
+                    <div class="card-holder" id="prevIfsc">BANK0000000</div>
+                </div>
+            </div>
+        </div>
+
+        <form id="bankForm" onsubmit="saveBankDetails(event)">
+            <div class="form-card">
+                <div class="input-group">
+                    <label>Account Holder Name</label>
+                    <input type="text" id="holderName" class="input-box" placeholder="Name as in bank" oninput="updatePreview()" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Bank Account Number</label>
+                    <input type="text" id="accountNumber" class="input-box" placeholder="Enter bank account number" oninput="updatePreview()" required>
+                </div>
+
+                <div class="input-group">
+                    <label>IFSC Code</label>
+                    <input type="text" id="ifscCode" class="input-box" placeholder="e.g. SBIN0001234" oninput="updatePreview()" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Bank Name (Optional)</label>
+                    <input type="text" id="bankName" class="input-box" placeholder="e.g. State Bank of India">
+                </div>
+
+                <div class="input-group">
+                    <label>UPI ID (Optional)</label>
+                    <input type="text" id="upiId" class="input-box" placeholder="e.g. yourphone@upi">
+                </div>
+            </div>
+
+            <button type="submit" id="saveBtn" class="btn-save">Save Bank Details</button>
+        </form>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let currentUser = null;
+
+        document.addEventListener("DOMContentLoaded", async function() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) return window.location.replace('login.html');
+
+            currentUser = session.user;
+            await loadSavedDetails();
+        });
+
+        function updatePreview() {
+            const num = document.getElementById('accountNumber').value.trim();
+            const name = document.getElementById('holderName').value.trim();
+            const ifsc = document.getElementById('ifscCode').value.trim().toUpperCase();
+
+            document.getElementById('prevCardNum').innerText = num ? num.replace(/\d{4}(?=.)/g, '$& ') : '•••• •••• •••• ••••';
+            document.getElementById('prevHolder').innerText = name ? name.toUpperCase() : 'YOUR NAME';
+            document.getElementById('prevIfsc').innerText = ifsc || 'BANK0000000';
+        }
+
+        async function loadSavedDetails() {
+            try {
+                const { data: card, error } = await supabaseClient
+                    .from('bank_cards')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .maybeSingle();
+
+                if (card) {
+                    document.getElementById('holderName').value = card.holder_name || '';
+                    document.getElementById('accountNumber').value = card.account_number || '';
+                    document.getElementById('ifscCode').value = card.ifsc_code || '';
+                    document.getElementById('bankName').value = card.bank_name || '';
+                    document.getElementById('upiId').value = card.upi_id || '';
+                    updatePreview();
+                }
+            } catch (err) {
+                console.error("Error loading bank card:", err);
+            }
+        }
+
+        async function saveBankDetails(e) {
+            e.preventDefault();
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = true;
+            btn.innerText = "Saving...";
+
+            const holderName = document.getElementById('holderName').value.trim();
+            const accountNumber = document.getElementById('accountNumber').value.trim();
+            const ifscCode = document.getElementById('ifscCode').value.trim().toUpperCase();
+            const bankName = document.getElementById('bankName').value.trim();
+            const upiId = document.getElementById('upiId').value.trim();
+
+            try {
+                const { error } = await supabaseClient
+                    .from('bank_cards')
+                    .upsert([{
+                        user_id: currentUser.id,
+                        holder_name: holderName,
+                        account_number: accountNumber,
+                        ifsc_code: ifscCode,
+                        bank_name: bankName,
+                        upi_id: upiId,
+                        updated_at: new Date()
+                    }], { onConflict: 'user_id' });
+
+                if (error) throw error;
+
+                alert("Bank details successfully saved!");
+                window.location.replace('profile.html');
+
+            } catch (err) {
+                alert("Failed to save: " + err.message);
+                btn.disabled = false;
+                btn.innerText = "Save Bank Details";
+            }
+        }
+    </script>
+</body>
+</html>
