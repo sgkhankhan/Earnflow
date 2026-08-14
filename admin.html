@@ -115,15 +115,24 @@
 
         async function fetchDashboardMetrics() {
             try {
+                // 1. Total users count
                 const { count: usersCount } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true });
                 if (usersCount !== null && usersCount !== undefined) {
                     document.getElementById('totalUsersCount').innerText = usersCount;
                 }
 
+                // 2. Total approved recharges sum
                 const { data: recs } = await supabaseClient.from('recharges').select('amount').eq('status', 'approved');
                 if (recs) {
                     const totalRec = recs.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
                     document.getElementById('totalRechargeSum').innerText = '₹' + totalRec.toFixed(2);
+                }
+
+                // 3. Total approved withdrawals sum
+                const { data: wList } = await supabaseClient.from('withdrawals').select('amount').eq('status', 'approved');
+                if (wList) {
+                    const totalW = wList.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+                    document.getElementById('totalWithdrawSum').innerText = '₹' + totalW.toFixed(2);
                 }
             } catch (e) {
                 console.error("Metrics error:", e);
@@ -131,45 +140,40 @@
         }
 
         async function searchUser() {
-    const input = document.getElementById('searchPhone').value.trim();
-    if (!input) return alert("Please enter mobile number");
+            const input = document.getElementById('searchPhone').value.trim();
+            if (!input) return alert("Please enter mobile number");
 
-    // Supabase se saare profiles laakar frontend par exact match check karega
-    const { data: allProfiles, error } = await supabaseClient
-        .from('profiles')
-        .select('*');
+            const { data: allProfiles, error } = await supabaseClient.from('profiles').select('*');
 
-    if (error || !allProfiles || allProfiles.length === 0) {
-        alert("Database connection error or no profiles found!");
-        return;
-    }
+            if (error || !allProfiles || allProfiles.length === 0) {
+                alert("Database connection error or no profiles found!");
+                return;
+            }
 
-    // Match by: email, phone, referral_code, ya ID
-    const found = allProfiles.find(p => {
-        const email = (p.email || '').toLowerCase();
-        const phone = (p.phone || '').toString();
-        const ref = (p.referral_code || '').toString();
-        const id = (p.id || '').toString();
-        const query = input.toLowerCase();
+            const found = allProfiles.find(p => {
+                const email = (p.email || '').toLowerCase();
+                const phone = (p.phone || '').toString();
+                const ref = (p.referral_code || '').toString();
+                const id = (p.id || '').toString();
+                const query = input.toLowerCase();
 
-        return email.includes(query) || phone.includes(query) || ref.includes(query) || id === query;
-    });
+                return email.includes(query) || phone.includes(query) || ref.includes(query) || id === query;
+            });
 
-    if (!found) {
-        alert("User " + input + " database me nahi mila! Kripya number dobara check karein.");
-        document.getElementById('searchResult').style.display = 'none';
-        searchedUser = null;
-        return;
-    }
+            if (!found) {
+                alert("User " + input + " database me nahi mila!");
+                document.getElementById('searchResult').style.display = 'none';
+                searchedUser = null;
+                return;
+            }
 
-    searchedUser = found;
-    const displayPhone = searchedUser.email ? searchedUser.email.split('@')[0] : (searchedUser.phone || searchedUser.referral_code || 'User');
-    
-    document.getElementById('resUserPhone').innerText = '+91 ' + displayPhone;
-    document.getElementById('resUserBalance').innerText = parseFloat(searchedUser.balance || 0).toFixed(2);
-    document.getElementById('searchResult').style.display = 'block';
+            searchedUser = found;
+            const displayPhone = searchedUser.email ? searchedUser.email.split('@')[0] : (searchedUser.phone || searchedUser.referral_code || 'User');
+            document.getElementById('resUserPhone').innerText = '+91 ' + displayPhone;
+            document.getElementById('resUserBalance').innerText = parseFloat(searchedUser.balance || 0).toFixed(2);
+            document.getElementById('searchResult').style.display = 'block';
         }
-            
+
         async function updateUserBalance(action) {
             if (!searchedUser) return alert("Search a user first!");
             const amt = parseFloat(document.getElementById('manualAmount').value);
@@ -193,13 +197,9 @@
             if (!container) return;
 
             try {
-                const { data: txs, error } = await supabaseClient
-                    .from('recharges')
-                    .select('*')
-                    .eq('status', 'pending');
+                const { data: txs, error } = await supabaseClient.from('recharges').select('*').eq('status', 'pending');
 
                 if (error) {
-                    console.error("Fetch Error:", error);
                     container.innerHTML = `<div class="empty-text" style="color:#ef4444;">Error: ${error.message}</div>`;
                     return;
                 }
@@ -240,13 +240,13 @@
                 const newBal = parseFloat(userProfile.balance || 0) + rechargeAmt;
                 const newTotalRec = parseFloat(userProfile.total_recharge || 0) + rechargeAmt;
 
-                // 1. Credit balance to profile
+                // 1. Credit balance
                 await supabaseClient.from('profiles').update({ balance: newBal, total_recharge: newTotalRec }).eq('id', userId);
                 
-                // 2. Mark recharge as approved
+                // 2. Mark approved
                 await supabaseClient.from('recharges').update({ status: 'approved' }).eq('id', txId);
 
-                // 3. Level 1 Referral Bonus (27%)
+                // 3. Referral Bonus (27%)
                 if (userProfile.referred_by) {
                     const { data: level1Parent } = await supabaseClient
                         .from('profiles')
@@ -280,8 +280,72 @@
 
         async function loadPendingWithdrawals() {
             const container = document.getElementById('withdrawalList');
-            if (container) {
-                container.innerHTML = `<div class="empty-text">No pending withdrawals.</div>`;
+            if (!container) return;
+
+            try {
+                const { data: wList, error } = await supabaseClient
+                    .from('withdrawals')
+                    .select('*')
+                    .eq('status', 'pending')
+                    .order('created_at', { ascending: false });
+
+                if (error || !wList || wList.length === 0) {
+                    container.innerHTML = `<div class="empty-text">No pending withdrawals.</div>`;
+                    return;
+                }
+
+                container.innerHTML = wList.map(w => `
+                    <div class="req-item" style="border-left: 4px solid #dc2626;">
+                        <div class="req-info"><span>Phone:</span> <strong>+91 ${w.user_phone || 'User'}</strong></div>
+                        <div class="req-info"><span>Amount:</span> <strong style="color:#dc2626;">₹${parseFloat(w.amount).toFixed(2)}</strong></div>
+                        <div class="req-info"><span>A/C Holder:</span> <strong>${w.holder_name || 'N/A'}</strong></div>
+                        <div class="req-info"><span>Account No:</span> <strong>${w.account_number || 'N/A'}</strong></div>
+                        <div class="req-info"><span>IFSC Code:</span> <strong>${w.ifsc_code || 'N/A'}</strong></div>
+                        ${w.upi_id ? `<div class="req-info"><span>UPI ID:</span> <strong>${w.upi_id}</strong></div>` : ''}
+                        
+                        <div class="action-btns">
+                            <button class="btn-approve" onclick="approveWithdrawal('${w.id}')">Approve</button>
+                            <button class="btn-reject" onclick="rejectWithdrawal('${w.id}', '${w.user_id}', ${w.amount})">Reject & Refund</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                container.innerHTML = `<div class="empty-text" style="color:#ef4444;">Error loading withdrawals</div>`;
+            }
+        }
+
+        async function approveWithdrawal(wId) {
+            if (!confirm("Confirm payment transfer and mark as approved?")) return;
+
+            try {
+                const { error } = await supabaseClient.from('withdrawals').update({ status: 'approved' }).eq('id', wId);
+                if (error) throw error;
+
+                alert("Withdrawal request marked as Approved!");
+                loadPendingWithdrawals();
+                fetchDashboardMetrics();
+            } catch (err) {
+                alert("Action failed: " + err.message);
+            }
+        }
+
+        async function rejectWithdrawal(wId, userId, amount) {
+            const refundAmt = parseFloat(amount);
+            if (!confirm(`Reject request and refund ₹${refundAmt} back to user wallet?`)) return;
+
+            try {
+                const { data: prof, error: pErr } = await supabaseClient.from('profiles').select('balance').eq('id', userId).single();
+                if (pErr) throw pErr;
+
+                const updatedBal = parseFloat(prof.balance || 0) + refundAmt;
+                await supabaseClient.from('profiles').update({ balance: updatedBal }).eq('id', userId);
+                await supabaseClient.from('withdrawals').update({ status: 'rejected' }).eq('id', wId);
+
+                alert(`Request rejected and ₹${refundAmt} refunded to user!`);
+                loadPendingWithdrawals();
+                fetchDashboardMetrics();
+            } catch (err) {
+                alert("Refund failed: " + err.message);
             }
         }
     </script>
