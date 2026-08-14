@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Information - Earnflow</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f8fafc; display: flex; justify-content: center; min-height: 100vh; padding: 15px; }
+        .app-container { width: 100%; max-width: 480px; background: #ffffff; min-height: 100vh; padding: 20px 16px 60px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+
+        /* Header */
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
+        .header h2 { font-size: 18px; font-weight: 800; color: #0f172a; }
+        .back-btn { text-decoration: none; color: #0f172a; width: 36px; height: 36px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+
+        /* User Avatar Card */
+        .user-card { background: linear-gradient(135deg, #16a34a, #15803d); border-radius: 16px; padding: 20px; color: white; display: flex; align-items: center; gap: 15px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(22, 163, 74, 0.2); }
+        .avatar-circle { width: 55px; height: 55px; background: rgba(255,255,255,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .user-info h3 { font-size: 16px; font-weight: 800; }
+        .user-info p { font-size: 12px; opacity: 0.9; margin-top: 2px; }
+
+        /* Info Group */
+        .section-title { font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; margin: 15px 0 8px 4px; }
+        .info-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; margin-bottom: 20px; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid #edf2f7; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-size: 13px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 10px; }
+        .info-label i { color: #16a34a; font-size: 15px; width: 18px; }
+        .info-val { font-size: 13px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+
+        /* Copy Button */
+        .btn-copy { background: #e2e8f0; border: none; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; color: #334155; }
+        .btn-copy:active { background: #cbd5e1; }
+
+        /* Password Form */
+        .form-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; }
+        .input-group { margin-bottom: 12px; }
+        .input-group label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 5px; }
+        .input-box { width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 13px; outline: none; background: #ffffff; }
+        .input-box:focus { border-color: #16a34a; }
+        .btn-update { width: 100%; background: #16a34a; color: white; border: none; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; }
+        
+        .logout-btn { width: 100%; background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 25px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <a href="profile.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+            <h2>Personal Information</h2>
+            <div style="width: 36px;"></div>
+        </div>
+
+        <!-- User Top Card -->
+        <div class="user-card">
+            <div class="avatar-circle"><i class="fa-solid fa-user-shield"></i></div>
+            <div class="user-info">
+                <h3 id="displayPhone">Loading...</h3>
+                <p id="displayUid">User ID: ---</p>
+            </div>
+        </div>
+
+        <!-- Basic Account Details -->
+        <div class="section-title">Account Details</div>
+        <div class="info-card">
+            <div class="info-row">
+                <div class="info-label"><i class="fa-solid fa-phone"></i> Registered Mobile</div>
+                <div class="info-val" id="rowPhone">---</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label"><i class="fa-solid fa-share-nodes"></i> My Referral Code</div>
+                <div class="info-val">
+                    <span id="rowRef">---</span>
+                    <button class="btn-copy" onclick="copyRef()"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+            </div>
+            <div class="info-row">
+                <div class="info-label"><i class="fa-solid fa-user-tag"></i> Invited By</div>
+                <div class="info-val" id="rowInviter">Direct / None</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label"><i class="fa-solid fa-shield-check"></i> Account Status</div>
+                <div class="info-val" style="color: #16a34a;"><i class="fa-solid fa-circle-check"></i> Active & Verified</div>
+            </div>
+        </div>
+
+        <!-- Security / Password Change -->
+        <div class="section-title">Security & Password</div>
+        <div class="form-box">
+            <form onsubmit="handlePasswordChange(event)">
+                <div class="input-group">
+                    <label>New Password</label>
+                    <input type="password" id="newPass" class="input-box" placeholder="Enter new password" required minlength="6">
+                </div>
+                <button type="submit" id="passBtn" class="btn-update">Update Password</button>
+            </form>
+        </div>
+
+        <!-- Logout Action -->
+        <button class="logout-btn" onclick="handleLogout()">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout Account
+        </button>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let userRefCode = "";
+
+        document.addEventListener("DOMContentLoaded", loadUserInfo);
+
+        async function loadUserInfo() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                window.location.replace('login.html');
+                return;
+            }
+
+            const userId = session.user.id;
+
+            const { data: prof, error } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single();
+
+            if (prof) {
+                const phone = prof.phone || session.user.email.split('@')[0];
+                userRefCode = prof.referral_code || phone;
+
+                document.getElementById('displayPhone').innerText = "+91 " + phone;
+                document.getElementById('displayUid').innerText = "ID: " + prof.id.substring(0, 8).toUpperCase();
+                document.getElementById('rowPhone').innerText = "+91 " + phone;
+                document.getElementById('rowRef').innerText = userRefCode;
+                document.getElementById('rowInviter').innerText = prof.referred_by ? "+91 " + prof.referred_by : "Direct / None";
+            }
+        }
+
+        function copyRef() {
+            if (!userRefCode) return;
+            navigator.clipboard.writeText(userRefCode);
+            alert("Referral code copied: " + userRefCode);
+        }
+
+        async function handlePasswordChange(e) {
+            e.preventDefault();
+            const newPassword = document.getElementById('newPass').value.trim();
+            const btn = document.getElementById('passBtn');
+
+            if (newPassword.length < 6) {
+                return alert("Password must be at least 6 characters!");
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Updating...";
+
+            const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+
+            if (error) {
+                alert("Password update failed: " + error.message);
+            } else {
+                alert("Password updated successfully!");
+                document.getElementById('newPass').value = "";
+            }
+
+            btn.disabled = false;
+            btn.innerText = "Update Password";
+        }
+
+        async function handleLogout() {
+            if (!confirm("Are you sure you want to logout?")) return;
+            await supabaseClient.auth.signOut();
+            window.location.replace('login.html');
+        }
+    </script>
+</body>
+</html>
