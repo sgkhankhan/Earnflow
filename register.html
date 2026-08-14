@@ -95,21 +95,34 @@
                 if (authErr) throw authErr;
 
                 const userId = authData.user ? authData.user.id : null;
+// register.html ke handleRegister function ke andar ye part replace karein:
+if (userId) {
+    // Sirf wahi columns use karein jo aapke database table 'profiles' mein hain
+    const { error: profErr } = await supabaseClient.from('profiles').insert([{
+        id: userId,
+        phone: phone, // Email hataya
+        referral_code: phone,
+        referred_by: refCode ? refCode : null,
+        balance: 50,
+        total_recharge: 0,
+        team_income: 0
+    }]);
 
-                if (userId) {
-                    // 2. Profile table entry (Referred by lock)
-                    const { error: profErr } = await supabaseClient.from('profiles').upsert([{
-                        id: userId,
-                        email: fakeEmail,
-                        phone: phone,
-                        referral_code: phone,
-                        referred_by: refCode ? refCode : null,
-                        balance: 50,
-                        total_recharge: 0,
-                        team_income: 0
-                    }]);
+    if (profErr) {
+        console.error("Profile insert error:", profErr);
+        throw profErr;
+    }
 
-                    if (profErr) throw profErr;
+    // Transaction log
+    await supabaseClient.from('transactions').insert([{
+        user_id: userId,
+        type: 'deposit',
+        amount: 50,
+        status: 'success',
+        payment_details: 'Welcome Signup Bonus'
+    }]);
+}
+                
 
                     // 3. Welcome bonus log
                     await supabaseClient.from('transactions').insert([{
