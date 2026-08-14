@@ -355,29 +355,42 @@
 
         async function loadPendingRecharges() {
     const container = document.getElementById('rechargeList');
-    // 'transactions' ki jagah 'recharges' table se fetch karein
-    const { data: txs, error } = await supabaseClient
-        .from('recharges')
-        .select('*')
-        .eq('status', 'pending');
+    if (!container) return;
 
-    if (!txs || txs.length === 0) {
-        container.innerHTML = `<div class="empty-text">No pending recharges.</div>`;
-        return;
-    }
+    try {
+        // 'recharges' table se pending requests fetch karein
+        const { data: txs, error } = await supabaseClient
+            .from('recharges')
+            .select('*')
+            .eq('status', 'pending');
 
-    container.innerHTML = txs.map(tx => `
-        <div class="req-item">
-            <div class="req-info"><span>Phone:</span> <strong>+91 ${tx.user_phone || 'User'}</strong></div>
-            <div class="req-info"><span>Amount:</span> <strong>₹${tx.amount}</strong></div>
-            <div class="req-info"><span>UTR Number:</span> <strong>${tx.utr || 'N/A'}</strong></div>
-            <div class="action-btns">
-                <button class="btn-approve" onclick="approveRecharge('${tx.id}', '${tx.user_id}', ${tx.amount})">Approve</button>
-                <button class="btn-reject" onclick="rejectRecharge('${tx.id}')">Reject</button>
+        if (error) {
+            console.error("Fetch Error:", error);
+            container.innerHTML = `<div class="empty-text">Error: ${error.message}</div>`;
+            return;
+        }
+
+        if (!txs || txs.length === 0) {
+            container.innerHTML = `<div class="empty-text">No pending recharges.</div>`;
+            return;
+        }
+
+        container.innerHTML = txs.map(tx => `
+            <div class="req-item" style="background:#f8fafc; padding:12px; border-radius:12px; margin-bottom:10px; border:1px solid #e2e8f0;">
+                <div class="req-info"><span>Phone:</span> <strong>+91 ${tx.user_phone || 'User'}</strong></div>
+                <div class="req-info"><span>Amount:</span> <strong>₹${tx.amount}</strong></div>
+                <div class="req-info"><span>UTR Number:</span> <strong>${tx.utr || 'N/A'}</strong></div>
+                <div class="action-btns" style="margin-top:8px; display:flex; gap:10px;">
+                    <button class="btn-approve" style="background:#16a34a; color:white; border:none; padding:6px 12px; border-radius:8px; font-weight:700; cursor:pointer;" onclick="approveRecharge('${tx.id}', '${tx.user_id}', ${tx.amount})">Approve</button>
+                    <button class="btn-reject" style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:8px; font-weight:700; cursor:pointer;" onclick="rejectRecharge('${tx.id}')">Reject</button>
+                </div>
             </div>
-        </div>
-    `).join('');
+        `).join('');
+    } catch (err) {
+        container.innerHTML = `<div class="empty-text">Error loading data</div>`;
+    }
 }
+
 
 async function rejectRecharge(rechargeId) {
     const { error } = await supabaseClient
