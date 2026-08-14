@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>My Active Plans - Earnflow Seeds</title>
+    <title>My Orders - Earnflow Seeds</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: #f0fdf4; display: flex; justify-content: center; min-height: 100vh; color: #0f172a; }
-        .app-container { width: 100%; max-width: 440px; background: #ffffff; min-height: 100vh; padding: 20px 16px 80px; position: relative; }
+        .app-container { width: 100%; max-width: 440px; background: #ffffff; min-height: 100vh; padding: 20px 16px 80px; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.06); }
 
-        /* Header */
+        /* Top Bar Header */
         .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
         .header h2 { font-size: 18px; font-weight: 800; color: #0f172a; }
         .back-btn { text-decoration: none; color: #0f172a; width: 36px; height: 36px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
 
-        /* Order Cards */
+        /* Orders Container */
         .order-list { display: flex; flex-direction: column; gap: 14px; }
         .order-card { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 18px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); position: relative; }
         
@@ -34,10 +34,18 @@
         .info-box h4.green { color: #16a34a; }
 
         /* Empty State */
-        .empty-box { text-align: center; padding: 60px 20px; }
+        .empty-box { text-align: center; padding: 70px 20px; }
         .empty-box i { font-size: 55px; color: #cbd5e1; margin-bottom: 15px; }
         .empty-box p { font-size: 14px; color: #64748b; font-weight: 600; line-height: 1.5; margin-bottom: 20px; }
         .btn-buy-now { display: inline-block; background: #16a34a; color: white; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 800; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25); }
+
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 440px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; align-items: center; padding: 8px 0; z-index: 100; box-shadow: 0 -4px 15px rgba(0,0,0,0.03); }
+        .nav-item { text-align: center; text-decoration: none; color: #64748b; font-size: 10px; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .nav-item i { font-size: 18px; }
+        .nav-item.active { color: #16a34a; }
+        .nav-wheel { margin-top: -24px; }
+        .wheel-btn { width: 52px; height: 52px; background: radial-gradient(circle, #22c55e, #15803d); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35); border: 3px solid #ffffff; }
     </style>
 </head>
 <body>
@@ -51,10 +59,35 @@
 
         <!-- Orders Container -->
         <div id="ordersContainer">
-            <div style="text-align: center; padding: 40px; color: #64748b; font-weight: 700;">
-                <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; color: #16a34a; margin-bottom: 10px;"></i>
+            <div style="text-align: center; padding: 50px 20px; color: #64748b; font-weight: 700;">
+                <i class="fa-solid fa-spinner fa-spin" style="font-size: 26px; color: #16a34a; margin-bottom: 12px;"></i>
                 <p>Loading your orders...</p>
             </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <a href="index.html" class="nav-item">
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </a>
+            <a href="treasure.html" class="nav-item">
+                <i class="fa-solid fa-box-archive"></i>
+                <span>Treasure</span>
+            </a>
+            <div class="nav-wheel">
+                <a href="wheel.html" class="wheel-btn">
+                    <i class="fa-solid fa-dharmachakra"></i>
+                </a>
+            </div>
+            <a href="team.html" class="nav-item">
+                <i class="fa-solid fa-users"></i>
+                <span>Team</span>
+            </a>
+            <a href="profile.html" class="nav-item active">
+                <i class="fa-solid fa-user"></i>
+                <span>Profile</span>
+            </a>
         </div>
     </div>
 
@@ -63,9 +96,9 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        document.addEventListener("DOMContentLoaded", loadOrders);
+        document.addEventListener("DOMContentLoaded", loadUserOrders);
 
-        async function loadOrders() {
+        async function loadUserOrders() {
             const container = document.getElementById('ordersContainer');
             
             try {
@@ -77,14 +110,14 @@
 
                 const userId = session.user.id;
 
-                // Fetch all orders for this user
-                const { data: orders, error } = await supabaseClient
+                // 1. Fetch from orders table
+                const { data: orders, error: orderErr } = await supabaseClient
                     .from('orders')
                     .select('*')
                     .eq('user_id', userId)
                     .order('id', { ascending: false });
 
-                if (error) throw error;
+                if (orderErr) throw orderErr;
 
                 if (!orders || orders.length === 0) {
                     container.innerHTML = `
@@ -103,7 +136,6 @@
                     const daysRemaining = order.days_remaining !== undefined && order.days_remaining !== null ? order.days_remaining : 150;
                     const status = order.status || 'active';
                     
-                    // Auto-detect plan name by daily income
                     let planName = "Maize Seed Plan";
                     if (daily === 375) planName = "Wheat Seed Plan";
                     else if (daily === 920) planName = "Paddy Hybrid Seed";
@@ -132,12 +164,12 @@
                                     <h4>${daysRemaining} Days</h4>
                                 </div>
                                 <div class="info-box">
-                                    <p>Total Revenue</p>
+                                    <p>Total Return</p>
                                     <h4>₹${totalEstimated}</h4>
                                 </div>
                                 <div class="info-box">
-                                    <p>Payout Time</p>
-                                    <h4>Daily 12:00 AM</h4>
+                                    <p>Daily Credit</p>
+                                    <h4>12:00 AM</h4>
                                 </div>
                             </div>
                         </div>
@@ -148,7 +180,7 @@
                 container.innerHTML = html;
 
             } catch (err) {
-                console.error("Order load error:", err);
+                console.error("Order loading error:", err);
                 container.innerHTML = `
                     <div class="empty-box">
                         <i class="fa-solid fa-triangle-exclamation" style="color: #ef4444;"></i>
