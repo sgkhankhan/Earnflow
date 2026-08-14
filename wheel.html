@@ -3,224 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earnflow - Lucky Wheel</title>
+    <title>Earnflow Seeds - Lucky Spin Wheel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: #f4f7f4; display: none; justify-content: center; min-height: 100vh; }
-        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 20px; padding-bottom: 90px; position: relative; text-align: center; }
-        
-        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-        .header h2 { font-size: 20px; color: #1b5e20; }
-        .back-btn { text-decoration: none; color: #1b5e20; font-size: 20px; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #0f172a; display: flex; justify-content: center; min-height: 100vh; padding: 15px; }
+        .app-container { width: 100%; max-width: 430px; background: #1e293b; min-height: 100vh; padding: 20px; padding-bottom: 90px; border-radius: 20px; color: white; text-align: center; }
 
-        .banner { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: white; padding: 15px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .banner h3 { font-size: 16px; margin-bottom: 4px; }
-        .banner p { font-size: 12px; opacity: 0.9; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #334155; }
+        .header h2 { font-size: 18px; font-weight: 800; color: #f8fafc; }
+        .back-btn { text-decoration: none; color: #f8fafc; font-size: 18px; }
 
-        /* Premium Wheel Container */
-        .wheel-box { position: relative; width: 290px; height: 290px; margin: 10px auto 30px; border-radius: 50%; padding: 8px; background: linear-gradient(145deg, #ffd700, #b8860b); box-shadow: 0 8px 20px rgba(0,0,0,0.25); }
-        .wheel-pointer { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 16px solid transparent; border-right: 16px solid transparent; border-top: 28px solid #dc2626; z-index: 20; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.4)); }
-        
-        .wheel { width: 100%; height: 100%; border-radius: 50%; position: relative; overflow: hidden; transition: transform 4s cubic-bezier(0.15, 0.9, 0.15, 1); background: conic-gradient(#16a34a 0deg 60deg, #f59e0b 60deg 120deg, #2563eb 120deg 180deg, #dc2626 180deg 240deg, #8b5cf6 240deg 300deg, #10b981 300deg 360deg); border: 4px solid #ffffff; }
+        .wheel-box { position: relative; width: 300px; height: 300px; margin: 20px auto; display: flex; align-items: center; justify-content: center; }
+        #wheelCanvas { width: 100%; height: 100%; border-radius: 50%; border: 6px solid #22c55e; box-shadow: 0 0 20px rgba(34, 197, 94, 0.4); }
+        .pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid #ef4444; z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
 
-        .wheel-center-cap { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: radial-gradient(circle, #ffe259, #ffa751); border-radius: 50%; z-index: 15; border: 3px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: #78350f; font-size: 18px; }
+        .spin-count-box { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; margin: 15px 0; font-size: 14px; }
+        .spin-count-box strong { color: #22c55e; font-size: 16px; }
 
-        .slice-label { position: absolute; top: 0; left: 50%; width: 60px; height: 50%; margin-left: -30px; transform-origin: 50% 100%; text-align: center; padding-top: 15px; font-weight: 800; font-size: 16px; color: #ffffff; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
-        .l1 { transform: rotate(30deg); }
-        .l2 { transform: rotate(90deg); }
-        .l3 { transform: rotate(150deg); }
-        .l4 { transform: rotate(210deg); }
-        .l5 { transform: rotate(270deg); }
-        .l6 { transform: rotate(330deg); }
+        .btn-spin { width: 100%; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3); }
+        .btn-spin:disabled { background: #64748b; cursor: not-allowed; opacity: 0.6; }
+        .btn-spin:active { transform: scale(0.98); }
 
-        .spin-btn { width: 100%; max-width: 290px; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; border: none; padding: 15px; border-radius: 25px; font-size: 17px; font-weight: bold; cursor: pointer; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(46, 125, 50, 0.4); }
-        .spin-btn:disabled { background: #9ca3af; cursor: not-allowed; box-shadow: none; }
-
-        .timer-msg { font-size: 13px; color: #dc2626; font-weight: bold; }
-
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e0e0e0; left: 50%; transform: translateX(-50%); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #888; cursor: pointer; text-decoration: none; }
-        .nav-item.active { color: #2e7d32; font-weight: bold; }
-        .wheel-btn { position: relative; top: -20px; }
-        .wheel-icon { width: 50px; height: 50px; background: #16a34a; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 22px; border: 4px solid #ffffff; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .rewards-info { background: rgba(255,255,255,0.03); border: 1px solid #334155; border-radius: 14px; padding: 14px; margin-top: 20px; text-align: left; font-size: 12px; color: #94a3b8; }
+        .rewards-info h4 { color: #f8fafc; font-size: 13px; margin-bottom: 6px; }
     </style>
 </head>
 <body>
-
     <div class="app-container">
         <div class="header">
             <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
-            <h2>Daily Lucky Wheel</h2>
+            <h2>Lucky Spin Wheel</h2>
             <div></div>
         </div>
 
-        <div class="banner">
-            <h3>Spin & Win Daily Rewards!</h3>
-            <p>Get up to ₹50 bonus added directly to your wallet every 24 hours.</p>
-        </div>
+        <p style="font-size: 13px; color: #94a3b8;">Spin the wheel daily to win exciting cash prizes!</p>
 
-        <!-- Lucky Wheel -->
         <div class="wheel-box">
-            <div class="wheel-pointer"></div>
-            <div class="wheel-center-cap"><i class="fa-solid fa-crown"></i></div>
-            <div class="wheel" id="wheelDisk">
-                <div class="slice-label l1">₹5</div>
-                <div class="slice-label l2">₹10</div>
-                <div class="slice-label l3">₹15</div>
-                <div class="slice-label l4">₹20</div>
-                <div class="slice-label l5">₹25</div>
-                <div class="slice-label l6">₹50</div>
-            </div>
+            <div class="pointer"></div>
+            <canvas id="wheelCanvas" width="300" height="300"></canvas>
         </div>
 
-        <button id="spinButton" class="spin-btn" onclick="spinWheel()">Spin Now</button>
-        <p id="timerMessage" class="timer-msg"></p>
+        <div class="spin-count-box">
+            Available Spins: <strong id="spinsLeftDisplay">0</strong>
+        </div>
 
-        <!-- Bottom Navigation -->
-        <div class="bottom-nav">
-            <a href="index.html" class="nav-item"><i class="fa-solid fa-house"></i><span>Home</span></a>
-            <a href="recharge.html" class="nav-item"><i class="fa-solid fa-box-archive"></i><span>Treasure</span></a>
-            <a href="wheel.html" class="nav-item active wheel-btn"><div class="wheel-icon"><i class="fa-solid fa-dharmachakra"></i></div><span>Wheel</span></a>
-            <a href="team.html" class="nav-item"><i class="fa-solid fa-users"></i><span>Team</span></a>
-            <a href="profile.html" class="nav-item"><i class="fa-solid fa-user"></i><span>Profile</span></a>
+        <button id="spinBtn" class="btn-spin" onclick="startSpin()">SPIN NOW</button>
+
+        <div class="rewards-info">
+            <h4><i class="fa-solid fa-gift"></i> Rules:</h4>
+            • 1 Free Spin everyday for active users.<br>
+            • Winnings are directly added to your Available Balance.<br>
+            • More spins unlocked with invites & investments.
         </div>
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
-        let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
-        const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
+        const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null;
+        let spinsLeft = 0;
+        let isSpinning = false;
 
-        // Web Audio API Audio Synthesizer Logic
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const prizes = [
+            { text: "₹5", value: 5, color: "#10b981" },
+            { text: "₹10", value: 10, color: "#3b82f6" },
+            { text: "₹50", value: 50, color: "#8b5cf6" },
+            { text: "₹1", value: 1, color: "#f59e0b" },
+            { text: "₹20", value: 20, color: "#ec4899" },
+            { text: "₹100", value: 100, color: "#14b8a6" }
+        ];
 
-        function playTickSound() {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.05);
-        }
+        let currentAngle = 0;
 
-        function playWinSound() {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const notes = [523.25, 659.25, 783.99, 1046.50];
-            notes.forEach((freq, idx) => {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.value = freq;
-                gain.gain.setValueAtTime(0.15, audioCtx.currentTime + (idx * 0.1));
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (idx * 0.1) + 0.3);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start(audioCtx.currentTime + (idx * 0.1));
-                osc.stop(audioCtx.currentTime + (idx * 0.1) + 0.3);
+        document.addEventListener("DOMContentLoaded", async function() {
+            drawWheel();
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) return window.location.replace('login.html');
+
+            currentUser = session.user;
+            await loadUserSpins();
+        });
+
+        function drawWheel() {
+            const canvas = document.getElementById("wheelCanvas");
+            const ctx = canvas.getContext("2d");
+            const numSlices = prizes.length;
+            const sliceAngle = (2 * Math.PI) / numSlices;
+            const radius = canvas.width / 2;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            prizes.forEach((prize, i) => {
+                const angle = i * sliceAngle;
+                ctx.beginPath();
+                ctx.fillStyle = prize.color;
+                ctx.moveTo(radius, radius);
+                ctx.arc(radius, radius, radius, angle, angle + sliceAngle);
+                ctx.lineTo(radius, radius);
+                ctx.fill();
+                ctx.stroke();
+
+                // Draw Text
+                ctx.save();
+                ctx.translate(radius, radius);
+                ctx.rotate(angle + sliceAngle / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 15px Plus Jakarta Sans, sans-serif";
+                ctx.fillText(prize.text, radius - 20, 5);
+                ctx.restore();
             });
         }
 
-        document.addEventListener("DOMContentLoaded", async function() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
+        async function loadUserSpins() {
+            try {
+                const { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('spins_left, last_spin_date')
+                    .eq('id', currentUser.id)
+                    .single();
 
-            if (!session) {
-                window.location.replace('login.html');
-            } else {
-                currentUser = session.user;
-                document.body.style.display = 'flex';
-                checkSpinEligibility();
-            }
-        });
+                const today = new Date().toISOString().split('T')[0];
 
-        async function checkSpinEligibility() {
-            const { data: profile } = await supabaseClient
-                .from('profiles')
-                .select('last_spin')
-                .eq('id', currentUser.id)
-                .single();
-
-            if (profile && profile.last_spin) {
-                const lastSpinTime = new Date(profile.last_spin);
-                const now = new Date();
-                const hoursPassed = (now - lastSpinTime) / (1000 * 60 * 60);
-
-                if (hoursPassed < 24) {
-                    disableSpin(24 - hoursPassed);
+                if (profile) {
+                    if (profile.last_spin_date !== today && (profile.spins_left || 0) <= 0) {
+                        // Reset 1 daily free spin
+                        await supabaseClient.from('profiles').update({ spins_left: 1, last_spin_date: today }).eq('id', currentUser.id);
+                        spinsLeft = 1;
+                    } else {
+                        spinsLeft = profile.spins_left !== undefined ? profile.spins_left : 1;
+                    }
+                } else {
+                    spinsLeft = 1;
                 }
+
+                document.getElementById('spinsLeftDisplay').innerText = spinsLeft;
+                document.getElementById('spinBtn').disabled = spinsLeft <= 0;
+            } catch (err) {
+                console.error("Spins fetch error:", err);
             }
         }
 
-        function disableSpin(remainingHours) {
-            const btn = document.getElementById('spinButton');
-            const msg = document.getElementById('timerMessage');
-            btn.disabled = true;
-            btn.innerText = "Already Spun Today";
-            msg.innerText = `Next spin available in approx ${Math.ceil(remainingHours)} hours.`;
-        }
+        async function startSpin() {
+            if (isSpinning || spinsLeft <= 0) return;
 
-        async function spinWheel() {
-            const btn = document.getElementById('spinButton');
-            btn.disabled = true;
+            isSpinning = true;
+            document.getElementById('spinBtn').disabled = true;
 
-            const sliceRewards = [
-                { amount: 5, angle: 330 },
-                { amount: 10, angle: 270 },
-                { amount: 15, angle: 210 },
-                { amount: 20, angle: 150 },
-                { amount: 25, angle: 90 },
-                { amount: 50, angle: 30 }
-            ];
+            // Select random winning index
+            const winningIndex = Math.floor(Math.random() * prizes.length);
+            const wonPrize = prizes[winningIndex];
 
-            const winningIndex = Math.floor(Math.random() * sliceRewards.length);
-            const winningOutcome = sliceRewards[winningIndex];
+            const sliceAngle = 360 / prizes.length;
+            const stopAngle = 360 - (winningIndex * sliceAngle + sliceAngle / 2) - 90;
+            const totalRotation = 360 * 5 + stopAngle; // 5 full rounds + target slice
 
-            const wheelDisk = document.getElementById('wheelDisk');
-            const totalRotation = (360 * 5) + winningOutcome.angle;
-            wheelDisk.style.transform = `rotate(${totalRotation}deg)`;
-
-            // Continuous Ticking sound interval while spinning
-            let tickInterval = setInterval(playTickSound, 120);
-            setTimeout(() => clearInterval(tickInterval), 3200);
+            const canvas = document.getElementById("wheelCanvas");
+            canvas.style.transition = "transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)";
+            canvas.style.transform = `rotate(${totalRotation}deg)`;
 
             setTimeout(async () => {
-                playWinSound(); // Play Victory Jingle
                 try {
-                    const { data: profile } = await supabaseClient.from('profiles').select('balance').eq('id', currentUser.id).single();
-                    const newBalance = parseFloat(profile.balance || 0) + winningOutcome.amount;
+                    // Credit reward to user balance
+                    const { data: prof } = await supabaseClient.from('profiles').select('balance').eq('id', currentUser.id).single();
+                    const newBal = parseFloat(prof.balance || 0) + wonPrize.value;
+                    const newSpins = spinsLeft - 1;
 
                     await supabaseClient.from('profiles').update({
-                        balance: newBalance,
-                        last_spin: new Date().toISOString()
+                        balance: newBal,
+                        spins_left: newSpins,
+                        last_spin_date: new Date().toISOString().split('T')[0]
                     }).eq('id', currentUser.id);
 
+                    // Add transaction log
                     await supabaseClient.from('transactions').insert([{
                         user_id: currentUser.id,
-                        type: 'recharge',
-                        amount: winningOutcome.amount,
+                        type: 'deposit',
+                        amount: wonPrize.value,
                         status: 'success',
-                        payment_details: 'Daily Lucky Wheel Bonus'
+                        payment_details: `Lucky Spin Reward: ${wonPrize.text}`
                     }]);
 
-                    alert(`🎉 Congratulations! You won ₹${winningOutcome.amount} bonus! Added to your wallet.`);
-                    disableSpin(24);
+                    alert(`🎉 Congratulations! You won ${wonPrize.text}!\nAmount has been credited to your wallet.`);
+                    spinsLeft = newSpins;
+                    document.getElementById('spinsLeftDisplay').innerText = spinsLeft;
 
-                } catch (err) {
-                    alert("Error saving reward: " + err.message);
+                } catch (e) {
+                    alert("Reward credit error: " + e.message);
+                } finally {
+                    isSpinning = false;
+                    canvas.style.transition = "none";
+                    canvas.style.transform = `rotate(${stopAngle}deg)`;
+                    document.getElementById('spinBtn').disabled = spinsLeft <= 0;
                 }
-            }, 4000);
+            }, 4200);
         }
     </script>
 </body>
