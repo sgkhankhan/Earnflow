@@ -99,14 +99,15 @@
         }
 
         function payViaUpi() {
-            const amount = document.getElementById('rechargeAmount').value;
-            if (!amount || amount < 100) {
-                alert("Please enter amount first (Min ₹100)");
-                document.getElementById('rechargeAmount').focus();
-                return;
-            }
-            const upiUrl = `upi://pay?pa=${UPI_ID}&pn=Earnflow%20Seeds&am=${amount}&cu=INR`;
-            window.location.href = upiUrl;
+    const amount = document.getElementById('rechargeAmount').value;
+    if (!amount || amount < 100) {
+        alert("Pehle amount daalein (Min ₹100)");
+        document.getElementById('rechargeAmount').focus();
+        return;
+    }
+    // Clean direct UPI format
+    const upiUrl = `upi://pay?pa=5326807QJ1@mairtel&pn=Earnflow&am=${amount}&cu=INR`;
+    window.location.href = upiUrl;
         }
 
         async function submitRecharge(e) {
