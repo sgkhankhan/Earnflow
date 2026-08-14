@@ -57,14 +57,15 @@
             Already have an account? <a href="login.html">Login</a>
         </div>
     </div>
-
     <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Welcome bonus amount yahan set karein (e.g. ₹50)
+        const WELCOME_BONUS = 50;
 
-        // Auto-fill Referral Code from URL
         document.addEventListener("DOMContentLoaded", function() {
             const urlParams = new URLSearchParams(window.location.search);
             const refFromUrl = urlParams.get('ref');
@@ -108,23 +109,32 @@
                 const userId = authData.user ? authData.user.id : null;
 
                 if (userId) {
-                    // 2. Insert into Profiles table
+                    // 2. Insert into Profiles table with Welcome Bonus
                     const { error: profErr } = await supabaseClient.from('profiles').upsert([{
                         id: userId,
                         email: fakeEmail,
                         phone: phone,
                         referral_code: phone,
                         referred_by: refCode || null,
-                        balance: 0,
+                        balance: WELCOME_BONUS,
                         total_recharge: 0,
                         team_income: 0,
                         spins_left: 1
                     }]);
 
                     if (profErr) console.error("Profile insert error:", profErr);
+
+                    // 3. Log Welcome Bonus in transactions table
+                    await supabaseClient.from('transactions').insert([{
+                        user_id: userId,
+                        type: 'deposit',
+                        amount: WELCOME_BONUS,
+                        status: 'success',
+                        payment_details: 'Welcome Signup Bonus'
+                    }]);
                 }
 
-                alert("🎉 Account created successfully! Please login.");
+                alert(`🎉 Account created successfully!\n₹${WELCOME_BONUS} Welcome Bonus has been added to your wallet.`);
                 window.location.replace('login.html');
 
             } catch (err) {
@@ -133,6 +143,9 @@
                 btn.innerText = "Register Now";
             }
         }
-    </script>
-</body>
+                    </script>
+    </body>
 </html>
+    
+
+                
