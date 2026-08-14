@@ -273,6 +273,12 @@
                 window.location.href = 'recharge.html';
                 return;
             }
+// Plan khareedte waqt multi-level commission distribute karne ke liye:
+await supabaseClient.rpc('distribute_plan_commission', {
+    buyer_user_id: user.id,
+    plan_amount: planPrice,
+    plan_title: planName
+});
 
             if (confirm(`Do you want to invest ₹${planPrice} in ${productName}?`)) {
                 try {
