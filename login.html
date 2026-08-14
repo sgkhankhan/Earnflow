@@ -100,13 +100,16 @@
         async function handleAuth(e, type) {
     e.preventDefault();
 
-    const phone = type === 'login' 
-        ? document.getElementById('loginPhone').value.trim() 
-        : document.getElementById('signupPhone').value.trim();
+    let phone = '';
+    let pass = '';
 
-    const pass = type === 'login' 
-        ? document.getElementById('loginPass').value.trim() 
-        : document.getElementById('signupPass').value.trim();
+    if (type === 'login') {
+        phone = document.getElementById('loginPhone').value.trim();
+        pass = document.getElementById('loginPass').value.trim();
+    } else {
+        phone = document.getElementById('signupPhone').value.trim();
+        pass = document.getElementById('signupPass').value.trim();
+    }
 
     const email = `${phone}@earnflow.app`;
 
@@ -114,7 +117,7 @@
         const refCode = document.getElementById('referralCodeInput').value.trim();
 
         if (!refCode) {
-            return alert('Referral code is required to register!');
+            return alert('Referral code required hai!');
         }
 
         const { data, error } = await supabaseClient.auth.signUp({
@@ -125,7 +128,7 @@
         if (error) return alert("Registration failed: " + error.message);
 
         if (data.user) {
-            const myRefCode = phone; // Ab sahi phone number standard format me aayega
+            const myRefCode = phone;
 
             const { error: profileErr } = await supabaseClient.from('profiles').upsert([{
                 id: data.user.id,
@@ -142,18 +145,17 @@
                 window.location.replace('index.html');
             }
         }
-    }
-            }
-        
-            
-            } else {
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: pass,
-                });
 
-                if (error) return alert("Login failed: " + error.message);
-                if (data.session) window.location.replace('index.html');
+    } else {
+        // Login Logic
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: pass,
+        });
+
+        if (error) return alert("Login failed: " + error.message);
+        if (data.session) window.location.replace('index.html');
+                   
             }
         }
     </script>
