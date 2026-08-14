@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earnflow Seeds - Withdrawal History</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f1f7f2; display: flex; justify-content: center; min-height: 100vh; padding: 15px; }
+        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 20px; padding-bottom: 90px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0; }
+        .header h2 { font-size: 18px; font-weight: 800; color: #0f172a; }
+        .back-btn { text-decoration: none; color: #0f172a; font-size: 18px; }
+
+        .history-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed #e2e8f0; }
+        .amount-text { font-size: 18px; font-weight: 800; color: #0f172a; }
+        
+        .badge { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; }
+        .badge.pending { background: #fef9c3; color: #854d0e; }
+        .badge.approved { background: #dcfce7; color: #15803d; }
+        .badge.rejected { background: #fee2e2; color: #b91c1c; }
+
+        .detail-row { display: flex; justify-content: space-between; font-size: 12px; color: #64748b; margin-bottom: 6px; }
+        .detail-row strong { color: #334155; }
+
+        .empty-box { text-align: center; padding: 50px 20px; color: #94a3b8; }
+        .empty-box i { font-size: 44px; color: #cbd5e1; margin-bottom: 12px; }
+        .empty-box p { font-size: 14px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <a href="profile.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+            <h2>Withdrawal Records</h2>
+            <div></div>
+        </div>
+
+        <div id="historyList">
+            <div class="empty-box">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <p>Loading records...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document.addEventListener("DOMContentLoaded", async function() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) return window.location.replace('login.html');
+
+            loadWithdrawalHistory(session.user.id);
+        });
+
+        async function loadWithdrawalHistory(userId) {
+            const container = document.getElementById('historyList');
+
+            try {
+                const { data: list, error } = await supabaseClient
+                    .from('withdrawals')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .order('created_at', { ascending: false });
+
+                if (error || !list || list.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-box">
+                            <i class="fa-solid fa-receipt"></i>
+                            <p>Koi withdrawal record nahi mila.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = list.map(item => {
+                    const status = (item.status || 'pending').toLowerCase();
+                    const dateStr = new Date(item.created_at).toLocaleString('en-IN', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    return `
+                        <div class="history-card">
+                            <div class="card-top">
+                                <span class="amount-text">₹${parseFloat(item.amount).toFixed(2)}</span>
+                                <span class="badge ${status}">${status}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>A/C Number:</span>
+                                <strong>${item.account_number || 'N/A'}</strong>
+                            </div>
+                            <div class="detail-row">
+                                <span>IFSC Code:</span>
+                                <strong>${item.ifsc_code || 'N/A'}</strong>
+                            </div>
+                            <div class="detail-row">
+                                <span>Date & Time:</span>
+                                <strong>${dateStr}</strong>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                container.innerHTML = `<div class="empty-box"><p style="color:#ef4444;">Error: ${err.message}</p></div>`;
+            }
+        }
+    </script>
+</body>
+</html>
