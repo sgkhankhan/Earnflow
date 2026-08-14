@@ -106,43 +106,44 @@
     }
 });
 
-        async function loadTeamData(myRef) {
-            if (!myRef) {
-                document.getElementById('membersList').innerHTML = `<div class="no-data">No referral code found</div>`;
-                return;
-            }
+async function loadTeamData(myRef) {
+    if (!myRef) {
+        document.getElementById('membersList').innerHTML = '<div class="no-data">No referral code found</div>';
+        return;
+    }
 
-            // Fetch Level 1 Members
-            const { data: l1 } = await supabaseClient
-                .from('profiles')
-                .select('*')
-                .eq('referred_by', myRef);
+    // Fetch Level 1 Members
+    const { data: l1 } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('referred_by', myRef);
 
-            teamL1 = l1 || [];
-            document.getElementById('l1Count').innerText = teamL1.length;
+    teamL1 = l1 || [];
+    document.getElementById('l1Count').innerText = teamL1.length;
 
-            // Fetch Level 2 Members
-            if (teamL1.length > 0) {
-                const l1Codes = teamL1.map(m => m.referral_code || (m.email ? m.email.split('@')[0] : '')).filter(Boolean);
-                if (l1Codes.length > 0) {
-                    const { data: l2 } = await supabaseClient.from('profiles').select('*').in('referred_by', l1Codes);
-                    teamL2 = l2 || [];
-                }
-            }
-            document.getElementById('l2Count').innerText = teamL2.length;
-
-            // Fetch Level 3 Members
-            if (teamL2.length > 0) {
-                const l2Codes = teamL2.map(m => m.referral_code || (m.email ? m.email.split('@')[0] : '')).filter(Boolean);
-                if (l2Codes.length > 0) {
-                    const { data: l3 } = await supabaseClient.from('profiles').select('*').in('referred_by', l2Codes);
-                    teamL3 = l3 || [];
-                }
-            }
-            document.getElementById('l3Count').innerText = teamL3.length;
-
-            renderList();
+    // Fetch Level 2 Members
+    if (teamL1.length > 0) {
+        const l1Codes = teamL1.map(m => m.referral_code || (m.email ? m.email.split('@')[0] : '')).filter(Boolean);
+        if (l1Codes.length > 0) {
+            const { data: l2 } = await supabaseClient.from('profiles').select('*').in('referred_by', l1Codes);
+            teamL2 = l2 || [];
         }
+    }
+    document.getElementById('l2Count').innerText = teamL2.length;
+
+    // Fetch Level 3 Members
+    if (teamL2.length > 0) {
+        const l2Codes = teamL2.map(m => m.referral_code || (m.email ? m.email.split('@')[0] : '')).filter(Boolean);
+        if (l2Codes.length > 0) {
+            const { data: l3 } = await supabaseClient.from('profiles').select('*').in('referred_by', l2Codes);
+            teamL3 = l3 || [];
+        }
+    }
+    document.getElementById('l3Count').innerText = teamL3.length;
+
+    renderList();
+            }
+                
 
         function switchLevel(lvl) {
             activeTab = lvl;
