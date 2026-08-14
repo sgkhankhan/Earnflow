@@ -2,325 +2,379 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earnflow Seeds - Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Earnflow Seeds - Smart Agriculture Investment</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: #f0fdf4; display: flex; justify-content: center; min-height: 100vh; color: #0f172a; }
+        .app-container { width: 100%; max-width: 440px; background: #ffffff; min-height: 100vh; padding-bottom: 90px; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.06); }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background-color: #f1f7f2; display: none; justify-content: center; min-height: 100vh; }
-        .app-container { width: 100%; max-width: 430px; background: #f1f7f2; min-height: 100vh; padding: 12px; padding-bottom: 95px; position: relative; }
+        /* Top Header */
+        .top-header { background: linear-gradient(135deg, #15803d, #16a34a); padding: 20px 18px 25px; border-radius: 0 0 24px 24px; color: white; }
+        .user-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        .user-profile { display: flex; align-items: center; gap: 12px; }
+        .avatar-box { width: 44px; height: 44px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1.5px solid rgba(255,255,255,0.4); }
+        .user-details h3 { font-size: 15px; font-weight: 800; }
+        .user-details p { font-size: 11px; opacity: 0.85; font-weight: 600; }
+        .vip-badge { background: #fef08a; color: #854d0e; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 4px; }
 
-        /* Top Hero Banner Carousel */
-        .hero-banner-container { width: 100%; height: 160px; border-radius: 20px; position: relative; overflow: hidden; margin-bottom: 16px; box-shadow: 0 8px 20px rgba(22, 101, 52, 0.2); border: 2px solid #bbf7d0; background: #064e3b; }
-        .hero-banner-img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .carousel-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 3; }
-        .dot { width: 8px; height: 8px; background: rgba(255,255,255,0.5); border-radius: 50%; }
-        .dot.active { width: 22px; background: #ffffff; border-radius: 10px; }
+        /* Wallet Card */
+        .wallet-card { background: rgba(255,255,255,0.12); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.25); border-radius: 18px; padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; }
+        .wallet-item:first-child { border-right: 1px solid rgba(255,255,255,0.2); }
+        .wallet-item p { font-size: 11px; opacity: 0.9; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+        .wallet-item h2 { font-size: 20px; font-weight: 800; }
 
-        /* Quick Action Bar (5 Buttons) */
-        .quick-action-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 20px; }
-        .q-btn { background: #ffffff; border-radius: 18px; padding: 12px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid #e2ebd8; }
-        .q-icon-box { width: 40px; height: 40px; border-radius: 12px; background: #eaf5eb; color: #16a34a; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 6px; }
-        .q-btn span { font-size: 11px; font-weight: 700; color: #1e293b; }
-        .badge-new { position: absolute; top: -5px; right: 8px; background: #ef4444; color: white; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 10px; border: 2px solid #ffffff; }
+        /* Quick Action Grid */
+        .action-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; padding: 18px 16px; margin-top: -12px; }
+        .action-btn { background: #ffffff; border-radius: 16px; padding: 12px 6px; text-align: center; text-decoration: none; color: #1e293b; box-shadow: 0 4px 14px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; transition: transform 0.15s; position: relative; }
+        .action-btn:active { transform: scale(0.95); }
+        .action-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin: 0 auto 6px; }
+        .action-btn span { font-size: 11px; font-weight: 700; display: block; }
+        .badge-new { position: absolute; top: -6px; right: 8px; background: #ef4444; color: white; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 8px; }
 
-        /* Product Cards */
-        .products-title-bar { font-size: 17px; font-weight: 800; color: #0f172a; margin-bottom: 14px; padding-left: 4px; }
-        .product-list { display: flex; flex-direction: column; gap: 16px; }
-        
-        .product-card { background: #ffffff; border-radius: 24px; padding: 16px; position: relative; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.04); border: 1px solid #e2ebd8; }
-        .ribbon-tag { position: absolute; top: 0; right: 0; background: linear-gradient(135deg, #22c55e, #15803d); color: white; font-size: 10px; font-weight: 800; padding: 5px 14px; border-bottom-left-radius: 14px; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 5; }
+        .icon-recharge { background: #dcfce7; color: #16a34a; }
+        .icon-withdraw { background: #dbeafe; color: #2563eb; }
+        .icon-mission { background: #fef3c7; color: #d97706; }
+        .icon-invite { background: #f3e8ff; color: #9333ea; }
+        .icon-online { background: #e0f2fe; color: #0284c7; }
 
-        .card-body { display: flex; gap: 14px; margin-top: 10px; margin-bottom: 14px; }
-        .product-image-container { width: 120px; height: 120px; border-radius: 18px; overflow: hidden; position: relative; flex-shrink: 0; border: 1px solid #bbf7d0; box-shadow: 0 4px 10px rgba(0,0,0,0.08); background: linear-gradient(135deg, #14532d, #047857); display: flex; align-items: center; justify-content: center; }
-        .product-image-container img { width: 100%; height: 100%; object-fit: cover; }
-        .fallback-icon { font-size: 45px; color: #a7f3d0; }
-        .limit-pill { position: absolute; top: 6px; left: 6px; background: rgba(15, 23, 42, 0.85); color: white; font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 10px; backdrop-filter: blur(4px); z-index: 2; }
-        .seed-name { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(15, 23, 42, 0.9)); font-size: 10px; font-weight: 800; color: #ffffff; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; padding: 8px 2px 4px; z-index: 2; }
+        /* Section Titles */
+        .section-header { padding: 8px 18px 12px; display: flex; justify-content: space-between; align-items: center; }
+        .section-header h2 { font-size: 17px; font-weight: 800; color: #0f172a; }
+        .section-header span { font-size: 12px; color: #16a34a; font-weight: 700; }
+                /* Plan Card Container */
+        .plans-list { padding: 0 16px; display: flex; flex-direction: column; gap: 16px; }
+        .plan-card { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 20px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); position: relative; overflow: hidden; }
+        .plan-tag { position: absolute; top: 0; right: 0; background: linear-gradient(135deg, #16a34a, #15803d); color: white; font-size: 10px; font-weight: 800; padding: 5px 14px; border-radius: 0 0 0 14px; text-transform: uppercase; }
+        .plan-tag.best { background: linear-gradient(135deg, #0284c7, #0369a1); }
+        .plan-tag.vip { background: linear-gradient(135deg, #d97706, #b45309); }
 
-        .product-info-grid { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
-        .info-row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 700; color: #475569; }
-        .row-left { display: flex; align-items: center; gap: 6px; }
-        .dot-green { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; }
-        .info-val { font-size: 14px; font-weight: 800; color: #16a34a; }
-        .info-val.dark { color: #0f172a; }
+        .plan-main { display: flex; gap: 14px; align-items: center; margin-bottom: 14px; }
+        .plan-img-box { width: 105px; height: 105px; background: linear-gradient(135deg, #0f3923, #15803d); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; position: relative; padding: 8px; }
+        .plan-img-box .limit { position: absolute; top: 6px; left: 6px; font-size: 9px; font-weight: 700; background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 6px; }
+        .plan-img-box i { font-size: 32px; margin-bottom: 6px; color: #86efac; }
+        .plan-img-box h4 { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .buy-now-bar { width: 100%; background: linear-gradient(135deg, #22c55e, #15803d); color: white; border: none; padding: 12px 18px; border-radius: 25px; font-size: 15px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); transition: transform 0.2s; }
-        .buy-now-bar:active { transform: scale(0.98); }
-        .arrow-circle { width: 28px; height: 28px; background: rgba(255,255,255,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .plan-info { flex: 1; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 13px; }
+        .info-row span.label { color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        .info-row span.label::before { content: "•"; color: #16a34a; font-size: 16px; line-height: 0; }
+        .info-row span.val { font-weight: 800; color: #0f172a; }
+        .info-row span.val.green { color: #16a34a; }
+
+        .btn-buy { width: 100%; background: linear-gradient(135deg, #16a34a, #15803d); color: white; border: none; padding: 13px; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25); transition: transform 0.15s; }
+        .btn-buy:active { transform: scale(0.98); }
 
         /* Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e2ebd8; left: 50%; transform: translateX(-50%); box-shadow: 0 -4px 20px rgba(0,0,0,0.05); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #64748b; cursor: pointer; text-decoration: none; font-weight: 600; gap: 3px; }
-        .nav-item.active { color: #16a34a; font-weight: 800; }
-        .wheel-btn { position: relative; top: -22px; }
-        .wheel-icon { width: 56px; height: 56px; background: radial-gradient(circle, #22c55e, #15803d); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; border: 4px solid #ffffff; box-shadow: 0 6px 16px rgba(22, 163, 74, 0.4); }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 440px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; align-items: center; padding: 8px 0; z-index: 100; box-shadow: 0 -4px 15px rgba(0,0,0,0.03); }
+        .nav-item { text-align: center; text-decoration: none; color: #64748b; font-size: 10px; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .nav-item i { font-size: 18px; }
+        .nav-item.active { color: #16a34a; }
+        .nav-wheel { margin-top: -24px; }
+        .wheel-btn { width: 52px; height: 52px; background: radial-gradient(circle, #22c55e, #15803d); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35); border: 3px solid #ffffff; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+        .modal-box { background: white; width: 100%; max-width: 380px; border-radius: 20px; padding: 24px; text-align: center; }
+        .modal-box h3 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+        .modal-box p { font-size: 12px; color: #64748b; margin-bottom: 16px; }
+        .ref-code-box { background: #f8fafc; border: 1.5px dashed #16a34a; padding: 12px; border-radius: 12px; font-size: 15px; font-weight: 800; color: #16a34a; margin-bottom: 16px; word-break: break-all; }
+        .btn-modal { width: 100%; background: #16a34a; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; }
     </style>
 </head>
 <body>
-
     <div class="app-container">
-        <!-- Hero Banner Carousel -->
-        <div class="hero-banner-container">
-            <div style="padding: 20px; color: white; height: 100%; display: flex; flex-direction: column; justify-content: center;">
-                <h2 style="font-size: 22px; font-weight: 800; color: #a7f3d0;"><i class="fa-solid fa-seedling"></i> EARNFLOW SEED</h2>
-                <p style="font-size: 12px; color: #dcfce7; margin-top: 4px;">Growing Quality, Harvesting Prosperity</p>
+        <!-- Top Bar Header -->
+        <div class="top-header">
+            <div class="user-row">
+                <div class="user-profile">
+                    <div class="avatar-box"><i class="fa-solid fa-seedling"></i></div>
+                    <div class="user-details">
+                        <h3 id="userPhoneDisplay">Loading...</h3>
+                        <p id="userUidDisplay">UID: ---</p>
+                    </div>
+                </div>
+                <div class="vip-badge"><i class="fa-solid fa-crown"></i> VIP Member</div>
             </div>
-            <div class="carousel-dots">
-                <div class="dot active"></div>
-                <div class="dot"></div>
+
+            <!-- Wallet Overview -->
+            <div class="wallet-card">
+                <div class="wallet-item">
+                    <p>Total Balance</p>
+                    <h2 id="totalBalText">₹0.00</h2>
+                </div>
+                <div class="wallet-item">
+                    <p>Team Income</p>
+                    <h2 id="teamIncText">₹0.00</h2>
+                </div>
             </div>
         </div>
 
-        <!-- 5 Quick Action Buttons -->
-        <div class="quick-action-bar">
-            <a href="recharge.html" class="q-btn">
-                <div class="q-icon-box"><i class="fa-solid fa-wallet"></i></div>
+        <!-- Quick Actions Grid -->
+        <div class="action-grid">
+            <a href="recharge.html" class="action-btn">
+                <div class="action-icon icon-recharge"><i class="fa-solid fa-wallet"></i></div>
                 <span>Recharge</span>
             </a>
-            <a href="withdraw.html" class="q-btn">
-                <div class="q-icon-box"><i class="fa-solid fa-download"></i></div>
+            <a href="withdraw.html" class="action-btn">
+                <div class="action-icon icon-withdraw"><i class="fa-solid fa-money-bill-transfer"></i></div>
                 <span>Withdraw</span>
             </a>
-            <a href="mission.html" class="q-btn">
-    <span class="badge-new">New</span>
-    <div class="q-icon-box"><i class="fa-solid fa-list-check"></i></div>
-    <span>Mission</span>
+            <a href="mission.html" class="action-btn">
+                <span class="badge-new">New</span>
+                <div class="action-icon icon-mission"><i class="fa-solid fa-list-check"></i></div>
+                <span>Mission</span>
             </a>
-            
-            <a href="invite.html" class="q-btn">
-                <div class="q-icon-box"><i class="fa-solid fa-share-nodes"></i></div>
+            <div onclick="openInviteModal()" class="action-btn" style="cursor: pointer;">
+                <div class="action-icon icon-invite"><i class="fa-solid fa-share-nodes"></i></div>
                 <span>Invite</span>
+            </div>
+            <a href="https://t.me/EARNFLOWSEEDS" target="_blank" class="action-btn">
+                <div class="action-icon icon-online"><i class="fa-brands fa-telegram"></i></div>
+                <span>Online</span>
             </a>
-            <a href="https://t.me/EARNFLOWSEEDS" target="_blank" class="q-btn">
-    <div class="q-icon-box"><i class="fa-brands fa-telegram"></i></div>
-    <span>Online</span>
-            </a>
-            
+        </div>
+            <!-- Section Header -->
+        <div class="section-header">
+            <h2>Earnflow Seed Plans</h2>
+            <span>Daily Withdrawal</span>
         </div>
 
-        <!-- Product List Header -->
-        <div class="products-title-bar">Earnflow Seed Plans – Daily withdrawal</div>
-
-        <div class="product-list">
-            <!-- Product A: Maize Seed -->
-            <div class="product-card">
-                <div class="ribbon-tag"><i class="fa-solid fa-star"></i> Popular</div>
-                <div class="card-body">
-                    <div class="product-image-container">
-                        <span class="limit-pill">Limit 0/10</span>
-                        <i class="fa-solid fa-seedling fallback-icon"></i>
-                        <span class="seed-name">Maize Seed</span>
+        <!-- Plans List -->
+        <div class="plans-list">
+            <!-- Plan 1: Maize Seed -->
+            <div class="plan-card">
+                <div class="plan-tag">★ Popular</div>
+                <div class="plan-main">
+                    <div class="plan-img-box">
+                        <span class="limit">Limit 0/10</span>
+                        <i class="fa-solid fa-seedling"></i>
+                        <h4>Maize Seed</h4>
                     </div>
-                    <div class="product-info-grid">
-                        <div class="info-row">
-                            <div class="row-left"><div class="dot-green"></div> Price</div>
-                            <div class="info-val">₹525</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="row-left"><div class="dot-green"></div> Daily</div>
-                            <div class="info-val">₹125</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="row-left"><div class="dot-green"></div> Total</div>
-                            <div class="info-val">₹18,750</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="row-left"><div class="dot-green"></div> End day</div>
-                            <div class="info-val dark">150 day</div>
-                        </div>
+                    <div class="plan-info">
+                        <div class="info-row"><span class="label">Price</span><span class="val green">₹525</span></div>
+                        <div class="info-row"><span class="label">Daily</span><span class="val green">₹125</span></div>
+                        <div class="info-row"><span class="label">Total</span><span class="val">₹18,750</span></div>
+                        <div class="info-row"><span class="label">End day</span><span class="val">150 day</span></div>
                     </div>
                 </div>
-                <button class="buy-now-bar" onclick="buyProduct('Maize Seed', 525, 125)">
-                    <span>Buy Now <i class="fa-solid fa-cart-shopping"></i></span>
-                    <div class="arrow-circle"><i class="fa-solid fa-chevron-right"></i></div>
+                <button onclick="buyPlan('Maize Seed', 525, 125, 150)" class="btn-buy">
+                    Buy Now <i class="fa-solid fa-cart-shopping"></i>
                 </button>
             </div>
 
-            <!-- Product B: Wheat Seed -->
-            <div class="product-card">
-                <div class="ribbon-tag"><i class="fa-solid fa-crown"></i> Best Value</div>
-                <div class="card-body">
-                    <div class="product-image-container">
-                        <span class="limit-pill">Limit 0/5</span>
-                        <i class="fa-solid fa-plant-wilt fallback-icon"></i>
-                        <span class="seed-name">Wheat Seed</span>
+            <!-- Plan 2: Wheat Seed -->
+            <div class="plan-card">
+                <div class="plan-tag best">👑 Best Value</div>
+                <div class="plan-main">
+                    <div class="plan-img-box" style="background: linear-gradient(135deg, #075985, #0284c7);">
+                        <span class="limit">Limit 0/5</span>
+                        <i class="fa-solid fa-wheat-awn"></i>
+                        <h4>Wheat Seed</h4>
                     </div>
-                    <div class="product-info-grid">
-                        <div class="info-row">
-                            <div class="row-left"><div class="dot-green"></div> Price</div>
-                            <div class="info-val">₹1,500</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="row-left"><div class="dot-green"></div> Daily</div>
-                            <div class="info-val">₹375</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="row-left"><div class="dot-green"></div> Total</div>
-                            <div class="info-val">₹56,250</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="row-left"><div class="dot-green"></div> End day</div>
-                            <div class="info-val dark">150 day</div>
-                        </div>
+                    <div class="plan-info">
+                        <div class="info-row"><span class="label">Price</span><span class="val green">₹1,500</span></div>
+                        <div class="info-row"><span class="label">Daily</span><span class="val green">₹375</span></div>
+                        <div class="info-row"><span class="label">Total</span><span class="val">₹56,250</span></div>
+                        <div class="info-row"><span class="label">End day</span><span class="val">150 day</span></div>
                     </div>
                 </div>
-                <button class="buy-now-bar" onclick="buyProduct('Wheat Seed', 1500, 375)">
-                    <span>Buy Now <i class="fa-solid fa-cart-shopping"></i></span>
-                    <div class="arrow-circle"><i class="fa-solid fa-chevron-right"></i></div>
+                <button onclick="buyPlan('Wheat Seed', 1500, 375, 150)" class="btn-buy" style="background: linear-gradient(135deg, #0284c7, #0369a1);">
+                    Buy Now <i class="fa-solid fa-cart-shopping"></i>
                 </button>
             </div>
 
-            <!-- Product C: Paddy Seed -->
-            <div class="product-card">
-                <div class="ribbon-tag"><i class="fa-solid fa-gem"></i> VIP Plan</div>
-                <div class="card-body">
-                    <div class="product-image-container">
-                        <span class="limit-pill">Limit 0/5</span>
-                        <i class="fa-solid fa-bowl-rice fallback-icon"></i>
-                        <span class="seed-name">Paddy Seed</span>
+            <!-- Plan 3: Paddy Hybrid Seed -->
+            <div class="plan-card">
+                <div class="plan-tag vip">🔥 High Yield</div>
+                <div class="plan-main">
+                    <div class="plan-img-box" style="background: linear-gradient(135deg, #854d0e, #d97706);">
+                        <span class="limit">Limit 0/3</span>
+                        <i class="fa-solid fa-plant-wilt"></i>
+                        <h4>Paddy Seed</h4>
                     </div>
-                    <div class="product-info-grid">
-                        <div class="info-row">
-                            <div class="row-left"><div class="dot-green"></div> Price</div>
-                            <div class="info-val">₹3,000</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="row-left"><div class="dot-green"></div> Daily</div>
-                            <div class="info-val">₹780</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="row-left"><div class="dot-green"></div> Total</div>
-                            <div class="info-val">₹1,17,000</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="row-left"><div class="dot-green"></div> End day</div>
-                            <div class="info-val dark">150 day</div>
-                        </div>
+                    <div class="plan-info">
+                        <div class="info-row"><span class="label">Price</span><span class="val green">₹3,500</span></div>
+                        <div class="info-row"><span class="label">Daily</span><span class="val green">₹920</span></div>
+                        <div class="info-row"><span class="label">Total</span><span class="val">₹1,38,000</span></div>
+                        <div class="info-row"><span class="label">End day</span><span class="val">150 day</span></div>
                     </div>
                 </div>
-                <button class="buy-now-bar" onclick="buyProduct('Seed Plan A', 525, 131.25)">
-                    
-                    <span>Buy Now <i class="fa-solid fa-cart-shopping"></i></span>
-                    <div class="arrow-circle"><i class="fa-solid fa-chevron-right"></i></div>
+                <button onclick="buyPlan('Paddy Hybrid Seed', 3500, 920, 150)" class="btn-buy" style="background: linear-gradient(135deg, #d97706, #b45309);">
+                    Buy Now <i class="fa-solid fa-cart-shopping"></i>
                 </button>
             </div>
         </div>
-
-        <!-- Bottom Navigation -->
+                <!-- Bottom Navigation Bar -->
         <div class="bottom-nav">
-            <a href="index.html" class="nav-item active"><i class="fa-solid fa-house"></i><span>Home</span></a>
-            <a href="treasure.html" class="nav-item"><i class="fa-solid fa-box-archive"></i><span>Treasure</span></a>
-            <a href="wheel.html" class="nav-item wheel-btn"><div class="wheel-icon"><i class="fa-solid fa-dharmachakra"></i></div><span>Wheel</span></a>
-            <a href="team.html" class="nav-item"><i class="fa-solid fa-users"></i><span>Team</span></a>
-            <a href="profile.html" class="nav-item"><i class="fa-solid fa-user"></i><span>Profile</span></a>
+            <a href="index.html" class="nav-item active">
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </a>
+            <a href="treasure.html" class="nav-item">
+                <i class="fa-solid fa-box-archive"></i>
+                <span>Treasure</span>
+            </a>
+            <div class="nav-wheel">
+                <a href="wheel.html" class="wheel-btn">
+                    <i class="fa-solid fa-dharmachakra"></i>
+                </a>
+            </div>
+            <a href="team.html" class="nav-item">
+                <i class="fa-solid fa-users"></i>
+                <span>Team</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <i class="fa-solid fa-user"></i>
+                <span>Profile</span>
+            </a>
         </div>
-                    </div>
+
+        <!-- Invite Modal -->
+        <div id="inviteModal" class="modal">
+            <div class="modal-box">
+                <i class="fa-solid fa-gift" style="font-size: 40px; color: #16a34a; margin-bottom: 10px;"></i>
+                <h3>Invite & Earn 27%</h3>
+                <p>Share your referral link and earn Level 1 (27%), Level 2 (3%), and Level 3 (1%) instant commissions!</p>
+                <div id="refLinkBox" class="ref-code-box">Generating link...</div>
+                <button onclick="copyInviteLink()" class="btn-modal">Copy Link & Share</button>
+                <button onclick="closeInviteModal()" style="margin-top: 10px; background: none; border: none; color: #64748b; font-weight: 700; font-size: 13px; cursor: pointer;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Configuration -->
     <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
-        // Verified Original Working Key
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
-
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         let currentUser = null;
-        let currentBalance = 0;
+        let userProfileData = null;
+                document.addEventListener("DOMContentLoaded", initApp);
 
-        document.addEventListener("DOMContentLoaded", async function() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            
-            if (!session) {
-                return window.location.replace('login.html');
-            } else {
-                currentUser = session.user;
-                document.body.style.display = 'flex';
-                await fetchUserData();
-            }
-        });
-
-        async function fetchUserData() {
-            if (!currentUser) return;
-
+        async function initApp() {
             try {
-                const { data: profile, error } = await supabaseClient
-                    .from('profiles')
-                    .select('balance, total_recharge')
-                    .eq('id', currentUser.id)
-                    .maybeSingle();
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) {
+                    window.location.replace('login.html');
+                    return;
+                }
+                currentUser = session.user;
 
-                if (profile) {
-                    currentBalance = parseFloat(profile.balance || 0);
+                // Load User Profile Data
+                const { data: prof, error } = await supabaseClient
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', currentUser.id)
+                    .single();
+
+                if (prof) {
+                    userProfileData = prof;
+                    const phone = prof.phone || currentUser.email.split('@')[0];
+                    document.getElementById('userPhoneDisplay').innerText = "+91 " + phone;
+                    document.getElementById('userUidDisplay').innerText = "UID: " + prof.id.substring(0, 8).toUpperCase();
+                    document.getElementById('totalBalText').innerText = "₹" + parseFloat(prof.balance || 0).toFixed(2);
+                    document.getElementById('teamIncText').innerText = "₹" + parseFloat(prof.team_income || 0).toFixed(2);
                 }
             } catch (err) {
-                console.error("Profile fetch error:", err);
+                console.error("Initialization error:", err);
             }
         }
 
-        async function buyProduct(productName, price, dailyIncome) {
-            // Fresh balance re-check before purchase
-            await fetchUserData();
-
+        // Buy Plan Function
+        async function buyPlan(productName, price, dailyIncome, totalDays) {
             const planPrice = parseFloat(price);
+            const dailyInc = parseFloat(dailyIncome);
+            const days = parseInt(totalDays) || 150;
 
-            if (currentBalance < planPrice) {
-                alert(`Insufficient balance! Please recharge ₹${(planPrice - currentBalance).toFixed(0)} more.`);
-                window.location.href = 'recharge.html';
+            if (!currentUser || !userProfileData) {
+                alert("Kripya pehle login karein!");
+                window.location.href = 'login.html';
                 return;
             }
-// Plan khareedte waqt multi-level commission distribute karne ke liye:
-await supabaseClient.rpc('distribute_plan_commission', {
-    buyer_user_id: user.id,
-    plan_amount: planPrice,
-    plan_title: planName
-});
 
-            if (confirm(`Do you want to invest ₹${planPrice} in ${productName}?`)) {
-                try {
-                    const newBal = currentBalance - planPrice;
+            if (!confirm(`Kya aap ₹${planPrice} ka ${productName} plan khareedna chahte hain?`)) return;
 
-                    // 1. Balance deduct karein
-                    const { error: balErr } = await supabaseClient
-                        .from('profiles')
-                        .update({ balance: newBal })
-                        .eq('id', currentUser.id);
+            try {
+                // Fresh balance check
+                const { data: prof, error: pErr } = await supabaseClient
+                    .from('profiles')
+                    .select('balance, phone')
+                    .eq('id', currentUser.id)
+                    .single();
 
-                    if (balErr) throw balErr;
+                if (pErr || !prof) throw new Error("Balance fetch nahi ho saka.");
 
-                    // 2. Orders table me entry save karein
-                    await supabaseClient.from('orders').insert([{
-                        user_id: currentUser.id,
-                        plan_name: productName,
-                        price: planPrice,
-                        daily_income: parseFloat(dailyIncome),
-                        validity_days: 45,
-                        status: 'active'
-                    }]);
-
-                    // 3. Transactions log update
-                    await supabaseClient.from('transactions').insert([{
-                        user_id: currentUser.id,
-                        type: 'withdraw',
-                        amount: planPrice,
-                        status: 'success',
-                        payment_details: `Investment Purchase: ${productName}`
-                    }]);
-
-                    alert(`Successfully invested in ${productName}! Daily return ₹${dailyIncome} will be credited.`);
-                    currentBalance = newBal;
-                    window.location.reload();
-
-                } catch (err) {
-                    alert("Investment failed: " + err.message);
+                const currentBal = parseFloat(prof.balance || 0);
+                if (currentBal < planPrice) {
+                    alert(`Apke wallet me kam balance hai (Available: ₹${currentBal.toFixed(2)}).\nKripya pehle Recharge karein!`);
+                    window.location.href = 'recharge.html';
+                    return;
                 }
+
+                // 1. Balance deduct
+                const updatedBalance = currentBal - planPrice;
+                await supabaseClient.from('profiles').update({ balance: updatedBalance }).eq('id', currentUser.id);
+
+                // 2. Orders table insert
+                await supabaseClient.from('orders').insert([{
+                    user_id: currentUser.id,
+                    daily_income: dailyInc,
+                    days_remaining: days,
+                    status: 'active'
+                }]);
+
+                // 3. Transactions table log
+                await supabaseClient.from('transactions').insert([{
+                    user_id: currentUser.id,
+                    type: 'income',
+                    amount: planPrice,
+                    status: 'success',
+                    payment_details: `Purchased: ${productName}`
+                }]);
+
+                // 4. Distribute Multi-level Referral Commission (Level 1: 27%, Level 2: 3%, Level 3: 1%)
+                try {
+                    await supabaseClient.rpc('distribute_plan_commission', {
+                        buyer_user_id: currentUser.id,
+                        plan_amount: planPrice,
+                        plan_title: productName
+                    });
+                } catch (rpcErr) {
+                    console.log("Commission trigger notice:", rpcErr);
+                }
+
+                alert(`🎉 Mubarak ho! ${productName} successfully activate ho gaya hai.\nDaily ₹${dailyInc} aapke wallet me judega.`);
+                window.location.reload();
+
+            } catch (err) {
+                alert("Plan buy failed: " + err.message);
             }
         }
+
+        // Referral Modal Functions
+        function openInviteModal() {
+            if (!userProfileData) return;
+            const myRef = userProfileData.referral_code || userProfileData.phone;
+            const fullUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}register.html?ref=${myRef}`;
+            document.getElementById('refLinkBox').innerText = fullUrl;
+            document.getElementById('inviteModal').style.display = 'flex';
+        }
+
+        function closeInviteModal() {
+            document.getElementById('inviteModal').style.display = 'none';
+        }
+
+        function copyInviteLink() {
+            const linkText = document.getElementById('refLinkBox').innerText;
+            navigator.clipboard.writeText(linkText);
+            alert("Referral link copied successfully!");
+            closeInviteModal();
+        }
     </script>
-    
 </body>
 </html>
