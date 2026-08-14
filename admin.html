@@ -125,22 +125,43 @@
         }
 
         async function searchUser() {
-            const phone = document.getElementById('searchPhone').value.trim();
-            if (!phone) return alert("Please enter mobile number");
+    const input = document.getElementById('searchPhone').value.trim();
+    if (!input) return alert("Please enter mobile number");
 
-            const email = `${phone}@earnflow.app`;
-            const { data, error } = await supabaseClient.from('profiles').select('*').eq('email', email).maybeSingle();
+    const email = `${input}@earnflow.app`;
 
-            if (error || !data) {
-                alert("User not found!");
-                document.getElementById('searchResult').style.display = 'none';
-                searchedUser = null;
-            } else {
-                searchedUser = data;
-                document.getElementById('resUserPhone').innerText = phone;
-                document.getElementById('resUserBalance').innerText = parseFloat(data.balance || 0).toFixed(2);
-                document.getElementById('searchResult').style.display = 'block';
+    // Phone, Email ya Referral Code teeno me se match dhundhega
+    const { data, error } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .or(`email.eq.${email},referral_code.eq.${input},id.eq.${input}`)
+        .maybeSingle();
+
+    if (error || !data) {
+        // Fallback: ILIKE search agar email me match ho
+        const { data: fallbackData } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .ilike('email', `%${input}%`)
+            .maybeSingle();
+
+        if (!fallbackData) {
+            alert("User not found!");
+            document.getElementById('searchResult').style.display = 'none';
+            searchedUser = null;
+            return;
+        }
+        searchedUser = fallbackData;
+    } else {
+        searchedUser = data;
+    }
+
+    const displayPhone = searchedUser.email ? searchedUser.email.split('@')[0] : (searchedUser.referral_code || 'User');
+    document.getElementById('resUserPhone').innerText = '+91 ' + displayPhone;
+    document.getElementById('resUserBalance').innerText = parseFloat(searchedUser.balance || 0).toFixed(2);
+    document.getElementById('searchResult').style.display = 'block';
             }
+                                             
         }
 
         async function updateUserBalance(action) {
