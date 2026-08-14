@@ -204,7 +204,8 @@
                         </div>
                     </div>
                 </div>
-                <button class="buy-now-bar" onclick="buyProduct('Paddy Seed', 3000, 780)">
+                <button class="buy-now-bar" onclick="buyProduct('Seed Plan A', 525, 131.25)">
+                    
                     <span>Buy Now <i class="fa-solid fa-cart-shopping"></i></span>
                     <div class="arrow-circle"><i class="fa-solid fa-chevron-right"></i></div>
                 </button>
@@ -254,34 +255,52 @@
         }
 
         async function buyProduct(productName, price, dailyIncome) {
-            if (currentBalance < price) {
-                alert(`Insufficient balance! Please recharge ₹${(price - currentBalance).toFixed(0)} more.`);
-                window.location.href = 'recharge.html';
-                return;
-            }
+    if (currentBalance < price) {
+        alert(`Insufficient balance! Please recharge ₹${(price - currentBalance).toFixed(0)} more.`);
+        window.location.href = 'recharge.html';
+        return;
+    }
 
-            if (confirm(`Do you want to invest ₹${price} in ${productName}?`)) {
-                try {
-                    const newBal = currentBalance - price;
+    if (confirm(`Do you want to invest ₹${price} in ${productName}?`)) {
+        try {
+            const newBal = currentBalance - price;
 
-                    await supabaseClient.from('profiles').update({ balance: newBal }).eq('id', currentUser.id);
+            // 1. Balance minus karein
+            const { error: balErr } = await supabaseClient
+                .from('profiles')
+                .update({ balance: newBal })
+                .eq('id', currentUser.id);
 
-                    await supabaseClient.from('transactions').insert([{
-                        user_id: currentUser.id,
-                        type: 'withdraw',
-                        amount: price,
-                        status: 'success',
-                        payment_details: `Investment Purchase: ${productName}`
-                    }]);
+            if (balErr) throw balErr;
 
-                    alert(`Successfully invested in ${productName}! Daily return ₹${dailyIncome} will be credited.`);
-                    fetchUserData();
+            // 2. Orders table me active plan save karein
+            await supabaseClient.from('orders').insert([{
+                user_id: currentUser.id,
+                plan_name: productName,
+                price: price,
+                daily_income: dailyIncome,
+                validity_days: 45,
+                status: 'active'
+            }]);
 
-                } catch (err) {
-                    alert("Investment failed: " + err.message);
-                }
-            }
+            // 3. Transactions me entry daalein
+            await supabaseClient.from('transactions').insert([{
+                user_id: currentUser.id,
+                type: 'withdraw',
+                amount: price,
+                status: 'success',
+                payment_details: `Investment Purchase: ${productName}`
+            }]);
+
+            alert(`Successfully invested in ${productName}! Daily return ₹${dailyIncome} will be credited.`);
+            fetchUserData();
+
+        } catch (err) {
+            alert("Investment failed: " + err.message);
         }
+    }
+        }
+                            
     </script>
 </body>
 </html>
