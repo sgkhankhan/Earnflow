@@ -131,43 +131,45 @@
         }
 
         async function searchUser() {
-            const input = document.getElementById('searchPhone').value.trim();
-            if (!input) return alert("Please enter mobile number");
+    const input = document.getElementById('searchPhone').value.trim();
+    if (!input) return alert("Please enter mobile number");
 
-            const email = `${input}@earnflow.app`;
+    // Supabase se saare profiles laakar frontend par exact match check karega
+    const { data: allProfiles, error } = await supabaseClient
+        .from('profiles')
+        .select('*');
 
-            const { data, error } = await supabaseClient
-                .from('profiles')
-                .select('*')
-                .or(`email.eq.${email},referral_code.eq.${input}`)
-                .maybeSingle();
+    if (error || !allProfiles || allProfiles.length === 0) {
+        alert("Database connection error or no profiles found!");
+        return;
+    }
 
-            let targetUser = data;
+    // Match by: email, phone, referral_code, ya ID
+    const found = allProfiles.find(p => {
+        const email = (p.email || '').toLowerCase();
+        const phone = (p.phone || '').toString();
+        const ref = (p.referral_code || '').toString();
+        const id = (p.id || '').toString();
+        const query = input.toLowerCase();
 
-            if (!targetUser) {
-                const { data: fallbackData } = await supabaseClient
-                    .from('profiles')
-                    .select('*')
-                    .ilike('email', `%${input}%`)
-                    .maybeSingle();
+        return email.includes(query) || phone.includes(query) || ref.includes(query) || id === query;
+    });
 
-                targetUser = fallbackData;
-            }
+    if (!found) {
+        alert("User " + input + " database me nahi mila! Kripya number dobara check karein.");
+        document.getElementById('searchResult').style.display = 'none';
+        searchedUser = null;
+        return;
+    }
 
-            if (!targetUser) {
-                alert("User not found!");
-                document.getElementById('searchResult').style.display = 'none';
-                searchedUser = null;
-                return;
-            }
-
-            searchedUser = targetUser;
-            const displayPhone = searchedUser.email ? searchedUser.email.split('@')[0] : (searchedUser.referral_code || 'User');
-            document.getElementById('resUserPhone').innerText = '+91 ' + displayPhone;
-            document.getElementById('resUserBalance').innerText = parseFloat(searchedUser.balance || 0).toFixed(2);
-            document.getElementById('searchResult').style.display = 'block';
+    searchedUser = found;
+    const displayPhone = searchedUser.email ? searchedUser.email.split('@')[0] : (searchedUser.phone || searchedUser.referral_code || 'User');
+    
+    document.getElementById('resUserPhone').innerText = '+91 ' + displayPhone;
+    document.getElementById('resUserBalance').innerText = parseFloat(searchedUser.balance || 0).toFixed(2);
+    document.getElementById('searchResult').style.display = 'block';
         }
-
+            
         async function updateUserBalance(action) {
             if (!searchedUser) return alert("Search a user first!");
             const amt = parseFloat(document.getElementById('manualAmount').value);
