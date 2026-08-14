@@ -66,123 +66,135 @@
             <div class="no-data"><i class="fa-solid fa-spinner fa-spin"></i> Loading team members...</div>
         </div>
     </div>
-        <script>
+        
+    <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let currentUserProfile = null;
         let teamL1 = [], teamL2 = [], teamL3 = [];
         let activeTab = 1;
 
         document.addEventListener("DOMContentLoaded", async function() {
-    try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (!session) return window.location.replace('login.html');
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) return window.location.replace('login.html');
 
-        // Session me se direct mobile number nikalen
-        const userPhone = session.user.email ? session.user.email.split('@')[0] : '';
+                const userPhone = session.user.email ? session.user.email.split('@')[0] : '';
 
-        // Profile fetch karein
-        let { data: profile } = await supabaseClient
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .maybeSingle();
+                // Fetch current user profile
+                const { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .maybeSingle();
 
-        // Agar profile na mile toh phone number ko hi referral_code maanein
-        const myRefCode = (profile && profile.referral_code) ? profile.referral_code : userPhone;
+                const myRef = (profile && profile.referral_code) ? profile.referral_code : userPhone;
+                await loadTeamData(myRef, userPhone);
+            } catch (err) {
+                console.error("Team load error:", err);
+                const listEl = document.getElementById('membersList');
+                if (listEl) listEl.innerHTML = '<div class="no-data"><i class="fa-solid fa-triangle-exclamation"></i> Error loading team data</div>';
+            }
+        });
 
-        if (myRefCode) {
-            await loadTeamData(myRefCode);
-        } else {
-            document.getElementById('membersList').innerHTML = '<div class="no-data">No Referral Code Found</div>';
+        async function loadTeamData(myRef, userPhone) {
+            try {
+                // Fetch Level 1 Members (match either referral_code or raw phone)
+                const { data: l1, error: l1Err } = await supabaseClient
+                    .from('profiles')
+                    .select('*')
+                    .or(`referred_by.eq.${myRef},referred_by.eq.${userPhone}`);
+
+                teamL1 = l1 || [];
+                if (document.getElementById('l1Count')) document.getElementById('l1Count').innerText = teamL1.length;
+
+                // Fetch Level 2 Members
+                if (teamL1.length > 0) {
+                    const l1Identifiers = [];
+                    teamL1.forEach(m => {
+                        if (m.referral_code) l1Identifiers.push(m.referral_code);
+                        if (m.email) l1Identifiers.push(m.email.split('@')[0]);
+                        if (m.phone) l1Identifiers.push(m.phone);
+                    });
+
+                    const cleanL1 = [...new Set(l1Identifiers)].filter(Boolean);
+
+                    if (cleanL1.length > 0) {
+                        const { data: l2 } = await supabaseClient
+                            .from('profiles')
+                            .select('*')
+                            .in('referred_by', cleanL1);
+
+                        teamL2 = l2 || [];
+                    }
+                }
+                if (document.getElementById('l2Count')) document.getElementById('l2Count').innerText = teamL2.length;
+
+                // Fetch Level 3 Members
+                if (teamL2.length > 0) {
+                    const l2Identifiers = [];
+                    teamL2.forEach(m => {
+                        if (m.referral_code) l2Identifiers.push(m.referral_code);
+                        if (m.email) l2Identifiers.push(m.email.split('@')[0]);
+                        if (m.phone) l2Identifiers.push(m.phone);
+                    });
+
+                    const cleanL2 = [...new Set(l2Identifiers)].filter(Boolean);
+
+                    if (cleanL2.length > 0) {
+                        const { data: l3 } = await supabaseClient
+                            .from('profiles')
+                            .select('*')
+                            .in('referred_by', cleanL2);
+
+                        teamL3 = l3 || [];
+                    }
+                }
+                if (document.getElementById('l3Count')) document.getElementById('l3Count').innerText = teamL3.length;
+
+                renderList();
+            } catch (e) {
+                console.error("Fetch level error:", e);
+                renderList();
+            }
         }
-
-    } catch (err) {
-        console.error("Team load error:", err);
-        document.getElementById('membersList').innerHTML = '<div class="no-data">Error loading team data</div>';
-    }
-});
-
-async function loadTeamData(myRef) {
-    if (!myRef) {
-        document.getElementById('membersList').innerHTML = '<div class="no-data">No referral code found</div>';
-        return;
-    }
-
-    // Fetch Level 1 Members
-    const { data: l1 } = await supabaseClient
-        .from('profiles')
-        .select('*')
-        .eq('referred_by', myRef);
-
-    teamL1 = l1 || [];
-    if (document.getElementById('l1Count')) {
-        document.getElementById('l1Count').innerText = teamL1.length;
-    }
-
-    // Fetch Level 2 Members
-    if (teamL1.length > 0) {
-        const l1Codes = teamL1.map(m => m.referral_code || (m.email ? m.email.split('@')[0] : '')).filter(Boolean);
-        if (l1Codes.length > 0) {
-            const { data: l2 } = await supabaseClient.from('profiles').select('*').in('referred_by', l1Codes);
-            teamL2 = l2 || [];
-        }
-    }
-    if (document.getElementById('l2Count')) {
-        document.getElementById('l2Count').innerText = teamL2.length;
-    }
-
-    // Fetch Level 3 Members
-    if (teamL2.length > 0) {
-        const l2Codes = teamL2.map(m => m.referral_code || (m.email ? m.email.split('@')[0] : '')).filter(Boolean);
-        if (l2Codes.length > 0) {
-            const { data: l3 } = await supabaseClient.from('profiles').select('*').in('referred_by', l2Codes);
-            teamL3 = l3 || [];
-        }
-    }
-    if (document.getElementById('l3Count')) {
-        document.getElementById('l3Count').innerText = teamL3.length;
-    }
-
-    renderList();
-}
-    
-                
 
         function switchLevel(lvl) {
             activeTab = lvl;
-            document.getElementById('btnL1').classList.toggle('active', lvl === 1);
-            document.getElementById('btnL2').classList.toggle('active', lvl === 2);
-            document.getElementById('btnL3').classList.toggle('active', lvl === 3);
+            if (document.getElementById('btnL1')) document.getElementById('btnL1').classList.toggle('active', lvl === 1);
+            if (document.getElementById('btnL2')) document.getElementById('btnL2').classList.toggle('active', lvl === 2);
+            if (document.getElementById('btnL3')) document.getElementById('btnL3').classList.toggle('active', lvl === 3);
             renderList();
         }
 
         function renderList() {
             const container = document.getElementById('membersList');
+            if (!container) return;
+
             let list = activeTab === 1 ? teamL1 : (activeTab === 2 ? teamL2 : teamL3);
 
-            if (list.length === 0) {
-                container.innerHTML = `<div class="no-data"><i class="fa-solid fa-users-slash"></i> No members found in Level ${activeTab}</div>`;
+            if (!list || list.length === 0) {
+                container.innerHTML = '<div class="no-data"><i class="fa-solid fa-users-slash"></i> No members found in Level ' + activeTab + '</div>';
                 return;
             }
 
-            let html = '';
-            list.forEach(member => {
-                const phone = member.email ? member.email.split('@')[0] : (member.referral_code || 'User');
-                html += `
-                    <div class="member-card">
+            container.innerHTML = list.map(member => {
+                const phone = member.email ? member.email.split('@')[0] : (member.referral_code || member.phone || 'User');
+                const recharge = parseFloat(member.total_recharge || 0);
+                const regDate = member.created_at ? new Date(member.created_at).toLocaleDateString() : 'Active';
+
+                return `
+                    <div class="member-card" style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; border:1px solid #e2e8f0; padding:12px; border-radius:12px; margin-bottom:8px;">
                         <div class="member-info">
-                            <h5>+91 ${phone}</h5>
-                            <p>Ref Code: <b>${member.referral_code || phone}</b></p>
+                            <h5 style="font-size:13px; font-weight:800; color:#0f172a;">+91 ${phone}</h5>
+                            <p style="font-size:11px; color:#64748b; margin-top:2px;">Recharge: <b style="color:#16a34a;">₹${recharge.toFixed(2)}</b> | Joined: ${regDate}</p>
                         </div>
-                        <span class="badge">Active Member</span>
+                        <span class="badge" style="background:#dcfce7; color:#15803d; font-size:10px; font-weight:800; padding:4px 8px; border-radius:6px;">Level ${activeTab}</span>
                     </div>
                 `;
-            });
-            container.innerHTML = html;
+            }).join('');
         }
     </script>
 </body>
