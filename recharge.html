@@ -73,7 +73,6 @@
         <form onsubmit="submitRecharge(event)">
             <div class="form-group">
                 <label class="form-label">Amount (₹)</label>
-                <!-- Fixed Minimum ₹525 and Default Value 525 -->
                 <input type="number" id="rechargeAmount" class="input-box" value="525" min="525" required placeholder="Amount (₹525)">
             </div>
 
@@ -88,7 +87,8 @@
 
     <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
+        // Verified Original Working Key
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const UPI_ID = "5326807QJ1@mairtel";
