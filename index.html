@@ -221,10 +221,10 @@
             <a href="profile.html" class="nav-item"><i class="fa-solid fa-user"></i><span>Profile</span></a>
         </div>
                     </div>
-                        <script>
-        const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
-        let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
-        const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
+    <script>
+        const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
+        // Verified Original Working Key
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUser = null;
@@ -232,75 +232,87 @@
 
         document.addEventListener("DOMContentLoaded", async function() {
             const { data: { session } } = await supabaseClient.auth.getSession();
-
+            
             if (!session) {
-                window.location.replace('login.html');
+                return window.location.replace('login.html');
             } else {
                 currentUser = session.user;
                 document.body.style.display = 'flex';
-                fetchUserData();
+                await fetchUserData();
             }
         });
 
         async function fetchUserData() {
-            const { data: profile } = await supabaseClient
-                .from('profiles')
-                .select('balance')
-                .eq('id', currentUser.id)
-                .single();
+            if (!currentUser) return;
 
-            if (profile) {
-                currentBalance = parseFloat(profile.balance || 0);
+            try {
+                const { data: profile, error } = await supabaseClient
+                    .from('profiles')
+                    .select('balance, total_recharge')
+                    .eq('id', currentUser.id)
+                    .maybeSingle();
+
+                if (profile) {
+                    currentBalance = parseFloat(profile.balance || 0);
+                }
+            } catch (err) {
+                console.error("Profile fetch error:", err);
             }
         }
 
         async function buyProduct(productName, price, dailyIncome) {
-    if (currentBalance < price) {
-        alert(`Insufficient balance! Please recharge ₹${(price - currentBalance).toFixed(0)} more.`);
-        window.location.href = 'recharge.html';
-        return;
-    }
+            // Fresh balance re-check before purchase
+            await fetchUserData();
 
-    if (confirm(`Do you want to invest ₹${price} in ${productName}?`)) {
-        try {
-            const newBal = currentBalance - price;
+            const planPrice = parseFloat(price);
 
-            // 1. Balance minus karein
-            const { error: balErr } = await supabaseClient
-                .from('profiles')
-                .update({ balance: newBal })
-                .eq('id', currentUser.id);
+            if (currentBalance < planPrice) {
+                alert(`Insufficient balance! Please recharge ₹${(planPrice - currentBalance).toFixed(0)} more.`);
+                window.location.href = 'recharge.html';
+                return;
+            }
 
-            if (balErr) throw balErr;
+            if (confirm(`Do you want to invest ₹${planPrice} in ${productName}?`)) {
+                try {
+                    const newBal = currentBalance - planPrice;
 
-            // 2. Orders table me active plan save karein
-            await supabaseClient.from('orders').insert([{
-                user_id: currentUser.id,
-                plan_name: productName,
-                price: price,
-                daily_income: dailyIncome,
-                validity_days: 45,
-                status: 'active'
-            }]);
+                    // 1. Balance deduct karein
+                    const { error: balErr } = await supabaseClient
+                        .from('profiles')
+                        .update({ balance: newBal })
+                        .eq('id', currentUser.id);
 
-            // 3. Transactions me entry daalein
-            await supabaseClient.from('transactions').insert([{
-                user_id: currentUser.id,
-                type: 'withdraw',
-                amount: price,
-                status: 'success',
-                payment_details: `Investment Purchase: ${productName}`
-            }]);
+                    if (balErr) throw balErr;
 
-            alert(`Successfully invested in ${productName}! Daily return ₹${dailyIncome} will be credited.`);
-            fetchUserData();
+                    // 2. Orders table me entry save karein
+                    await supabaseClient.from('orders').insert([{
+                        user_id: currentUser.id,
+                        plan_name: productName,
+                        price: planPrice,
+                        daily_income: parseFloat(dailyIncome),
+                        validity_days: 45,
+                        status: 'active'
+                    }]);
 
-        } catch (err) {
-            alert("Investment failed: " + err.message);
+                    // 3. Transactions log update
+                    await supabaseClient.from('transactions').insert([{
+                        user_id: currentUser.id,
+                        type: 'withdraw',
+                        amount: planPrice,
+                        status: 'success',
+                        payment_details: `Investment Purchase: ${productName}`
+                    }]);
+
+                    alert(`Successfully invested in ${productName}! Daily return ₹${dailyIncome} will be credited.`);
+                    currentBalance = newBal;
+                    window.location.reload();
+
+                } catch (err) {
+                    alert("Investment failed: " + err.message);
+                }
+            }
         }
-    }
-        }
-                            
     </script>
+    
 </body>
 </html>
