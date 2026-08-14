@@ -54,7 +54,7 @@
             </div>
         </div>
 
-        <label class="form-label" style="text-align:center; display:block; margin-bottom:10px;">DIRECT PAY WITH UPI APPS</label>
+        <label class="form-label" style="text-align:center; display:block; margin-bottom:10px;">PAY VIA UPI APPS</label>
         <div class="upi-apps-grid">
             <div class="upi-app-btn gpay" onclick="payViaUpi()">
                 <i class="fa-brands fa-google-pay"></i>
@@ -73,7 +73,8 @@
         <form onsubmit="submitRecharge(event)">
             <div class="form-group">
                 <label class="form-label">Amount (₹)</label>
-                <input type="number" id="rechargeAmount" class="input-box" placeholder="Enter amount (Min ₹100)" min="100" required>
+                <!-- Fixed Minimum ₹525 and Default Value 525 -->
+                <input type="number" id="rechargeAmount" class="input-box" value="525" min="525" required placeholder="Amount (₹525)">
             </div>
 
             <div class="form-group">
@@ -87,8 +88,7 @@
 
     <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
-        // User ki exact key small 'e' ke sath
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const UPI_ID = "5326807QJ1@mairtel";
@@ -99,15 +99,16 @@
         }
 
         function payViaUpi() {
-    const amount = document.getElementById('rechargeAmount').value;
-    if (!amount || amount < 100) {
-        alert("Pehle amount daalein (Min ₹100)");
-        document.getElementById('rechargeAmount').focus();
-        return;
-    }
-    // Clean direct UPI format
-    const upiUrl = `upi://pay?pa=5326807QJ1@mairtel&pn=Earnflow&am=${amount}&cu=INR`;
-    window.location.href = upiUrl;
+            const amount = document.getElementById('rechargeAmount').value;
+            if (!amount || amount < 525) {
+                alert("Minimum recharge amount is ₹525");
+                document.getElementById('rechargeAmount').value = 525;
+                document.getElementById('rechargeAmount').focus();
+                return;
+            }
+
+            navigator.clipboard.writeText(UPI_ID);
+            alert("UPI ID (5326807QJ1@mairtel) copy ho gayi hai!\n\nApni GPay / PhonePe / Paytm app khol kar 'Pay to UPI ID' par payment karein aur 12-digit UTR daal kar submit karein.");
         }
 
         async function submitRecharge(e) {
@@ -119,7 +120,7 @@
             const amount = parseFloat(document.getElementById('rechargeAmount').value);
             const utr = document.getElementById('utrNumber').value.trim();
 
-            if (!amount || amount < 100) return alert("Minimum recharge amount is ₹100");
+            if (!amount || amount < 525) return alert("Minimum recharge amount is ₹525");
             if (utr.length !== 12) return alert("Please enter valid 12-digit UTR number");
 
             const phone = session.user.email ? session.user.email.split('@')[0] : '';
