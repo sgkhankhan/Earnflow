@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earnflow Seeds - Frequently Asked Questions</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f1f7f2; display: flex; justify-content: center; min-height: 100vh; padding: 15px; }
+        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 20px; padding-bottom: 90px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0; }
+        .header h2 { font-size: 18px; font-weight: 800; color: #0f172a; }
+        .back-btn { text-decoration: none; color: #0f172a; font-size: 18px; }
+
+        .faq-banner { background: linear-gradient(135deg, #16a34a, #15803d); color: white; padding: 20px; border-radius: 16px; margin-bottom: 20px; text-align: center; }
+        .faq-banner h3 { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+        .faq-banner p { font-size: 12px; opacity: 0.9; }
+
+        .faq-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; margin-bottom: 12px; overflow: hidden; transition: all 0.3s ease; }
+        .faq-question { padding: 14px 16px; font-size: 13px; font-weight: 700; color: #0f172a; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+        .faq-question i { font-size: 12px; color: #16a34a; transition: transform 0.3s ease; }
+        
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease; padding: 0 16px; font-size: 12px; color: #475569; line-height: 1.6; border-top: 1px dashed transparent; }
+        
+        .faq-item.active { border-color: #86efac; background: #ffffff; }
+        .faq-item.active .faq-question i { transform: rotate(180deg); }
+        .faq-item.active .faq-answer { max-height: 200px; padding: 12px 16px 14px; border-top-color: #e2e8f0; }
+
+        .support-card { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 14px; padding: 16px; margin-top: 25px; text-align: center; }
+        .support-card h4 { font-size: 13px; font-weight: 800; color: #1e40af; margin-bottom: 4px; }
+        .support-card p { font-size: 11px; color: #3b82f6; margin-bottom: 12px; }
+        .support-btn { display: inline-flex; align-items: center; gap: 8px; background: #0284c7; color: white; text-decoration: none; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 700; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <a href="profile.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+            <h2>Help & FAQ</h2>
+            <div></div>
+        </div>
+
+        <div class="faq-banner">
+            <div style="font-size: 32px; margin-bottom: 6px;"><i class="fa-solid fa-circle-question"></i></div>
+            <h3>Frequently Asked Questions</h3>
+            <p>Aapke sawaalon ke asaan jawaab</p>
+        </div>
+
+        <!-- FAQ Items -->
+        <div class="faq-item" onclick="toggleFaq(this)">
+            <div class="faq-question">
+                <span>1. Daily Income kab aur kaise credit hoti hai?</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                Har plan ki daily income har 24 ghante (raat 12:00 AM) me automatically aapke wallet balance me credit ho jati hai.
+            </div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+            <div class="faq-question">
+                <span>2. Minimum withdrawal amount kitna hai?</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                Platform par minimum withdrawal limit <b>₹200</b> hai. Aap bank account ya UPI ke madhyam se kabhi bhi payout request bhej sakte hain.
+            </div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+            <div class="faq-question">
+                <span>3. Withdrawal kitne samay me account me aata hai?</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                Withdrawal request verify hone ke baad aamtaur par 1 se 24 ghante ke andar aapke bank account me transfer kar di jaati hai.
+            </div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+            <div class="faq-question">
+                <span>4. Referral / Invite Commission kitna milta hai?</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                Level 1 par <b>27%</b> direct recharge commission, Level 2 par <b>2%</b> aur Level 3 par <b>1%</b> commission turant balance me milta hai.
+            </div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+            <div class="faq-question">
+                <span>5. Recharge balance wallet me kaise add karein?</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                Recharge page par diye gaye QR code/UPI par payment karein aur apna 12-digit UTR / Reference number submit karein. Admin approval ke baad balance add ho jayega.
+            </div>
+        </div>
+
+        <!-- Telegram Support Box -->
+        <div class="support-card">
+            <h4>Koi aur sawal hai?</h4>
+            <p>Humari official support team aapki madad ke liye 24/7 uplabdh hai.</p>
+            <a href="https://t.me/EARNFLOWSEEDS" target="_blank" class="support-btn">
+                <i class="fa-brands fa-telegram"></i> Telegram Support
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function toggleFaq(element) {
+            const isActive = element.classList.contains('active');
+            // Close all
+            document.querySelectorAll('.faq-item').forEach(item => item.classList.remove('active'));
+            // Open clicked if wasn't active
+            if (!isActive) {
+                element.classList.add('active');
+            }
+        }
+    </script>
+</body>
+  </html>
+  
