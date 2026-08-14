@@ -186,52 +186,78 @@
             <a href="profile.html" class="nav-item active"><i class="fa-solid fa-user"></i><span>Profile</span></a>
         </div>
                     </div>
-                        <script>
-        const SUPABASE_URL = 'https://ardnjjbcfhnaubzsdznu.supabase.co';
-        let RAW_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjE0MjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA';
-        const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
+    <script>
+        const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const ADMIN_MOBILE = "7983678835";
 
         document.addEventListener("DOMContentLoaded", async function() {
             const { data: { session } } = await supabaseClient.auth.getSession();
-
             if (!session) {
-                window.location.replace('login.html');
-            } else {
-                document.body.style.display = 'flex';
-                const userEmail = session.user.email || '';
-                const rawPhone = userEmail.replace('@earnflow.app', '');
-                
-                document.getElementById('userDisplayPhone').innerText = rawPhone;
-                document.getElementById('userDisplayEmail').innerText = userEmail;
-                document.getElementById('avatarLetter').innerText = rawPhone.charAt(0).toUpperCase();
-
-                if (rawPhone === ADMIN_MOBILE) {
-                    document.getElementById('adminPanelBtn').style.display = 'flex';
-                }
-
-                fetchProfileData(session.user.id);
+                return window.location.replace('login.html');
             }
+
+            document.body.style.display = 'flex';
+            const userEmail = session.user.email || '';
+            const rawPhone = userEmail.replace('@earnflow.app', '');
+
+            if (document.getElementById('userDisplayPhone')) document.getElementById('userDisplayPhone').innerText = rawPhone;
+            if (document.getElementById('userDisplayEmail')) document.getElementById('userDisplayEmail').innerText = userEmail;
+            if (document.getElementById('avatarLetter')) document.getElementById('avatarLetter').innerText = rawPhone.charAt(0).toUpperCase();
+
+            if (rawPhone === ADMIN_MOBILE && document.getElementById('adminPanelBtn')) {
+                document.getElementById('adminPanelBtn').style.display = 'flex';
+            }
+
+            await fetchProfileData(session.user.id);
         });
 
         async function fetchProfileData(userId) {
-            const { data: profile } = await supabaseClient
-                .from('profiles')
-                .select('balance, total_recharge, team_income')
-                .eq('id', userId)
-                .single();
+            try {
+                const { data: profile, error } = await supabaseClient
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', userId)
+                    .maybeSingle();
 
-            if (profile) {
-                const bal = parseFloat(profile.balance || 0);
-                const rec = parseFloat(profile.total_recharge || 0);
-                const inc = parseFloat(profile.team_income || 0);
+                if (error) {
+                    console.error("Profile fetch error:", error);
+                    return;
+                }
 
-                document.getElementById('valAvailable').innerText = '₹' + bal.toFixed(0);
-                document.getElementById('valRecharge').innerText = '₹' + rec.toFixed(0);
-                document.getElementById('valIncome').innerText = '₹' + inc.toFixed(0);
+                if (profile) {
+                    const bal = parseFloat(profile.balance || 0).toFixed(2);
+                    const rec = parseFloat(profile.total_recharge || 0).toFixed(2);
+                    const inc = parseFloat(profile.team_income || profile.total_income || 0).toFixed(2);
+
+                    // 1. Direct ID se update
+                    if (document.getElementById('valAvailable')) document.getElementById('valAvailable').innerText = '₹' + bal;
+                    if (document.getElementById('valRecharge')) document.getElementById('valRecharge').innerText = '₹' + rec;
+                    if (document.getElementById('valIncome')) document.getElementById('valIncome').innerText = '₹' + inc;
+
+                    // 2. Class / Label Fallback (Agar ID match na ho)
+                    updateBalanceText('Available Balance', '₹' + bal);
+                    updateBalanceText('Recharge Balance', '₹' + rec);
+                    updateBalanceText('Total Income', '₹' + inc);
+                }
+            } catch (err) {
+                console.error("Error:", err);
             }
+        }
+
+        function updateBalanceText(label, amountStr) {
+            const allDivs = document.querySelectorAll('div, p, span');
+            allDivs.forEach(el => {
+                if (el.innerText && el.innerText.trim() === label) {
+                    const parent = el.parentElement;
+                    if (parent) {
+                        const h3 = parent.querySelector('h3, h2, div, p');
+                        if (h3 && h3 !== el) h3.innerText = amountStr;
+                    }
+                }
+            });
         }
 
         async function logoutUser() {
@@ -239,5 +265,6 @@
             window.location.replace('login.html');
         }
     </script>
+    
 </body>
 </html>
