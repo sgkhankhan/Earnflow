@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earnflow Seeds - Treasure Box</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f1f7f2; display: flex; justify-content: center; min-height: 100vh; padding: 15px; }
+        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 20px; padding-bottom: 90px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; }
+
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0; }
+        .header h2 { font-size: 18px; font-weight: 800; color: #0f172a; }
+        .back-btn { text-decoration: none; color: #0f172a; font-size: 18px; }
+
+        .chest-banner { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 25px 20px; border-radius: 18px; margin-bottom: 20px; }
+        .chest-icon { font-size: 55px; margin-bottom: 10px; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+        .gift-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 18px; margin-bottom: 20px; }
+        .input-code { width: 100%; padding: 14px; border: 2px dashed #cbd5e1; border-radius: 12px; font-size: 16px; font-weight: 700; text-align: center; text-transform: uppercase; outline: none; margin-bottom: 12px; background: white; }
+        .input-code:focus { border-color: #f59e0b; }
+
+        .btn-claim { width: 100%; background: #f59e0b; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .btn-claim:active { transform: scale(0.98); }
+
+        .daily-task-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; text-align: left; }
+        .task-info h4 { font-size: 13px; font-weight: 800; color: #0f172a; }
+        .task-info p { font-size: 11px; color: #64748b; margin-top: 2px; }
+        .task-btn { background: #dcfce7; color: #16a34a; border: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+            <h2>Treasure Chest</h2>
+            <div></div>
+        </div>
+
+        <div class="chest-banner">
+            <div class="chest-icon"><i class="fa-solid fa-gift"></i></div>
+            <h3 style="font-size: 20px; font-weight: 800;">Claim Gift Code</h3>
+            <p style="font-size: 12px; opacity: 0.9; margin-top: 4px;">Enter official bonus code to receive instant wallet balance!</p>
+        </div>
+
+        <div class="gift-box">
+            <input type="text" id="giftCodeInput" class="input-code" placeholder="ENTER GIFT CODE">
+            <button class="btn-claim" onclick="claimGiftCode()">CLAIM REWARD</button>
+        </div>
+
+        <div style="text-align: left; margin-bottom: 12px; font-size: 14px; font-weight: 800; color: #0f172a;">Daily Missions</div>
+
+        <div class="daily-task-card">
+            <div class="task-info">
+                <h4>Daily Check-In</h4>
+                <p>Login everyday to earn bonus</p>
+            </div>
+            <button class="task-btn" onclick="dailyCheckIn()">Claim ₹5</button>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let currentUser = null;
+
+        document.addEventListener("DOMContentLoaded", async function() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) return window.location.replace('login.html');
+            currentUser = session.user;
+        });
+
+        async function dailyCheckIn() {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const { data: profile } = await supabaseClient.from('profiles').select('balance, last_checkin').eq('id', currentUser.id).single();
+
+                if (profile && profile.last_checkin === today) {
+                    return alert("Aapne aaj ka Daily Check-In pehle hi claim kar liya hai!");
+                }
+
+                const newBal = parseFloat(profile.balance || 0) + 5;
+                await supabaseClient.from('profiles').update({ balance: newBal, last_checkin: today }).eq('id', currentUser.id);
+
+                alert("🎉 ₹5 Daily Check-In bonus aapke wallet me add ho gaya!");
+            } catch (err) {
+                alert("Error: " + err.message);
+            }
+        }
+
+        async function claimGiftCode() {
+            const code = document.getElementById('giftCodeInput').value.trim().toUpperCase();
+            if (!code) return alert("Please enter a valid gift code!");
+
+            if (code === "WELCOME50" || code === "EARNFLOW") {
+                try {
+                    const { data: profile } = await supabaseClient.from('profiles').select('balance').eq('id', currentUser.id).single();
+                    const newBal = parseFloat(profile.balance || 0) + 50;
+                    await supabaseClient.from('profiles').update({ balance: newBal }).eq('id', currentUser.id);
+
+                    alert("🎉 Congratulations! ₹50 Gift Code successfully claimed!");
+                    window.location.replace('profile.html');
+                } catch (e) {
+                    alert("Claim failed: " + e.message);
+                }
+            } else {
+                alert("Invalid or Expired Gift Code!");
+            }
+        }
+    </script>
+</body>
+</html>
