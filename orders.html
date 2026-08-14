@@ -2,44 +2,58 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earnflow Seeds - My Orders</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My Active Plans - Earnflow Seeds</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: #f1f7f2; display: flex; justify-content: center; min-height: 100vh; padding: 15px; }
-        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 20px; padding-bottom: 90px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        body { background: #f0fdf4; display: flex; justify-content: center; min-height: 100vh; color: #0f172a; }
+        .app-container { width: 100%; max-width: 440px; background: #ffffff; min-height: 100vh; padding: 20px 16px 80px; position: relative; }
 
-        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0; }
+        /* Header */
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
         .header h2 { font-size: 18px; font-weight: 800; color: #0f172a; }
-        .back-btn { text-decoration: none; color: #0f172a; font-size: 18px; }
+        .back-btn { text-decoration: none; color: #0f172a; width: 36px; height: 36px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
 
-        .order-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #cbd5e1; }
-        .plan-title { font-size: 15px; font-weight: 800; color: #15803d; }
-        .plan-badge { background: #dcfce7; color: #16a34a; font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 6px; }
+        /* Order Cards */
+        .order-list { display: flex; flex-direction: column; gap: 14px; }
+        .order-card { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 18px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); position: relative; }
+        
+        .order-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px; }
+        .order-title { font-size: 15px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+        .order-title i { color: #16a34a; font-size: 18px; }
+        .status-badge { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; }
+        .status-active { background: #dcfce7; color: #16a34a; }
+        .status-completed { background: #f1f5f9; color: #64748b; }
 
-        .order-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; color: #475569; }
-        .order-row strong { color: #0f172a; }
+        .order-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; background: #f8fafc; padding: 12px; border-radius: 12px; }
+        .info-box p { font-size: 11px; color: #64748b; font-weight: 600; }
+        .info-box h4 { font-size: 14px; font-weight: 800; color: #0f172a; margin-top: 2px; }
+        .info-box h4.green { color: #16a34a; }
 
-        .empty-box { text-align: center; padding: 40px 20px; color: #64748b; }
-        .empty-box i { font-size: 40px; color: #cbd5e1; margin-bottom: 12px; }
+        /* Empty State */
+        .empty-box { text-align: center; padding: 60px 20px; }
+        .empty-box i { font-size: 55px; color: #cbd5e1; margin-bottom: 15px; }
+        .empty-box p { font-size: 14px; color: #64748b; font-weight: 600; line-height: 1.5; margin-bottom: 20px; }
+        .btn-buy-now { display: inline-block; background: #16a34a; color: white; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 800; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25); }
     </style>
 </head>
 <body>
     <div class="app-container">
+        <!-- Header -->
         <div class="header">
             <a href="profile.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
             <h2>My Active Plans</h2>
-            <div></div>
+            <div style="width: 36px;"></div>
         </div>
 
-        <div id="ordersList">
-            <div class="empty-box">
-                <i class="fa-solid fa-spinner fa-spin"></i>
-                <p>Loading your plans...</p>
+        <!-- Orders Container -->
+        <div id="ordersContainer">
+            <div style="text-align: center; padding: 40px; color: #64748b; font-weight: 700;">
+                <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; color: #16a34a; margin-bottom: 10px;"></i>
+                <p>Loading your orders...</p>
             </div>
         </div>
     </div>
@@ -47,63 +61,100 @@
     <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
-
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        document.addEventListener("DOMContentLoaded", async function() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) return window.location.replace('login.html');
+        document.addEventListener("DOMContentLoaded", loadOrders);
 
-            loadUserOrders(session.user.id);
-        });
-
-        async function loadUserOrders(userId) {
-            const container = document.getElementById('ordersList');
-
+        async function loadOrders() {
+            const container = document.getElementById('ordersContainer');
+            
             try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) {
+                    window.location.replace('login.html');
+                    return;
+                }
+
+                const userId = session.user.id;
+
+                // Fetch all orders for this user
                 const { data: orders, error } = await supabaseClient
                     .from('orders')
                     .select('*')
                     .eq('user_id', userId)
-                    .order('created_at', { ascending: false });
+                    .order('id', { ascending: false });
 
-                if (error || !orders || orders.length === 0) {
+                if (error) throw error;
+
+                if (!orders || orders.length === 0) {
                     container.innerHTML = `
                         <div class="empty-box">
                             <i class="fa-solid fa-box-open"></i>
                             <p>Aapne abhi tak koi plan buy nahi kiya hai.</p>
+                            <a href="index.html" class="btn-buy-now">Buy Seed Plan</a>
                         </div>
                     `;
                     return;
                 }
 
-                container.innerHTML = orders.map(ord => `
-                    <div class="order-card">
-                        <div class="order-header">
-                            <span class="plan-title">${ord.plan_name}</span>
-                            <span class="plan-badge">${ord.status.toUpperCase()}</span>
+                let html = '<div class="order-list">';
+                orders.forEach(order => {
+                    const daily = parseFloat(order.daily_income || 125);
+                    const daysRemaining = order.days_remaining !== undefined && order.days_remaining !== null ? order.days_remaining : 150;
+                    const status = order.status || 'active';
+                    
+                    // Auto-detect plan name by daily income
+                    let planName = "Maize Seed Plan";
+                    if (daily === 375) planName = "Wheat Seed Plan";
+                    else if (daily === 920) planName = "Paddy Hybrid Seed";
+                    else if (order.product_name) planName = order.product_name;
+
+                    const totalEstimated = (daily * 150).toLocaleString('en-IN');
+
+                    html += `
+                        <div class="order-card">
+                            <div class="order-top">
+                                <div class="order-title">
+                                    <i class="fa-solid fa-seedling"></i>
+                                    ${planName}
+                                </div>
+                                <span class="status-badge ${status === 'active' ? 'status-active' : 'status-completed'}">
+                                    ${status === 'active' ? '● Active' : 'Completed'}
+                                </span>
+                            </div>
+                            <div class="order-grid">
+                                <div class="info-box">
+                                    <p>Daily Income</p>
+                                    <h4 class="green">₹${daily.toFixed(2)}</h4>
+                                </div>
+                                <div class="info-box">
+                                    <p>Days Remaining</p>
+                                    <h4>${daysRemaining} Days</h4>
+                                </div>
+                                <div class="info-box">
+                                    <p>Total Revenue</p>
+                                    <h4>₹${totalEstimated}</h4>
+                                </div>
+                                <div class="info-box">
+                                    <p>Payout Time</p>
+                                    <h4>Daily 12:00 AM</h4>
+                                </div>
+                            </div>
                         </div>
-                        <div class="order-row">
-                            <span>Invested Amount:</span>
-                            <strong>₹${parseFloat(ord.price).toFixed(2)}</strong>
-                        </div>
-                        <div class="order-row">
-                            <span>Daily Income:</span>
-                            <strong style="color:#16a34a;">+₹${parseFloat(ord.daily_income).toFixed(2)} / day</strong>
-                        </div>
-                        <div class="order-row">
-                            <span>Validity:</span>
-                            <strong>${ord.validity_days || 45} Days</strong>
-                        </div>
-                        <div class="order-row">
-                            <span>Date:</span>
-                            <strong>${new Date(ord.created_at).toLocaleDateString()}</strong>
-                        </div>
-                    </div>
-                `).join('');
+                    `;
+                });
+                html += '</div>';
+
+                container.innerHTML = html;
 
             } catch (err) {
-                container.innerHTML = `<div class="empty-box"><p style="color:#ef4444;">Error loading plans: ${err.message}</p></div>`;
+                console.error("Order load error:", err);
+                container.innerHTML = `
+                    <div class="empty-box">
+                        <i class="fa-solid fa-triangle-exclamation" style="color: #ef4444;"></i>
+                        <p>Orders load karne me error aayi: ${err.message}</p>
+                    </div>
+                `;
             }
         }
     </script>
