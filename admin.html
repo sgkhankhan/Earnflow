@@ -197,37 +197,62 @@
         }
 
         async function approveRecharge(txId, userId, amount) {
-            try {
-                const rechargeAmt = parseFloat(amount);
-                const { data: userProfile } = await supabaseClient.from('profiles').select('balance, total_recharge, referred_by').eq('id', userId).single();
+    try {
+        const rechargeAmt = parseFloat(amount);
 
-                const newBal = parseFloat(userProfile.balance || 0) + rechargeAmt;
-                const newTotalRec = parseFloat(userProfile.total_recharge || 0) + rechargeAmt;
+        // 1. User profile fetch karein
+        const { data: userProfile, error: profErr } = await supabaseClient
+            .from('profiles')
+            .select('id, balance, total_recharge, referred_by')
+            .eq('id', userId)
+            .single();
 
-                // 1. Update user balance
-                await supabaseClient.from('profiles').update({ balance: newBal, total_recharge: newTotalRec }).eq('id', userId);
-                
-                // 2. Mark recharge approved in 'recharges' table
-                await supabaseClient.from('recharges').update({ status: 'approved' }).eq('id', txId);
+        if (profErr) return alert("User profile error: " + profErr.message);
 
-                // 3. Give Level 1 Referral Bonus (27%) if inviter exists
-                if (userProfile && userProfile.referred_by) {
-                    const { data: level1Parent } = await supabaseClient.from('profiles').select('id, balance, team_income, level1_income').eq('referral_code', userProfile.referred_by).maybeSingle();
-                    if (level1Parent) {
-                        const l1Comm = rechargeAmt * 0.27;
-                        await supabaseClient.from('profiles').update({
-                            balance: parseFloat(level1Parent.balance || 0) + l1Comm,
-                            team_income: parseFloat(level1Parent.team_income || 0) + l1Comm,
-                            level1_income: parseFloat(level1Parent.level1_income || 0) + l1Comm
-                        }).eq('id', level1Parent.id);
-                    }
-                }
+        const currentBal = parseFloat(userProfile.balance || 0);
+        const currentTotal = parseFloat(userProfile.total_recharge || 0);
 
-                alert("Recharge Approved & ₹" + rechargeAmt + " added!");
-                loadPendingRecharges();
-                fetchDashboardMetrics();
-            } catch (err) {
-                alert("Action failed: " + err.message);
+        // 2. Balance aur total recharge update karein
+        const { error: updateErr } = await supabaseClient
+            .from('profiles')
+            .update({ 
+                balance: currentBal + rechargeAmt, 
+                total_recharge: currentTotal + rechargeAmt 
+            })
+            .eq('id', userId);
+
+        if (updateErr) return alert("Balance credit failed: " + updateErr.message);
+
+        // 3. Recharge request ko approved mark karein
+        await supabaseClient
+            .from('recharges')
+            .update({ status: 'approved' })
+            .eq('id', txId);
+
+        // 4. Referral Commission (27%) Parent user ko dein
+        if (userProfile.referred_by) {
+            const { data: parentUser } = await supabaseClient
+                .from('profiles')
+                .select('id, balance, team_income, level1_income')
+                .eq('referral_code', userProfile.referred_by)
+                .maybeSingle();
+
+            if (parentUser) {
+                const comm = rechargeAmt * 0.27;
+                await supabaseClient.from('profiles').update({
+                    balance: parseFloat(parentUser.balance || 0) + comm,
+                    team_income: parseFloat(parentUser.team_income || 0) + comm,
+                    level1_income: parseFloat(parentUser.level1_income || 0) + comm
+                }).eq('id', parentUser.id);
+            }
+        }
+
+        alert("Recharge approved & ₹" + rechargeAmt + " credited successfully!");
+        loadPendingRecharges();
+        fetchDashboardMetrics();
+    } catch (err) {
+        alert("Action error: " + err.message);
+            
             }
         }
 
