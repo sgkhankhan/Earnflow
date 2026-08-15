@@ -2,207 +2,274 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earnflow Seeds - Lucky Spin Wheel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lucky Wheel - Earnflow Seeds</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: #0f172a; display: flex; justify-content: center; min-height: 100vh; padding: 15px; }
-        .app-container { width: 100%; max-width: 430px; background: #1e293b; min-height: 100vh; padding: 20px; padding-bottom: 90px; border-radius: 20px; color: white; text-align: center; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: #0f172a; display: flex; justify-content: center; min-height: 100vh; color: #f8fafc; }
+        .app-container { width: 100%; max-width: 440px; background: #0b1329; min-height: 100vh; padding: 20px 16px 85px; position: relative; text-align: center; }
 
-        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #334155; }
+        /* Header */
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #1e293b; }
         .header h2 { font-size: 18px; font-weight: 800; color: #f8fafc; }
-        .back-btn { text-decoration: none; color: #f8fafc; font-size: 18px; }
+        .back-btn { text-decoration: none; color: #f8fafc; width: 36px; height: 36px; background: #1e293b; border: 1px solid #334155; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
 
-        .wheel-box { position: relative; width: 300px; height: 300px; margin: 20px auto; display: flex; align-items: center; justify-content: center; }
-        #wheelCanvas { width: 100%; height: 100%; border-radius: 50%; border: 6px solid #22c55e; box-shadow: 0 0 20px rgba(34, 197, 94, 0.4); }
-        .pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid #ef4444; z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        /* Wheel Area */
+        .wheel-wrapper { position: relative; width: 320px; height: 320px; margin: 20px auto 25px; display: flex; justify-content: center; align-items: center; }
+        .wheel-pointer { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 26px solid #ef4444; z-index: 10; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4)); }
+        
+        #wheelCanvas { width: 320px; height: 320px; border-radius: 50%; border: 6px solid #22c55e; box-shadow: 0 0 25px rgba(34, 197, 94, 0.4); transition: transform 4s cubic-bezier(0.15, 0.9, 0.25, 1); }
 
-        .spin-count-box { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; margin: 15px 0; font-size: 14px; }
-        .spin-count-box strong { color: #22c55e; font-size: 16px; }
+        /* Stats & Button */
+        .spins-badge { background: #1e293b; border: 1px solid #334155; padding: 10px 20px; border-radius: 14px; font-size: 14px; font-weight: 700; color: #94a3b8; display: inline-block; margin-bottom: 20px; }
+        .spins-badge span { color: #22c55e; font-size: 16px; font-weight: 800; }
 
-        .btn-spin { width: 100%; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3); }
-        .btn-spin:disabled { background: #64748b; cursor: not-allowed; opacity: 0.6; }
-        .btn-spin:active { transform: scale(0.98); }
+        .btn-spin { width: 100%; background: #22c55e; color: #ffffff; border: none; padding: 15px; border-radius: 14px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35); text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-spin:disabled { background: #475569 !important; color: #94a3b8; box-shadow: none; cursor: not-allowed; }
 
-        .rewards-info { background: rgba(255,255,255,0.03); border: 1px solid #334155; border-radius: 14px; padding: 14px; margin-top: 20px; text-align: left; font-size: 12px; color: #94a3b8; }
-        .rewards-info h4 { color: #f8fafc; font-size: 13px; margin-bottom: 6px; }
+        /* Rules Card */
+        .rules-card { background: #1e293b; border-radius: 16px; padding: 16px; margin-top: 25px; border: 1px solid #334155; text-align: left; }
+        .rules-card h4 { font-weight: 800; font-size: 14px; color: #f8fafc; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .rules-card ul { list-style: none; font-size: 12px; color: #94a3b8; line-height: 1.6; }
+
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 440px; background: #0f172a; border-top: 1px solid #1e293b; display: flex; justify-content: space-around; align-items: center; padding: 8px 0; z-index: 100; }
+        .nav-item { text-align: center; text-decoration: none; color: #64748b; font-size: 10px; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .nav-item i { font-size: 18px; }
+        .nav-item.active { color: #22c55e; }
+        .nav-wheel { margin-top: -24px; }
+        .wheel-btn { width: 52px; height: 52px; background: radial-gradient(circle, #22c55e, #15803d); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4); border: 3px solid #0f172a; }
     </style>
 </head>
 <body>
     <div class="app-container">
+        <!-- Header -->
         <div class="header">
             <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
-            <h2>Lucky Spin Wheel</h2>
-            <div></div>
+            <h2>Lucky Wheel</h2>
+            <div style="width: 36px;"></div>
         </div>
 
-        <p style="font-size: 13px; color: #94a3b8;">Spin the wheel daily to win exciting cash prizes!</p>
-
-        <div class="wheel-box">
-            <div class="pointer"></div>
-            <canvas id="wheelCanvas" width="300" height="300"></canvas>
+        <!-- Lucky Wheel Container -->
+        <div class="wheel-wrapper">
+            <div class="wheel-pointer"></div>
+            <canvas id="wheelCanvas" width="320" height="320"></canvas>
         </div>
 
-        <div class="spin-count-box">
-            Available Spins: <strong id="spinsLeftDisplay">0</strong>
+        <!-- Available Spins Badge -->
+        <div class="spins-badge">
+            Available Spins: <span id="spinCountDisplay">1</span>
         </div>
 
-        <button id="spinBtn" class="btn-spin" onclick="startSpin()">SPIN NOW</button>
+        <!-- Spin Action Button -->
+        <button id="spinBtn" onclick="startWheelSpin()" class="btn-spin">Spin Now</button>
 
-        <div class="rewards-info">
-            <h4><i class="fa-solid fa-gift"></i> Rules:</h4>
-            • 1 Free Spin everyday for active users.<br>
-            • Winnings are directly added to your Available Balance.<br>
-            • More spins unlocked with invites & investments.
+        <!-- Rules Box -->
+        <div class="rules-card">
+            <h4><i class="fa-solid fa-gift" style="color: #22c55e;"></i> Rules:</h4>
+            <ul>
+                <li>• New user ko signup par <b>1 Free Welcome Spin</b> milta hai.</li>
+                <li>• Winning amount seedha aapke <b>Available Balance</b> me add ho jayega.</li>
+                <li>• Ek user sirf 1 baar spin kar sakta hai.</li>
+            </ul>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <a href="index.html" class="nav-item">
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </a>
+            <a href="treasure.html" class="nav-item">
+                <i class="fa-solid fa-box-archive"></i>
+                <span>Treasure</span>
+            </a>
+            <div class="nav-wheel">
+                <a href="wheel.html" class="wheel-btn">
+                    <i class="fa-solid fa-dharmachakra"></i>
+                </a>
+            </div>
+            <a href="team.html" class="nav-item">
+                <i class="fa-solid fa-users"></i>
+                <span>Team</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <i class="fa-solid fa-user"></i>
+                <span>Profile</span>
+            </a>
         </div>
     </div>
 
+    <!-- Script Configuration -->
     <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
-
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        let currentUser = null;
-        let spinsLeft = 0;
-        let isSpinning = false;
 
-        const prizes = [
-            { text: "₹5", value: 5, color: "#10b981" },
+        let currentUser = null;
+        let userSpins = 0;
+        let isSpinning = false;
+        let currentRotation = 0;
+
+        // Wheel Segments (6 Segments)
+        const segments = [
+            { text: "₹20", value: 20, color: "#ec4899" },
+            { text: "₹100", value: 100, color: "#14b8a6" },
+            { text: "₹5", value: 5, color: "#06b6d4" },
             { text: "₹10", value: 10, color: "#3b82f6" },
             { text: "₹50", value: 50, color: "#8b5cf6" },
-            { text: "₹1", value: 1, color: "#f59e0b" },
-            { text: "₹20", value: 20, color: "#ec4899" },
-            { text: "₹100", value: 100, color: "#14b8a6" }
+            { text: "₹2", value: 2, color: "#f59e0b" }
         ];
 
-        let currentAngle = 0;
-
-        document.addEventListener("DOMContentLoaded", async function() {
+        document.addEventListener("DOMContentLoaded", async () => {
             drawWheel();
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) return window.location.replace('login.html');
-
-            currentUser = session.user;
-            await loadUserSpins();
+            await checkUserSpins();
         });
 
+        // 1. Draw Canvas Wheel
         function drawWheel() {
             const canvas = document.getElementById("wheelCanvas");
             const ctx = canvas.getContext("2d");
-            const numSlices = prizes.length;
-            const sliceAngle = (2 * Math.PI) / numSlices;
+            const numSegments = segments.length;
+            const arc = (2 * Math.PI) / numSegments;
             const radius = canvas.width / 2;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            prizes.forEach((prize, i) => {
-                const angle = i * sliceAngle;
+            segments.forEach((seg, i) => {
+                const angle = i * arc;
                 ctx.beginPath();
-                ctx.fillStyle = prize.color;
+                ctx.fillStyle = seg.color;
                 ctx.moveTo(radius, radius);
-                ctx.arc(radius, radius, radius, angle, angle + sliceAngle);
+                ctx.arc(radius, radius, radius, angle, angle + arc);
                 ctx.lineTo(radius, radius);
                 ctx.fill();
-                ctx.stroke();
 
-                // Draw Text
+                // Text rendering
                 ctx.save();
-                ctx.translate(radius, radius);
-                ctx.rotate(angle + sliceAngle / 2);
-                ctx.textAlign = "right";
                 ctx.fillStyle = "#ffffff";
-                ctx.font = "bold 15px Plus Jakarta Sans, sans-serif";
-                ctx.fillText(prize.text, radius - 20, 5);
+                ctx.font = "bold 20px 'Plus Jakarta Sans', sans-serif";
+                ctx.translate(radius, radius);
+                ctx.rotate(angle + arc / 2);
+                ctx.textAlign = "right";
+                ctx.fillText(seg.text, radius - 35, 7);
                 ctx.restore();
             });
+
+            // Center Pin Circle
+            ctx.beginPath();
+            ctx.arc(radius, radius, 22, 0, 2 * Math.PI);
+            ctx.fillStyle = "#0f172a";
+            ctx.fill();
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "#22c55e";
+            ctx.stroke();
         }
 
-        async function loadUserSpins() {
+        // 2. Fetch User Spins Data
+        async function checkUserSpins() {
             try {
-                const { data: profile } = await supabaseClient
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) {
+                    window.location.replace('login.html');
+                    return;
+                }
+                currentUser = session.user;
+
+                const { data: prof, error } = await supabaseClient
                     .from('profiles')
-                    .select('spins_left, last_spin_date')
+                    .select('spins_left')
                     .eq('id', currentUser.id)
                     .single();
 
-                const today = new Date().toISOString().split('T')[0];
+                if (error) throw error;
 
-                if (profile) {
-                    if (profile.last_spin_date !== today && (profile.spins_left || 0) <= 0) {
-                        // Reset 1 daily free spin
-                        await supabaseClient.from('profiles').update({ spins_left: 1, last_spin_date: today }).eq('id', currentUser.id);
-                        spinsLeft = 1;
-                    } else {
-                        spinsLeft = profile.spins_left !== undefined ? profile.spins_left : 1;
-                    }
-                } else {
-                    spinsLeft = 1;
+                userSpins = (prof && prof.spins_left !== undefined && prof.spins_left !== null) ? prof.spins_left : 1;
+                document.getElementById('spinCountDisplay').innerText = userSpins;
+
+                if (userSpins <= 0) {
+                    const btn = document.getElementById('spinBtn');
+                    btn.disabled = true;
+                    btn.innerText = "NO SPINS LEFT";
                 }
-
-                document.getElementById('spinsLeftDisplay').innerText = spinsLeft;
-                document.getElementById('spinBtn').disabled = spinsLeft <= 0;
             } catch (err) {
-                console.error("Spins fetch error:", err);
+                console.error("Spins error:", err);
             }
         }
 
-        async function startSpin() {
-            if (isSpinning || spinsLeft <= 0) return;
+        // 3. Start Wheel Rotation
+        async function startWheelSpin() {
+            if (isSpinning || userSpins <= 0) return;
 
             isSpinning = true;
-            document.getElementById('spinBtn').disabled = true;
+            const btn = document.getElementById('spinBtn');
+            btn.disabled = true;
+            btn.innerText = "Spinning...";
 
-            // Select random winning index
-            const winningIndex = Math.floor(Math.random() * prizes.length);
-            const wonPrize = prizes[winningIndex];
+            // Random winning index (mostly ₹5, ₹10, or ₹20)
+            const winIndex = Math.floor(Math.random() * segments.length);
+            const wonPrize = segments[winIndex];
 
-            const sliceAngle = 360 / prizes.length;
-            const stopAngle = 360 - (winningIndex * sliceAngle + sliceAngle / 2) - 90;
-            const totalRotation = 360 * 5 + stopAngle; // 5 full rounds + target slice
+            const segmentAngle = 360 / segments.length;
+            // Target angle so pointer at top (270 deg) aligns with winning slice
+            const stopAngle = 360 - (winIndex * segmentAngle + segmentAngle / 2) + 270;
+            const extraRounds = 5 * 360; // 5 full rounds
+            currentRotation += extraRounds + (stopAngle - (currentRotation % 360));
 
-            const canvas = document.getElementById("wheelCanvas");
-            canvas.style.transition = "transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)";
-            canvas.style.transform = `rotate(${totalRotation}deg)`;
+            const canvas = document.getElementById('wheelCanvas');
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
 
+            // Wait for 4s CSS animation
             setTimeout(async () => {
-                try {
-                    // Credit reward to user balance
-                    const { data: prof } = await supabaseClient.from('profiles').select('balance').eq('id', currentUser.id).single();
-                    const newBal = parseFloat(prof.balance || 0) + wonPrize.value;
-                    const newSpins = spinsLeft - 1;
+                await processReward(wonPrize.value);
+                isSpinning = false;
+            }, 4100);
+        }
 
-                    await supabaseClient.from('profiles').update({
-                        balance: newBal,
-                        spins_left: newSpins,
-                        last_spin_date: new Date().toISOString().split('T')[0]
-                    }).eq('id', currentUser.id);
+        // 4. Process & Save Reward to Supabase
+        async function processReward(wonAmount) {
+            try {
+                const { data: prof } = await supabaseClient
+                    .from('profiles')
+                    .select('balance')
+                    .eq('id', currentUser.id)
+                    .single();
 
-                    // Add transaction log
-                    await supabaseClient.from('transactions').insert([{
-                        user_id: currentUser.id,
-                        type: 'deposit',
-                        amount: wonPrize.value,
-                        status: 'success',
-                        payment_details: `Lucky Spin Reward: ${wonPrize.text}`
-                    }]);
+                const newBalance = (parseFloat(prof?.balance) || 0) + wonAmount;
 
-                    alert(`🎉 Congratulations! You won ${wonPrize.text}!\nAmount has been credited to your wallet.`);
-                    spinsLeft = newSpins;
-                    document.getElementById('spinsLeftDisplay').innerText = spinsLeft;
+                // Set balance and lock spins permanently to 0
+                await supabaseClient
+                    .from('profiles')
+                    .update({ 
+                        balance: newBalance,
+                        spins_left: 0 
+                    })
+                    .eq('id', currentUser.id);
 
-                } catch (e) {
-                    alert("Reward credit error: " + e.message);
-                } finally {
-                    isSpinning = false;
-                    canvas.style.transition = "none";
-                    canvas.style.transform = `rotate(${stopAngle}deg)`;
-                    document.getElementById('spinBtn').disabled = spinsLeft <= 0;
-                }
-            }, 4200);
+                // Insert into transactions
+                await supabaseClient.from('transactions').insert([{
+                    user_id: currentUser.id,
+                    type: 'income',
+                    amount: wonAmount,
+                    status: 'success',
+                    payment_details: `Welcome Lucky Wheel Bonus: ₹${wonAmount}`
+                }]);
+
+                userSpins = 0;
+                document.getElementById('spinCountDisplay').innerText = "0";
+                const btn = document.getElementById('spinBtn');
+                btn.innerText = "NO SPINS LEFT";
+                btn.disabled = true;
+
+                alert(`🎉 Mubarak ho! Aapne jeete ₹${wonAmount}!\nYeh amount aapke wallet balance me add kar diya gaya hai.`);
+            } catch (err) {
+                alert("Reward update error: " + err.message);
+            }
         }
     </script>
 </body>
-</html>
+    </html>
+                    
