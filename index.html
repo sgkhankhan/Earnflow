@@ -245,7 +245,6 @@
             </div>
         </div>
     </div>
-
     <!-- Script Configuration -->
     <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
@@ -254,44 +253,107 @@
 
         let currentUser = null;
         let userProfileData = null;
-                document.addEventListener("DOMContentLoaded", initApp);
+
+        document.addEventListener("DOMContentLoaded", initApp);
 
         async function initApp() {
             try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                if (!session) {
+                // 1. Session Check
+                const { data: sessionData, error: sessionErr } = await supabaseClient.auth.getSession();
+                
+                if (sessionErr || !sessionData || !sessionData.session) {
                     window.location.replace('login.html');
                     return;
                 }
-                currentUser = session.user;
 
-                // Load User Profile Data
-                const { data: prof, error } = await supabaseClient
+                currentUser = sessionData.session.user;
+                const rawPhone = currentUser.email ? currentUser.email.split('@')[0] : "User";
+
+                // Temporary immediate render
+                document.getElementById('userPhoneDisplay').innerText = "+91 " + rawPhone;
+                document.getElementById('userUidDisplay').innerText = "UID: " + currentUser.id.substring(0, 8).toUpperCase();
+
+                // 2. Fetch Profile from Database
+                const { data: prof, error: profErr } = await supabaseClient
                     .from('profiles')
                     .select('*')
                     .eq('id', currentUser.id)
-                    .single();
+                    .maybeSingle();
 
                 if (prof) {
                     userProfileData = prof;
-                    const phone = prof.phone || currentUser.email.split('@')[0];
+                    const phone = prof.phone || rawPhone;
                     document.getElementById('userPhoneDisplay').innerText = "+91 " + phone;
                     document.getElementById('userUidDisplay').innerText = "UID: " + prof.id.substring(0, 8).toUpperCase();
                     document.getElementById('totalBalText').innerText = "₹" + parseFloat(prof.balance || 0).toFixed(2);
                     document.getElementById('teamIncText').innerText = "₹" + parseFloat(prof.team_income || 0).toFixed(2);
+                } else {
+                    // Agar profile table me row na ho toh create karein
+                    await supabaseClient.from('profiles').upsert([{
+                        id: currentUser.id,
+                        phone: rawPhone,
+                        referral_code: rawPhone,
+                        balance: 50,
+                        team_income: 0
+                    }]);
+                    document.getElementById('totalBalText').innerText = "₹50.00";
                 }
             } catch (err) {
                 console.error("Initialization error:", err);
             }
         }
 
-        // Buy Plan Function
+        // ================= INVITE LINK SYSTEM =================
+        function openInviteModal() {
+            try {
+                let refCode = "";
+                if (userProfileData && userProfileData.referral_code) {
+                    refCode = userProfileData.referral_code;
+                } else if (currentUser && currentUser.email) {
+                    refCode = currentUser.email.split('@')[0];
+                } else {
+                    refCode = "8433184064";
+                }
+
+                // Clean link without extra params
+                const currentPath = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+                const fullUrl = `${currentPath}register.html?ref=${refCode}`;
+
+                const modal = document.getElementById('inviteModal');
+                const linkBox = document.getElementById('refLinkBox');
+
+                if (modal && linkBox) {
+                    linkBox.innerText = fullUrl;
+                    modal.style.display = 'flex';
+                } else {
+                    // Fallback clipboard copy agar modal load na ho
+                    navigator.clipboard.writeText(fullUrl);
+                    alert("🎉 Referral Link Copied:\n" + fullUrl);
+                }
+            } catch (e) {
+                alert("Invite link generation error: " + e.message);
+            }
+        }
+
+        function closeInviteModal() {
+            const modal = document.getElementById('inviteModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function copyInviteLink() {
+            const linkText = document.getElementById('refLinkBox').innerText;
+            navigator.clipboard.writeText(linkText);
+            alert("Referral link copied successfully!");
+            closeInviteModal();
+        }
+
+        // ================= BUY PLAN SYSTEM =================
         async function buyPlan(productName, price, dailyIncome, totalDays) {
             const planPrice = parseFloat(price);
             const dailyInc = parseFloat(dailyIncome);
             const days = parseInt(totalDays) || 150;
 
-            if (!currentUser || !userProfileData) {
+            if (!currentUser) {
                 alert("Kripya pehle login karein!");
                 window.location.href = 'login.html';
                 return;
@@ -300,27 +362,25 @@
             if (!confirm(`Kya aap ₹${planPrice} ka ${productName} plan khareedna chahte hain?`)) return;
 
             try {
-                // Fresh balance check
                 const { data: prof, error: pErr } = await supabaseClient
                     .from('profiles')
                     .select('balance, phone')
                     .eq('id', currentUser.id)
                     .single();
 
-                if (pErr || !prof) throw new Error("Balance fetch nahi ho saka.");
+                if (pErr || !prof) throw new Error("Balance check karne me error aayi.");
 
                 const currentBal = parseFloat(prof.balance || 0);
                 if (currentBal < planPrice) {
-                    alert(`Apke wallet me kam balance hai (Available: ₹${currentBal.toFixed(2)}).\nKripya pehle Recharge karein!`);
+                    alert(`Wallet me balance kam hai (Available: ₹${currentBal.toFixed(2)}).\nKripya pehle Recharge karein!`);
                     window.location.href = 'recharge.html';
                     return;
                 }
 
-                // 1. Balance deduct
-                const updatedBalance = currentBal - planPrice;
-                await supabaseClient.from('profiles').update({ balance: updatedBalance }).eq('id', currentUser.id);
+                // Balance Deduct
+                await supabaseClient.from('profiles').update({ balance: currentBal - planPrice }).eq('id', currentUser.id);
 
-                // 2. Orders table insert
+                // Orders Entry
                 await supabaseClient.from('orders').insert([{
                     user_id: currentUser.id,
                     daily_income: dailyInc,
@@ -328,7 +388,7 @@
                     status: 'active'
                 }]);
 
-                // 3. Transactions table log
+                // Passbook Log
                 await supabaseClient.from('transactions').insert([{
                     user_id: currentUser.id,
                     type: 'income',
@@ -337,56 +397,25 @@
                     payment_details: `Purchased: ${productName}`
                 }]);
 
-                // 4. Distribute Multi-level Referral Commission (Level 1: 27%, Level 2: 3%, Level 3: 1%)
+                // Multi-Level Commission
                 try {
                     await supabaseClient.rpc('distribute_plan_commission', {
                         buyer_user_id: currentUser.id,
                         plan_amount: planPrice,
                         plan_title: productName
                     });
-                } catch (rpcErr) {
-                    console.log("Commission trigger notice:", rpcErr);
+                } catch (cErr) {
+                    console.log("Commission trigger notice:", cErr);
                 }
 
-                alert(`🎉 Mubarak ho! ${productName} successfully activate ho gaya hai.\nDaily ₹${dailyInc} aapke wallet me judega.`);
+                alert(`🎉 Mubarak ho! ${productName} successfully activate ho gaya hai.`);
                 window.location.reload();
 
             } catch (err) {
-                alert("Plan buy failed: " + err.message);
+                alert("Plan purchase failed: " + err.message);
             }
         }
+                    </script>
 
-               // ================= INVITE / REFERRAL LINK SYSTEM =================
-        function openInviteModal() {
-            if (!currentUser) {
-                alert("Kripya pehle login karein!");
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            // User phone / referral code securely fetch karein
-            const userPhone = currentUser.email ? currentUser.email.split('@')[0] : "";
-            const myRef = (userProfileData && userProfileData.referral_code) ? userProfileData.referral_code : userPhone;
-            
-            // Dynamic full URL generation
-            const fullUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}register.html?ref=${myRef}`;
-            
-            document.getElementById('refLinkBox').innerText = fullUrl;
-            document.getElementById('inviteModal').style.display = 'flex';
-        }
-
-        function closeInviteModal() {
-            document.getElementById('inviteModal').style.display = 'none';
-        }
-
-        function copyInviteLink() {
-            const linkText = document.getElementById('refLinkBox').innerText;
-            navigator.clipboard.writeText(linkText);
-            alert("Referral link copied successfully:\n" + linkText);
-            closeInviteModal();
-        }
-        
-        }
-    </script>
 </body>
 </html>
