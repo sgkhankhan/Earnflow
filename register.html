@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Earnflow Seeds - Register</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -16,10 +16,10 @@
         p.sub { font-size: 13px; color: #64748b; margin-bottom: 25px; }
         .form-group { margin-bottom: 15px; text-align: left; }
         .form-group label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; }
-        .input-box { width: 100%; padding: 12px 14px; border: 1.5px solid #cbd5e1; border-radius: 12px; font-size: 14px; font-weight: 600; outline: none; background: #f8fafc; transition: 0.2s; }
+        .input-box { width: 100%; padding: 12px 14px; border: 1.5px solid #cbd5e1; border-radius: 12px; font-size: 14px; font-weight: 600; outline: none; background: #f8fafc; }
         .input-box:focus { border-color: #16a34a; background: #ffffff; }
         .btn-submit { width: 100%; background: #16a34a; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25); }
-        .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
+        .btn-submit:disabled { background: #94a3b8; }
         .footer-text { font-size: 13px; color: #64748b; margin-top: 20px; }
         .footer-text a { color: #16a34a; text-decoration: none; font-weight: 700; }
     </style>
@@ -30,18 +30,18 @@
         <h2>Create Account</h2>
         <p class="sub">Register & start earning daily returns</p>
 
-        <form id="regForm" onsubmit="handleRegister(event)">
+        <form onsubmit="handleRegister(event)">
             <div class="form-group">
                 <label>Mobile Number</label>
                 <input type="tel" id="mobile" class="input-box" placeholder="10-digit mobile number" maxlength="10" required>
             </div>
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" id="password" class="input-box" placeholder="Create password" required>
+                <input type="password" id="password" class="input-box" placeholder="Create password" required minlength="6">
             </div>
             <div class="form-group">
                 <label>Referral Code (Inviter Phone)</label>
-                <input type="text" id="refCode" class="input-box" placeholder="Referral Code">
+                <input type="text" id="refCode" class="input-box" placeholder="Optional referral code">
             </div>
             <button type="submit" id="regBtn" class="btn-submit">Register Now</button>
         </form>
@@ -56,59 +56,50 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // URL parameter se referral code auto-fill
-        function checkReferral() {
+        window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             const ref = urlParams.get('ref') || urlParams.get('code') || urlParams.get('r');
-            if (ref) {
+            
+            if (ref && ref.trim() !== "" && ref !== "undefined" && ref !== "null") {
                 const refInput = document.getElementById('refCode');
-                if (refInput) {
-                    refInput.value = ref.trim();
-                    refInput.style.backgroundColor = '#e2e8f0';
-                }
+                refInput.value = ref.trim();
+                refInput.readOnly = true;
+                refInput.style.backgroundColor = '#e2e8f0';
+            } else {
+                document.getElementById('refCode').value = '';
             }
-        }
-
-        window.onload = checkReferral;
-        document.addEventListener("DOMContentLoaded", checkReferral);
+        };
 
         async function handleRegister(e) {
             e.preventDefault();
             const btn = document.getElementById('regBtn');
             const phone = document.getElementById('mobile').value.trim();
             const password = document.getElementById('password').value.trim();
-            const refCode = document.getElementById('refCode').value.trim();
+            let refCode = document.getElementById('refCode').value.trim();
 
             if (phone.length !== 10 || isNaN(phone)) {
-                return alert("Kripya 10-digit ka sahi mobile number dalein");
+                return alert("10-digit valid mobile number enter karein");
             }
-            if (password.length < 6) {
-                return alert("Password kam se kam 6 characters ka hona chahiye");
+
+            if (refCode === "undefined" || refCode === "null") {
+                refCode = "";
             }
 
             btn.disabled = true;
             btn.innerText = "Creating account...";
 
             try {
-                // Email column avoid karne ke liye unique auth identity
                 const authEmail = `${phone}@earnflow.seed`;
-
-                // 1. Auth Signup
                 const { data: authData, error: authErr } = await supabaseClient.auth.signUp({
                     email: authEmail,
                     password: password
                 });
 
                 if (authErr) throw authErr;
-
                 const userId = authData.user ? authData.user.id : null;
+                if (!userId) throw new Error("User registration failed.");
 
-                if (!userId) {
-                    throw new Error("User creation failed. Kripya doosra number try karein.");
-                }
-
-                // 2. Profiles table me insert (Strictly matched columns)
-                const profilePayload = {
+                const { error: profErr } = await supabaseClient.from('profiles').upsert([{
                     id: userId,
                     phone: phone,
                     referral_code: phone,
@@ -116,29 +107,22 @@
                     balance: 50,
                     total_recharge: 0,
                     team_income: 0
-                };
-
-                const { error: profErr } = await supabaseClient
-                    .from('profiles')
-                    .upsert([profilePayload]);
+                }]);
 
                 if (profErr) throw profErr;
 
-                // 3. Signup Welcome Bonus Transaction Log
                 await supabaseClient.from('transactions').insert([{
                     user_id: userId,
-                    type: 'deposit',
+                    type: 'income',
                     amount: 50,
                     status: 'success',
                     payment_details: 'Welcome Signup Bonus'
                 }]);
 
-                alert("🎉 Account successfully ban gaya hai!\n₹50 Bonus Wallet me add ho gaya.");
+                alert("🎉 Account successfully registered!\n₹50 Bonus Wallet me add ho gaya.");
                 window.location.href = 'login.html';
-
             } catch (err) {
-                console.error("Register Error:", err);
-                alert("Registration Failed: " + (err.message || "Database connection error"));
+                alert("Registration failed: " + err.message);
                 btn.disabled = false;
                 btn.innerText = "Register Now";
             }
