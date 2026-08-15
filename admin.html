@@ -180,20 +180,40 @@
             loadPendingWithdrawals();
         });
 
-        // 1. Dashboard Metrics Loader
+        // 1. Dashboard Metrics Loader (Accurate Active/Inactive Logic)
         async function fetchDashboardMetrics() {
             try {
-                const { count: uCount } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true });
-                document.getElementById('totalUsersCount').innerText = uCount || 0;
+                // Total users
+                const { data: allProfiles, error: pErr } = await supabaseClient
+                    .from('profiles')
+                    .select('id, total_recharge, balance');
+                
+                if (pErr) throw pErr;
+                const totalCount = allProfiles ? allProfiles.length : 0;
+                document.getElementById('totalUsersCount').innerText = totalCount;
 
-                const { data: activeOrders } = await supabaseClient.from('orders').select('user_id').eq('status', 'active');
-                const activeUserIds = new Set((activeOrders || []).map(o => o.user_id));
-                const activeCount = activeUserIds.size;
-                const totalCount = uCount || 0;
+                // Active orders fetch karein
+                const { data: activeOrders } = await supabaseClient
+                    .from('orders')
+                    .select('user_id')
+                    .eq('status', 'active');
+
+                const activeOrderUserIds = new Set((activeOrders || []).map(o => o.user_id));
+
+                // Jo user recharge kar chuka hai (total_recharge > 0) YA jiska order active hai = ACTIVE USER
+                let activeCount = 0;
+                (allProfiles || []).forEach(p => {
+                    const hasRecharge = parseFloat(p.total_recharge || 0) > 0;
+                    const hasOrder = activeOrderUserIds.has(p.id);
+                    if (hasRecharge || hasOrder) {
+                        activeCount++;
+                    }
+                });
 
                 document.getElementById('activeUsersCount').innerText = activeCount;
                 document.getElementById('inactiveUsersCount').innerText = Math.max(0, totalCount - activeCount);
 
+                // Total Recharges & Withdrawals
                 const { data: recs } = await supabaseClient.from('recharges').select('amount').eq('status', 'approved');
                 const recTotal = (recs || []).reduce((acc, r) => acc + parseFloat(r.amount || 0), 0);
                 document.getElementById('totalRechargeSum').innerText = "₹" + recTotal.toFixed(0);
@@ -205,14 +225,15 @@
                 console.error("Metrics error:", err);
             }
         }
-                    // 2. Directory with Active Plan & Downline
+
+        // 2. Directory with Safe Column Fallback
         async function fetchAllUsersList() {
             const tbody = document.getElementById('allUsersTableBody');
             const badge = document.getElementById('userCountBadge');
             try {
                 const { data: users, error: uErr } = await supabaseClient
                     .from('profiles')
-                    .select('id, phone, balance, invite_code, referred_by, created_at')
+                    .select('*')
                     .order('created_at', { ascending: false });
 
                 if (uErr) throw uErr;
@@ -236,26 +257,31 @@
                 }
 
                 let html = '';
-                users.forEach((u, i) => {
+                users.forEach((u) => {
                     const activePlans = userOrdersMap[u.id] || [];
-                    const isActive = activePlans.length > 0;
+                    const hasRecharge = parseFloat(u.total_recharge || 0) > 0;
+                    const isActive = activePlans.length > 0 || hasRecharge;
                     
-                    let planBadge = `<span style="color: #94a3b8; font-weight: 600;">No Plan</span>`;
-                    if (isActive) {
+                    let planBadge = `<span style="background: #fee2e2; color: #ef4444; font-weight: 700; font-size: 10px; padding: 2px 6px; border-radius: 6px;">No Plan</span>`;
+                    if (activePlans.length > 0) {
                         const planDetails = activePlans.map(p => `₹${p.daily_income}/d (${p.days_remaining}d)`).join(', ');
                         planBadge = `<span style="background: #dcfce7; color: #16a34a; font-weight: 800; font-size: 10px; padding: 2px 6px; border-radius: 6px; display: inline-block;">${planDetails}</span>`;
+                    } else if (hasRecharge) {
+                        planBadge = `<span style="background: #e0f2fe; color: #0284c7; font-weight: 800; font-size: 10px; padding: 2px 6px; border-radius: 6px;">Recharged (₹${u.total_recharge})</span>`;
                     }
+
+                    const refCode = u.invite_code || u.phone || u.id.substring(0, 6);
 
                     html += `
                         <tr style="border-bottom: 1px solid #f1f5f9;">
                             <td style="padding: 8px;">
                                 <div style="font-weight: 800; color: #0f172a;">+91 ${u.phone || '---'}</div>
-                                <div style="font-size: 9px; color: #94a3b8;">Code: <b>${u.invite_code || u.id.substring(0,6)}</b></div>
+                                <div style="font-size: 9px; color: #94a3b8;">Code: <b>${refCode}</b></div>
                             </td>
                             <td style="padding: 8px; font-weight: 800; color: #16a34a;">₹${parseFloat(u.balance || 0).toFixed(1)}</td>
                             <td style="padding: 8px;">${planBadge}</td>
                             <td style="padding: 8px; text-align: center;">
-                                <button onclick="viewUserDownline('${u.invite_code || ''}', '${u.phone || ''}')" style="background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; cursor: pointer;">
+                                <button onclick="viewUserDownline('${refCode}', '${u.phone || ''}')" style="background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; cursor: pointer;">
                                     <i class="fa-solid fa-users-viewfinder"></i> Team
                                 </button>
                             </td>
@@ -267,7 +293,7 @@
                 tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 15px; color: #ef4444;">Error: ${err.message}</td></tr>`;
             }
         }
-
+            
         // 3. View User Downline Team
         async function viewUserDownline(inviteCode, userPhone) {
             if (!inviteCode) return alert("Is user ka referral code available nahi hai.");
