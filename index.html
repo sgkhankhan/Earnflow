@@ -356,11 +356,21 @@
             }
         }
 
-        // Referral Modal Functions
+               // ================= INVITE / REFERRAL LINK SYSTEM =================
         function openInviteModal() {
-            if (!userProfileData) return;
-            const myRef = userProfileData.referral_code || userProfileData.phone;
+            if (!currentUser) {
+                alert("Kripya pehle login karein!");
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // User phone / referral code securely fetch karein
+            const userPhone = currentUser.email ? currentUser.email.split('@')[0] : "";
+            const myRef = (userProfileData && userProfileData.referral_code) ? userProfileData.referral_code : userPhone;
+            
+            // Dynamic full URL generation
             const fullUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}register.html?ref=${myRef}`;
+            
             document.getElementById('refLinkBox').innerText = fullUrl;
             document.getElementById('inviteModal').style.display = 'flex';
         }
@@ -372,8 +382,10 @@
         function copyInviteLink() {
             const linkText = document.getElementById('refLinkBox').innerText;
             navigator.clipboard.writeText(linkText);
-            alert("Referral link copied successfully!");
+            alert("Referral link copied successfully:\n" + linkText);
             closeInviteModal();
+        }
+        
         }
     </script>
 </body>
