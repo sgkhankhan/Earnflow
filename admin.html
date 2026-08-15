@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Earnflow Seeds - Admin Control Panel</title>
+    <title>Earnflow Seeds - Master Admin Control</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: #f0fdf4; display: flex; justify-content: center; min-height: 100vh; color: #0f172a; }
-        .admin-container { width: 100%; max-width: 480px; background: #ffffff; min-height: 100vh; padding: 20px 16px 60px; box-shadow: 0 0 30px rgba(0,0,0,0.06); }
+        .admin-container { width: 100%; max-width: 500px; background: #ffffff; min-height: 100vh; padding: 20px 16px 60px; box-shadow: 0 0 30px rgba(0,0,0,0.06); }
         
         .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
         .header h2 { font-size: 18px; font-weight: 800; color: #0f172a; }
         .back-btn { text-decoration: none; color: #0f172a; width: 36px; height: 36px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
         
-        .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-        .metric-card { padding: 12px 8px; border-radius: 14px; color: white; text-align: center; }
-        .metric-card.users { background: linear-gradient(135deg, #16a34a, #15803d); }
+        .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+        .metric-card { padding: 12px 10px; border-radius: 14px; color: white; text-align: center; }
+        .metric-card.users { background: linear-gradient(135deg, #0f172a, #1e293b); }
         .metric-card.recharge { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
         .metric-card.withdraw { background: linear-gradient(135deg, #dc2626, #b91c1c); }
         .metric-card h4 { font-size: 11px; opacity: 0.9; text-transform: uppercase; margin-bottom: 4px; font-weight: 700; }
-        .metric-card p { font-size: 14px; font-weight: 800; word-break: break-all; }
+        .metric-card p { font-size: 15px; font-weight: 800; }
         
         .section-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-bottom: 20px; }
         .section-title { font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
@@ -37,49 +37,65 @@
         .btn-approve { flex: 1; background: #16a34a; color: white; border: none; padding: 8px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 12px; }
         .btn-reject { flex: 1; background: #ef4444; color: white; border: none; padding: 8px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 12px; }
         .empty-text { text-align: center; color: #64748b; font-size: 12px; padding: 10px; font-weight: 600; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 16px; }
+        .modal-card { background: #ffffff; width: 100%; max-width: 440px; border-radius: 20px; padding: 20px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
     </style>
 </head>
 <body>
     <div class="admin-container">
+        <!-- Header -->
         <div class="header">
             <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
             <h2>Admin Control Dashboard</h2>
             <div style="width: 36px;"></div>
         </div>
 
+        <!-- 1. Realtime Metrics -->
         <div class="metrics-grid">
-            <div class="metric-card users">
-                <h4>USERS</h4>
-                <p id="totalUsersCount">0</p>
+            <div class="metric-card users" style="grid-column: span 2; display: flex; justify-content: space-around; padding: 14px 6px;">
+                <div>
+                    <h4>TOTAL</h4>
+                    <p id="totalUsersCount">0</p>
+                </div>
+                <div style="border-left: 1px solid rgba(255,255,255,0.2); padding-left: 12px;">
+                    <h4 style="color: #86efac;">● ACTIVE</h4>
+                    <p id="activeUsersCount" style="color: #86efac;">0</p>
+                </div>
+                <div style="border-left: 1px solid rgba(255,255,255,0.2); padding-left: 12px;">
+                    <h4 style="color: #fca5a5;">○ INACTIVE</h4>
+                    <p id="inactiveUsersCount" style="color: #fca5a5;">0</p>
+                </div>
             </div>
             <div class="metric-card recharge">
-                <h4>RECHARGE</h4>
+                <h4>TOTAL RECHARGE</h4>
                 <p id="totalRechargeSum">₹0</p>
             </div>
             <div class="metric-card withdraw">
-                <h4>WITHDRAWAL</h4>
+                <h4>TOTAL WITHDRAWAL</h4>
                 <p id="totalWithdrawSum">₹0</p>
             </div>
         </div>
 
-        <!-- 67+ Users Directory Table -->
+        <!-- 2. Master Users Directory with Plan & Downline View -->
         <div class="section-card" style="background: #ffffff;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <div class="section-title" style="margin-bottom: 0;">
-                    <i class="fa-solid fa-users" style="color: #16a34a;"></i> All Users Directory (<span id="userCountBadge">0</span>)
+                    <i class="fa-solid fa-users" style="color: #16a34a;"></i> Users & Active Plans (<span id="userCountBadge">0</span>)
                 </div>
                 <button onclick="fetchAllUsersList()" style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 5px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer;">
                     <i class="fa-solid fa-rotate"></i> Refresh
                 </button>
             </div>
-            <div style="overflow-x: auto; max-height: 320px; border-radius: 10px; border: 1px solid #f1f5f9;">
-                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12px;">
+            <div style="overflow-x: auto; max-height: 380px; border-radius: 10px; border: 1px solid #f1f5f9;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 11px;">
                     <thead>
                         <tr style="background: #f8fafc; color: #64748b; font-weight: 700; border-bottom: 1px solid #e2e8f0;">
-                            <th style="padding: 8px;">#</th>
-                            <th style="padding: 8px;">Phone / UID</th>
+                            <th style="padding: 8px;">User / Phone</th>
                             <th style="padding: 8px;">Balance</th>
-                            <th style="padding: 8px;">Referral</th>
+                            <th style="padding: 8px;">Active Plan</th>
+                            <th style="padding: 8px; text-align: center;">Team</th>
                         </tr>
                     </thead>
                     <tbody id="allUsersTableBody">
@@ -90,7 +106,14 @@
                 </table>
             </div>
         </div>
-                <!-- User Search & Balance Control -->
+                <!-- 3. Daily Income Distribute Trigger Button -->
+        <div class="section-card" style="text-align: center;">
+            <button onclick="triggerDailyPayout()" class="btn-action" style="background: linear-gradient(135deg, #16a34a, #15803d); padding: 12px; font-size: 14px;">
+                <i class="fa-solid fa-bolt"></i> Distribute Today's Daily Income
+            </button>
+        </div>
+
+        <!-- 4. User Search & Balance Control -->
         <div class="section-card">
             <div class="section-title"><i class="fa-solid fa-user-gear"></i> User Search, Balance & Suspend</div>
             <div class="form-group" style="display: flex; gap: 8px;">
@@ -110,14 +133,7 @@
             </div>
         </div>
 
-        <!-- Instant Daily Income Trigger Button -->
-        <div class="section-card" style="text-align: center;">
-            <button onclick="triggerDailyPayout()" class="btn-action" style="background: linear-gradient(135deg, #16a34a, #15803d); padding: 12px; font-size: 14px;">
-                <i class="fa-solid fa-bolt"></i> Distribute Today's Daily Income
-            </button>
-        </div>
-
-        <!-- Pending Recharges List -->
+        <!-- 5. Pending Recharges List -->
         <div class="section-card">
             <div class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Pending Recharges</div>
             <div id="rechargeList">
@@ -125,11 +141,27 @@
             </div>
         </div>
 
-        <!-- Pending Withdrawals List -->
+        <!-- 6. Pending Withdrawals List -->
         <div class="section-card">
             <div class="section-title"><i class="fa-solid fa-money-bill-transfer"></i> Pending Withdrawals</div>
             <div id="withdrawalList">
                 <div class="empty-text">Loading requests...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Downline Team Modal -->
+    <div id="teamModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <h3 style="font-size: 15px; font-weight: 800; color: #0f172a;" id="modalTeamTitle">Direct Team</h3>
+                    <p style="font-size: 11px; color: #64748b;" id="modalTeamSubtitle"></p>
+                </div>
+                <button onclick="closeTeamModal()" style="background: #f1f5f9; border: none; border-radius: 50%; width: 30px; height: 30px; font-weight: 800; cursor: pointer;">✕</button>
+            </div>
+            <div id="teamMembersList" style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="text-align: center; color: #94a3b8; font-size: 12px; padding: 20px;">Loading team members...</div>
             </div>
         </div>
     </div>
@@ -139,6 +171,7 @@
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let searchedUserId = null;
+        let allUsersCached = [];
 
         document.addEventListener("DOMContentLoaded", () => {
             fetchDashboardMetrics();
@@ -147,10 +180,19 @@
             loadPendingWithdrawals();
         });
 
+        // 1. Dashboard Metrics Loader
         async function fetchDashboardMetrics() {
             try {
                 const { count: uCount } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true });
                 document.getElementById('totalUsersCount').innerText = uCount || 0;
+
+                const { data: activeOrders } = await supabaseClient.from('orders').select('user_id').eq('status', 'active');
+                const activeUserIds = new Set((activeOrders || []).map(o => o.user_id));
+                const activeCount = activeUserIds.size;
+                const totalCount = uCount || 0;
+
+                document.getElementById('activeUsersCount').innerText = activeCount;
+                document.getElementById('inactiveUsersCount').innerText = Math.max(0, totalCount - activeCount);
 
                 const { data: recs } = await supabaseClient.from('recharges').select('amount').eq('status', 'approved');
                 const recTotal = (recs || []).reduce((acc, r) => acc + parseFloat(r.amount || 0), 0);
@@ -163,18 +205,30 @@
                 console.error("Metrics error:", err);
             }
         }
-
+                    // 2. Directory with Active Plan & Downline
         async function fetchAllUsersList() {
             const tbody = document.getElementById('allUsersTableBody');
             const badge = document.getElementById('userCountBadge');
             try {
-                const { data: users, error } = await supabaseClient
+                const { data: users, error: uErr } = await supabaseClient
                     .from('profiles')
-                    .select('id, phone, balance, referred_by')
+                    .select('id, phone, balance, invite_code, referred_by, created_at')
                     .order('created_at', { ascending: false });
 
-                if (error) throw error;
+                if (uErr) throw uErr;
+                allUsersCached = users || [];
                 if (badge) badge.innerText = users.length;
+
+                const { data: orders } = await supabaseClient
+                    .from('orders')
+                    .select('user_id, daily_income, days_remaining, status')
+                    .eq('status', 'active');
+
+                const userOrdersMap = {};
+                (orders || []).forEach(o => {
+                    if (!userOrdersMap[o.user_id]) userOrdersMap[o.user_id] = [];
+                    userOrdersMap[o.user_id].push(o);
+                });
 
                 if (!users || users.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 15px; color: #94a3b8;">No registered users.</td></tr>`;
@@ -183,15 +237,28 @@
 
                 let html = '';
                 users.forEach((u, i) => {
+                    const activePlans = userOrdersMap[u.id] || [];
+                    const isActive = activePlans.length > 0;
+                    
+                    let planBadge = `<span style="color: #94a3b8; font-weight: 600;">No Plan</span>`;
+                    if (isActive) {
+                        const planDetails = activePlans.map(p => `₹${p.daily_income}/d (${p.days_remaining}d)`).join(', ');
+                        planBadge = `<span style="background: #dcfce7; color: #16a34a; font-weight: 800; font-size: 10px; padding: 2px 6px; border-radius: 6px; display: inline-block;">${planDetails}</span>`;
+                    }
+
                     html += `
                         <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 8px; font-weight: 700; color: #94a3b8;">${i + 1}</td>
                             <td style="padding: 8px;">
                                 <div style="font-weight: 800; color: #0f172a;">+91 ${u.phone || '---'}</div>
-                                <div style="font-size: 10px; color: #94a3b8;">UID: ${u.id.substring(0, 6).toUpperCase()}</div>
+                                <div style="font-size: 9px; color: #94a3b8;">Code: <b>${u.invite_code || u.id.substring(0,6)}</b></div>
                             </td>
-                            <td style="padding: 8px; font-weight: 800; color: #16a34a;">₹${parseFloat(u.balance || 0).toFixed(2)}</td>
-                            <td style="padding: 8px; color: #64748b; font-weight: 600;">${u.referred_by || 'Direct'}</td>
+                            <td style="padding: 8px; font-weight: 800; color: #16a34a;">₹${parseFloat(u.balance || 0).toFixed(1)}</td>
+                            <td style="padding: 8px;">${planBadge}</td>
+                            <td style="padding: 8px; text-align: center;">
+                                <button onclick="viewUserDownline('${u.invite_code || ''}', '${u.phone || ''}')" style="background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; cursor: pointer;">
+                                    <i class="fa-solid fa-users-viewfinder"></i> Team
+                                </button>
+                            </td>
                         </tr>
                     `;
                 });
@@ -201,6 +268,71 @@
             }
         }
 
+        // 3. View User Downline Team
+        async function viewUserDownline(inviteCode, userPhone) {
+            if (!inviteCode) return alert("Is user ka referral code available nahi hai.");
+
+            const modal = document.getElementById('teamModal');
+            const list = document.getElementById('teamMembersList');
+            document.getElementById('modalTeamTitle').innerText = `Team of +91 ${userPhone}`;
+            document.getElementById('modalTeamSubtitle').innerText = `Referral Code: ${inviteCode}`;
+            
+            modal.style.display = 'flex';
+            list.innerHTML = `<div style="text-align: center; padding: 20px; color: #94a3b8;">Fetching team members...</div>`;
+
+            try {
+                const { data: team, error } = await supabaseClient
+                    .from('profiles')
+                    .select('id, phone, balance, created_at')
+                    .eq('referred_by', inviteCode);
+
+                if (error) throw error;
+
+                if (!team || team.length === 0) {
+                    list.innerHTML = `<div style="text-align: center; padding: 20px; color: #64748b; font-size: 13px;">Is user ke downline mein koi member nahi hai.</div>`;
+                    return;
+                }
+
+                let html = '';
+                team.forEach((m, idx) => {
+                    const joined = new Date(m.created_at).toLocaleDateString('en-IN');
+                    html += `
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 800; font-size: 13px; color: #0f172a;">${idx + 1}. +91 ${m.phone || '---'}</div>
+                                <div style="font-size: 10px; color: #94a3b8;">Joined: ${joined}</div>
+                            </div>
+                            <div style="font-weight: 800; color: #16a34a; font-size: 13px;">
+                                ₹${parseFloat(m.balance || 0).toFixed(2)}
+                            </div>
+                        </div>
+                    `;
+                });
+                list.innerHTML = html;
+            } catch (err) {
+                list.innerHTML = `<div style="text-align: center; padding: 20px; color: #ef4444;">Error: ${err.message}</div>`;
+            }
+        }
+
+        function closeTeamModal() {
+            document.getElementById('teamModal').style.display = 'none';
+        }
+
+        // 4. Daily Income RPC
+        async function triggerDailyPayout() {
+            if (!confirm("Kya aap sabhi active users ko aaj ki Daily Income distribute karna chahte hain?")) return;
+            try {
+                const { data, error } = await supabaseClient.rpc('distribute_daily_income');
+                if (error) throw error;
+                if (data && data.success === false) throw new Error(data.error || "Execution failed");
+                alert(`🎉 Daily income successfully distributed!\nOrders Credited: ${data.credited_orders || 0}\nTotal Amount: ₹${data.total_amount || 0}`);
+                fetchDashboardMetrics();
+                fetchAllUsersList();
+            } catch (err) {
+                alert("Distribution failed: " + err.message);
+            }
+            }
+                    // 5. User Search & Balance Control
         async function searchUser() {
             const phone = document.getElementById('searchPhone').value.trim();
             if (!phone) return alert("Phone number enter karein");
@@ -243,22 +375,8 @@
                 alert("Balance update failed: " + err.message);
             }
         }
-                    // Daily Payout Trigger Engine
-        async function triggerDailyPayout() {
-            if (!confirm("Kya aap sabhi active users ko aaj ki Daily Income distribute karna chahte hain?")) return;
-            try {
-                const { data, error } = await supabaseClient.rpc('distribute_daily_income');
-                if (error) throw error;
-                if (data && data.success === false) throw new Error(data.error || "Execution failed");
-                alert(`🎉 Daily income successfully distributed!\nOrders Credited: ${data.credited_orders || 0}\nTotal Amount: ₹${data.total_amount || 0}`);
-                fetchDashboardMetrics();
-                fetchAllUsersList();
-            } catch (err) {
-                alert("Distribution failed: " + err.message);
-            }
-        }
 
-        // Pending Recharges Operations
+        // 6. Pending Recharges
         async function loadPendingRecharges() {
             const list = document.getElementById('rechargeList');
             try {
@@ -324,7 +442,7 @@
             }
         }
 
-        // Pending Withdrawals Operations
+        // 7. Pending Withdrawals
         async function loadPendingWithdrawals() {
             const list = document.getElementById('withdrawalList');
             try {
