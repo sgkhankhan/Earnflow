@@ -10,9 +10,9 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: #f0fdf4; display: flex; justify-content: center; min-height: 100vh; color: #0f172a; }
-        .app-container { width: 100%; max-width: 440px; background: #ffffff; min-height: 100vh; padding: 20px 16px 80px; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.06); }
+        .app-container { width: 100%; max-width: 440px; background: #ffffff; min-height: 100vh; padding: 20px 16px 85px; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.06); }
 
-        /* Top Bar Header */
+        /* Top Header */
         .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
         .header h2 { font-size: 18px; font-weight: 800; color: #0f172a; }
         .back-btn { text-decoration: none; color: #0f172a; width: 36px; height: 36px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
@@ -50,7 +50,7 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Header -->
+        <!-- Top Bar Header -->
         <div class="header">
             <a href="profile.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
             <h2>My Active Plans</h2>
@@ -91,6 +91,7 @@
         </div>
     </div>
 
+    <!-- Script Configuration -->
     <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
@@ -110,15 +111,48 @@
 
                 const userId = session.user.id;
 
-                // 1. Fetch from orders table
-                const { data: orders, error: orderErr } = await supabaseClient
+                // 1. Database orders fetch
+                let { data: orders, error: orderErr } = await supabaseClient
                     .from('orders')
                     .select('*')
                     .eq('user_id', userId)
                     .order('id', { ascending: false });
 
-                if (orderErr) throw orderErr;
+                // 2. Fallback: Agar orders table blank mile toh transactions se purchased plans fetch karein
+                if (!orders || orders.length === 0) {
+                    const { data: txs } = await supabaseClient
+                        .from('transactions')
+                        .select('*')
+                        .eq('user_id', userId)
+                        .ilike('payment_details', '%Purchased%');
 
+                    if (txs && txs.length > 0) {
+                        orders = txs.map(tx => {
+                            let daily = 125;
+                            let planName = "Maize Seed Plan";
+                            const details = (tx.payment_details || "").toLowerCase();
+                            
+                            if (details.includes('wheat') || tx.amount == 1500) {
+                                daily = 375;
+                                planName = "Wheat Seed Plan";
+                            } else if (details.includes('paddy') || tx.amount == 3500) {
+                                daily = 920;
+                                planName = "Paddy Hybrid Seed";
+                            }
+
+                            return {
+                                id: tx.id,
+                                user_id: tx.user_id,
+                                daily_income: daily,
+                                days_remaining: 150,
+                                status: 'active',
+                                product_name: planName
+                            };
+                        });
+                    }
+                }
+
+                // 3. Agar koi plan na ho
                 if (!orders || orders.length === 0) {
                     container.innerHTML = `
                         <div class="empty-box">
@@ -130,16 +164,16 @@
                     return;
                 }
 
+                // 4. Render Active Order Cards
                 let html = '<div class="order-list">';
                 orders.forEach(order => {
                     const daily = parseFloat(order.daily_income || 125);
-                    const daysRemaining = order.days_remaining !== undefined && order.days_remaining !== null ? order.days_remaining : 150;
+                    const daysRemaining = (order.days_remaining !== undefined && order.days_remaining !== null) ? order.days_remaining : 150;
                     const status = order.status || 'active';
                     
-                    let planName = "Maize Seed Plan";
-                    if (daily === 375) planName = "Wheat Seed Plan";
-                    else if (daily === 920) planName = "Paddy Hybrid Seed";
-                    else if (order.product_name) planName = order.product_name;
+                    let planName = order.product_name || "Maize Seed Plan";
+                    if (daily === 375 && !order.product_name) planName = "Wheat Seed Plan";
+                    else if (daily === 920 && !order.product_name) planName = "Paddy Hybrid Seed";
 
                     const totalEstimated = (daily * 150).toLocaleString('en-IN');
 
