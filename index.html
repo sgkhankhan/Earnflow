@@ -40,12 +40,12 @@
         .icon-mission { background: #fef3c7; color: #d97706; }
         .icon-invite { background: #f3e8ff; color: #9333ea; }
         .icon-online { background: #e0f2fe; color: #0284c7; }
-
-        /* Section Titles */
+                /* Section Titles */
         .section-header { padding: 8px 18px 12px; display: flex; justify-content: space-between; align-items: center; }
         .section-header h2 { font-size: 17px; font-weight: 800; color: #0f172a; }
         .section-header span { font-size: 12px; color: #16a34a; font-weight: 700; }
-                /* Plan Card Container */
+
+        /* Plan Card Container */
         .plans-list { padding: 0 16px; display: flex; flex-direction: column; gap: 16px; }
         .plan-card { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 20px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); position: relative; overflow: hidden; }
         .plan-tag { position: absolute; top: 0; right: 0; background: linear-gradient(135deg, #16a34a, #15803d); color: white; font-size: 10px; font-weight: 800; padding: 5px 14px; border-radius: 0 0 0 14px; text-transform: uppercase; }
@@ -76,13 +76,56 @@
         .nav-wheel { margin-top: -24px; }
         .wheel-btn { width: 52px; height: 52px; background: radial-gradient(circle, #22c55e, #15803d); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35); border: 3px solid #ffffff; }
 
-        /* Modal */
+        /* Generic Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
         .modal-box { background: white; width: 100%; max-width: 380px; border-radius: 20px; padding: 24px; text-align: center; }
         .modal-box h3 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
         .modal-box p { font-size: 12px; color: #64748b; margin-bottom: 16px; }
         .ref-code-box { background: #f8fafc; border: 1.5px dashed #16a34a; padding: 12px; border-radius: 12px; font-size: 15px; font-weight: 800; color: #16a34a; margin-bottom: 16px; word-break: break-all; }
         .btn-modal { width: 100%; background: #16a34a; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; }
+
+        /* Flash Offer Popup Modal */
+        .flash-modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(5px); z-index: 999999; justify-content: center; align-items: center; padding: 18px;
+        }
+        .flash-modal-card {
+            background: #ffffff; width: 100%; max-width: 360px; border-radius: 24px;
+            padding: 24px 20px; position: relative; text-align: center; box-shadow: 0 20px 45px rgba(0,0,0,0.35);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            from { transform: scale(0.85); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .flash-close-btn {
+            position: absolute; right: 14px; top: 12px; background: #f1f5f9; border: none;
+            font-size: 22px; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: #64748b;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .flash-badge {
+            background: #ef4444; color: #fff; display: inline-block; font-size: 10px; font-weight: 800;
+            padding: 4px 12px; border-radius: 20px; letter-spacing: 0.5px; margin-bottom: 8px;
+        }
+        .flash-title { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 2px; }
+        .flash-sub { font-size: 12px; color: #64748b; margin-bottom: 14px; }
+        .flash-plan-box {
+            background: #f8fafc; border: 1.5px dashed #16a34a; border-radius: 16px;
+            padding: 14px; margin-bottom: 14px; text-align: left;
+        }
+        .plan-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; color: #334155; }
+        .plan-row.total-row { border-top: 1px solid #e2e8f0; padding-top: 8px; margin-top: 8px; margin-bottom: 0; }
+        .price-strike { text-decoration: line-through; color: #94a3b8; font-size: 11px; margin-right: 4px; }
+        .offer-price { color: #dc2626; font-size: 15px; font-weight: 800; }
+        .profit-highlight { color: #16a34a; font-weight: 800; }
+        .total-highlight { color: #0f172a; font-size: 15px; font-weight: 800; }
+        .flash-timer { font-size: 11px; font-weight: 700; color: #d97706; margin-bottom: 14px; }
+        .btn-buy-flash {
+            background: linear-gradient(135deg, #16a34a, #15803d); color: #ffffff; border: none;
+            width: 100%; padding: 13px; border-radius: 14px; font-size: 14px; font-weight: 800;
+            cursor: pointer; box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35); transition: 0.2s;
+        }
+        .btn-buy-flash:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
@@ -137,7 +180,7 @@
                 <span>Online</span>
             </a>
         </div>
-            <!-- Section Header -->
+                <!-- Section Header -->
         <div class="section-header">
             <h2>Earnflow Seed Plans</h2>
             <span>Daily Withdrawal</span>
@@ -207,8 +250,8 @@
                     Buy Now <i class="fa-solid fa-cart-shopping"></i>
                 </button>
             </div>
-        </div>
-                <!-- Bottom Navigation Bar -->
+                                                                           </div>
+            <!-- Bottom Navigation Bar -->
         <div class="bottom-nav">
             <a href="index.html" class="nav-item active">
                 <i class="fa-solid fa-house"></i>
@@ -244,8 +287,49 @@
                 <button onclick="closeInviteModal()" style="margin-top: 10px; background: none; border: none; color: #64748b; font-weight: 700; font-size: 13px; cursor: pointer;">Close</button>
             </div>
         </div>
+
+        <!-- Special Flash Offer Popup Modal -->
+        <div id="flashOfferModal" class="flash-modal-overlay">
+            <div class="flash-modal-card">
+                <button class="flash-close-btn" onclick="closeFlashOffer()">&times;</button>
+                <div class="flash-badge"><i class="fa-solid fa-bolt"></i> LIMITED TIME OFFER</div>
+                <h3 class="flash-title">🔥 VIP Starter Special</h3>
+                <p class="flash-sub">Sirf aaj ke liye special high yield launch!</p>
+                
+                <div class="flash-plan-box">
+                    <div class="plan-row">
+                        <span>Plan Name:</span>
+                        <b>SUPER SEED VIP</b>
+                    </div>
+                    <div class="plan-row">
+                        <span>Plan Price:</span>
+                        <span><b class="price-strike">₹600</b> <b class="offer-price">₹299 Only</b></span>
+                    </div>
+                    <div class="plan-row">
+                        <span>Daily Yield:</span>
+                        <b class="profit-highlight">₹85.00 / Day</b>
+                    </div>
+                    <div class="plan-row">
+                        <span>Validity:</span>
+                        <b>30 Days</b>
+                    </div>
+                    <div class="plan-row total-row">
+                        <span>Total Income:</span>
+                        <b class="total-highlight">₹2,550.00</b>
+                    </div>
+                </div>
+
+                <div class="flash-timer">
+                    <i class="fa-regular fa-clock"></i> Offer ends in: <span id="flashTimer">04:59</span>
+                </div>
+
+                <button class="btn-buy-flash" onclick="buyPlan('SUPER SEED VIP', 299, 85, 30)">
+                    <i class="fa-solid fa-cart-shopping"></i> Grab Offer Now
+                </button>
+            </div>
+        </div>
     </div>
-    <!-- Script Configuration -->
+        <!-- Script Configuration -->
     <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
@@ -253,12 +337,23 @@
 
         let currentUser = null;
         let userProfileData = null;
+        window.flashTimerInterval = null;
 
-        document.addEventListener("DOMContentLoaded", initApp);
+        document.addEventListener("DOMContentLoaded", () => {
+            initApp();
+            
+            // Har page open/login par popup show hoga
+            setTimeout(() => {
+                const modal = document.getElementById("flashOfferModal");
+                if (modal) {
+                    modal.style.display = "flex";
+                    startFlashCountdown(300);
+                }
+            }, 1000);
+        });
 
         async function initApp() {
             try {
-                // 1. Session Check
                 const { data: sessionData, error: sessionErr } = await supabaseClient.auth.getSession();
                 
                 if (sessionErr || !sessionData || !sessionData.session) {
@@ -269,11 +364,9 @@
                 currentUser = sessionData.session.user;
                 const rawPhone = currentUser.email ? currentUser.email.split('@')[0] : "User";
 
-                // Temporary immediate render
                 document.getElementById('userPhoneDisplay').innerText = "+91 " + rawPhone;
                 document.getElementById('userUidDisplay').innerText = "UID: " + currentUser.id.substring(0, 8).toUpperCase();
 
-                // 2. Fetch Profile from Database
                 const { data: prof, error: profErr } = await supabaseClient
                     .from('profiles')
                     .select('*')
@@ -288,7 +381,6 @@
                     document.getElementById('totalBalText').innerText = "₹" + parseFloat(prof.balance || 0).toFixed(2);
                     document.getElementById('teamIncText').innerText = "₹" + parseFloat(prof.team_income || 0).toFixed(2);
                 } else {
-                    // Agar profile table me row na ho toh create karein
                     await supabaseClient.from('profiles').upsert([{
                         id: currentUser.id,
                         phone: rawPhone,
@@ -301,6 +393,29 @@
             } catch (err) {
                 console.error("Initialization error:", err);
             }
+        }
+                // ================= FLASH POPUP ENGINE =================
+        function closeFlashOffer() {
+            const modal = document.getElementById("flashOfferModal");
+            if (modal) modal.style.display = "none";
+        }
+
+        function startFlashCountdown(durationInSeconds) {
+            let timer = durationInSeconds;
+            const timerDisplay = document.getElementById("flashTimer");
+            
+            if (window.flashTimerInterval) clearInterval(window.flashTimerInterval);
+
+            window.flashTimerInterval = setInterval(() => {
+                const minutes = String(Math.floor(timer / 60)).padStart(2, '0');
+                const seconds = String(timer % 60).padStart(2, '0');
+                if (timerDisplay) timerDisplay.textContent = `${minutes}:${seconds}`;
+                
+                if (--timer < 0) {
+                    clearInterval(window.flashTimerInterval);
+                    if (timerDisplay) timerDisplay.textContent = "00:00 (Expired)";
+                }
+            }, 1000);
         }
 
         // ================= INVITE LINK SYSTEM =================
@@ -315,7 +430,6 @@
                     refCode = "8433184064";
                 }
 
-                // Clean link without extra params
                 const currentPath = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
                 const fullUrl = `${currentPath}register.html?ref=${refCode}`;
 
@@ -326,107 +440,14 @@
                     linkBox.innerText = fullUrl;
                     modal.style.display = 'flex';
                 } else {
-                    // Fallback clipboard copy agar modal load na ho
                     navigator.clipboard.writeText(fullUrl);
                     alert("🎉 Referral Link Copied:\n" + fullUrl);
                 }
             } catch (e) {
-                alert("Invite link generation error: " + e.message);
+                alert("Invite link error: " + e.message);
             }
         }
-// Check Session and show Popup once per user session
-document.addEventListener("DOMContentLoaded", () => {
-    // Show popup 1.2 seconds after page load
-    setTimeout(() => {
-        const isClosed = sessionStorage.getItem("flash_offer_dismissed");
-        if (!isClosed) {
-            const modal = document.getElementById("flashOfferModal");
-            if (modal) modal.style.display = "flex";
-            startFlashCountdown(300); // 5 minutes timer
-        }
-    }, 1200);
-});
 
-function closeFlashOffer() {
-    document.getElementById("flashOfferModal").style.display = "none";
-    sessionStorage.setItem("flash_offer_dismissed", "true");
-}
-
-function startFlashCountdown(durationInSeconds) {
-    let timer = durationInSeconds;
-    const timerDisplay = document.getElementById("flashTimer");
-    const interval = setInterval(() => {
-        const minutes = String(Math.floor(timer / 60)).padStart(2, '0');
-        const seconds = String(timer % 60).padStart(2, '0');
-        if (timerDisplay) timerDisplay.textContent = `${minutes}:${seconds}`;
-        if (--timer < 0) {
-            clearInterval(interval);
-            if (timerDisplay) timerDisplay.textContent = "00:00 (Expired)";
-        }
-    }, 1000);
-}
-
-// Plan Buy Function
-async function buyFlashOfferPlan(price, planName, dailyIncome, validity) {
-    try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (!session || !session.user) {
-            window.location.href = "login.html";
-            return;
-        }
-        const userId = session.user.id;
-
-        // 1. Check wallet balance
-        const { data: profile, error: profErr } = await supabaseClient
-            .from('profiles')
-            .select('balance')
-            .eq('id', userId)
-            .single();
-
-        if (profErr || !profile) throw new Error("Profile not found");
-
-        if (parseFloat(profile.balance || 0) < price) {
-            alert(`Insufficient Balance! Aapke wallet mein ₹${price} hone chahiye. Pehle Recharge karein.`);
-            window.location.href = "recharge.html";
-            return;
-        }
-
-        // 2. Deduct Balance
-        await supabaseClient
-            .from('profiles')
-            .update({ balance: parseFloat(profile.balance) - price })
-            .eq('id', userId);
-
-        // 3. Create Active Order
-        await supabaseClient.from('orders').insert([{
-            user_id: userId,
-            plan_name: planName,
-            price: price,
-            daily_income: dailyIncome,
-            validity_days: validity,
-            days_remaining: validity,
-            status: 'active'
-        }]);
-
-        // 4. Log Transaction
-        await supabaseClient.from('transactions').insert([{
-            user_id: userId,
-            type: 'expense',
-            amount: price,
-            status: 'success',
-            payment_details: `Purchased: ${planName}`
-        }]);
-
-        alert(`🎉 Mubarak ho! ${planName} successfully activate ho gaya hai.`);
-        closeFlashOffer();
-        location.reload();
-
-    } catch (err) {
-        console.error("Flash buy error:", err);
-        alert("Purchase failed: " + err.message);
-    }
-    }
-        
         function closeInviteModal() {
             const modal = document.getElementById('inviteModal');
             if (modal) modal.style.display = 'none';
@@ -434,12 +455,15 @@ async function buyFlashOfferPlan(price, planName, dailyIncome, validity) {
 
         function copyInviteLink() {
             const linkText = document.getElementById('refLinkBox').innerText;
-            navigator.clipboard.writeText(linkText);
-            alert("Referral link copied successfully!");
-            closeInviteModal();
+            navigator.clipboard.writeText(linkText).then(() => {
+                alert("Referral link copied successfully!");
+                closeInviteModal();
+            }).catch(() => {
+                alert("Copied: " + linkText);
+                closeInviteModal();
+            });
         }
-
-        // ================= BUY PLAN SYSTEM =================
+                // ================= UNIFIED BUY PLAN SYSTEM =================
         async function buyPlan(productName, price, dailyIncome, totalDays) {
             const planPrice = parseFloat(price);
             const dailyInc = parseFloat(dailyIncome);
@@ -451,7 +475,7 @@ async function buyFlashOfferPlan(price, planName, dailyIncome, validity) {
                 return;
             }
 
-            if (!confirm(`Kya aap ₹${planPrice} ka ${productName} plan khareedna chahte hain?`)) return;
+            if (!confirm(`Kya aap ₹${planPrice} ka "${productName}" plan khareedna chahte hain?`)) return;
 
             try {
                 const { data: prof, error: pErr } = await supabaseClient
@@ -469,27 +493,39 @@ async function buyFlashOfferPlan(price, planName, dailyIncome, validity) {
                     return;
                 }
 
-                // Balance Deduct
-                await supabaseClient.from('profiles').update({ balance: currentBal - planPrice }).eq('id', currentUser.id);
+                // 1. Balance Deduct
+                const { error: balErr } = await supabaseClient
+                    .from('profiles')
+                    .update({ balance: currentBal - planPrice })
+                    .eq('id', currentUser.id);
 
-                // Orders Entry
-                await supabaseClient.from('orders').insert([{
-                    user_id: currentUser.id,
-                    daily_income: dailyInc,
-                    days_remaining: days,
-                    status: 'active'
-                }]);
+                if (balErr) throw balErr;
 
-                // Passbook Log
+                // 2. Orders Entry
+                const { error: ordErr } = await supabaseClient
+                    .from('orders')
+                    .insert([{
+                        user_id: currentUser.id,
+                        plan_name: productName,
+                        price: planPrice,
+                        daily_income: dailyInc,
+                        validity_days: days,
+                        days_remaining: days,
+                        status: 'active'
+                    }]);
+
+                if (ordErr) throw ordErr;
+
+                // 3. Passbook Log
                 await supabaseClient.from('transactions').insert([{
                     user_id: currentUser.id,
-                    type: 'income',
+                    type: 'expense',
                     amount: planPrice,
                     status: 'success',
                     payment_details: `Purchased: ${productName}`
                 }]);
 
-                // Multi-Level Commission
+                // 4. Multi-Level Commission Trigger
                 try {
                     await supabaseClient.rpc('distribute_plan_commission', {
                         buyer_user_id: currentUser.id,
@@ -501,102 +537,13 @@ async function buyFlashOfferPlan(price, planName, dailyIncome, validity) {
                 }
 
                 alert(`🎉 Mubarak ho! ${productName} successfully activate ho gaya hai.`);
+                closeFlashOffer();
                 window.location.reload();
 
             } catch (err) {
                 alert("Plan purchase failed: " + err.message);
             }
         }
-                    </script>
-<!-- Special Flash Offer Popup Modal -->
-<div id="flashOfferModal" class="flash-modal-overlay">
-    <div class="flash-modal-card">
-        <!-- Close Button -->
-        <button class="flash-close-btn" onclick="closeFlashOffer()">&times;</button>
-        
-        <!-- Badge -->
-        <div class="flash-badge"><i class="fa-solid fa-bolt"></i> LIMITED TIME OFFER</div>
-        
-        <h3 class="flash-title">🔥 VIP Starter Special</h3>
-        <p class="flash-sub">Sirf aaj ke liye special high yield launch!</p>
-        
-        <!-- Offer Detail Box -->
-        <div class="flash-plan-box">
-            <div class="plan-row">
-                <span>Plan Name:</span>
-                <b>SUPER SEED VIP</b>
-            </div>
-            <div class="plan-row">
-                <span>Plan Price:</span>
-                <b class="price-strike">₹600</b> <b class="offer-price">₹299 Only</b>
-            </div>
-            <div class="plan-row">
-                <span>Daily Yield:</span>
-                <b class="profit-highlight">₹85.00 / Day</b>
-            </div>
-            <div class="plan-row">
-                <span>Validity:</span>
-                <b>30 Days</b>
-            </div>
-            <div class="plan-row total-row">
-                <span>Total Income:</span>
-                <b class="total-highlight">₹2,550.00</b>
-            </div>
-        </div>
-
-        <div class="flash-timer">
-            <i class="fa-regular fa-clock"></i> Offer ends in: <span id="flashTimer">04:59</span>
-        </div>
-
-        <!-- Buy / Action Button -->
-        <button class="btn-buy-flash" onclick="buyFlashOfferPlan(299, 'SUPER SEED VIP', 85, 30)">
-            <i class="fa-solid fa-cart-shopping"></i> Grab Offer Now
-        </button>
-    </div>
-</div>
-
-<style>
-.flash-modal-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(4px); z-index: 99999; justify-content: center; align-items: center; padding: 20px;
-}
-.flash-modal-card {
-    background: #ffffff; width: 100%; max-width: 360px; border-radius: 24px;
-    padding: 24px 20px; position: relative; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-@keyframes popIn {
-    from { transform: scale(0.85); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-.flash-close-btn {
-    position: absolute; right: 14px; top: 12px; background: #f1f5f9; border: none;
-    font-size: 22px; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: #64748b;
-}
-.flash-badge {
-    background: #ef4444; color: #fff; display: inline-block; font-size: 10px; font-weight: 800;
-    padding: 4px 10px; border-radius: 20px; letter-spacing: 0.5px; margin-bottom: 8px;
-}
-.flash-title { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 2px; }
-.flash-sub { font-size: 12px; color: #64748b; margin-bottom: 14px; }
-.flash-plan-box {
-    background: #f8fafc; border: 1.5px dashed #16a34a; border-radius: 16px;
-    padding: 12px 14px; margin-bottom: 14px; text-align: left;
-}
-.plan-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; color: #334155; }
-.plan-row.total-row { border-top: 1px solid #e2e8f0; padding-top: 6px; margin-top: 6px; margin-bottom: 0; }
-.price-strike { text-decoration: line-through; color: #94a3b8; font-size: 11px; margin-right: 4px; }
-.offer-price { color: #dc2626; font-size: 14px; font-weight: 800; }
-.profit-highlight { color: #16a34a; font-weight: 800; }
-.total-highlight { color: #0f172a; font-size: 14px; font-weight: 800; }
-.flash-timer { font-size: 11px; font-weight: 700; color: #d97706; margin-bottom: 14px; }
-.btn-buy-flash {
-    background: linear-gradient(135deg, #16a34a, #15803d); color: #ffffff; border: none;
-    width: 100%; padding: 13px; border-radius: 14px; font-size: 14px; font-weight: 800;
-    cursor: pointer; box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35); transition: 0.2s;
-}
-.btn-buy-flash:active { transform: scale(0.98); }
-    </style>
-            
+    </script>
 </body>
 </html>
