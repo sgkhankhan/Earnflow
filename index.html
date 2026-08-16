@@ -126,6 +126,25 @@
             cursor: pointer; box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35); transition: 0.2s;
         }
         .btn-buy-flash:active { transform: scale(0.98); }
+
+        /* Telegram Modal Styles */
+        .tg-modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px); z-index: 9999999; justify-content: center; align-items: center; padding: 20px;
+        }
+        .tg-modal-card {
+            background: #ffffff; width: 100%; max-width: 320px; border-radius: 24px;
+            padding: 26px 20px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .tg-icon { font-size: 48px; color: #229ED9; margin-bottom: 14px; }
+        .tg-title { font-size: 19px; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
+        .tg-text { font-size: 12px; color: #64748b; margin-bottom: 20px; line-height: 1.5; }
+        .btn-tg-join {
+            background: #229ED9; color: white; border: none; width: 100%; padding: 13px;
+            border-radius: 14px; font-weight: 800; font-size: 14px; cursor: pointer; text-decoration: none;
+            display: block; box-shadow: 0 4px 12px rgba(34, 158, 217, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -175,7 +194,7 @@
                 <div class="action-icon icon-invite"><i class="fa-solid fa-share-nodes"></i></div>
                 <span>Invite</span>
             </div>
-            <a href="https://t.me/EARNFLOWSEEDS" target="_blank" class="action-btn">
+            <a href="https://t.me/Earnflowseeds" target="_blank" class="action-btn">
                 <div class="action-icon icon-online"><i class="fa-brands fa-telegram"></i></div>
                 <span>Online</span>
             </a>
@@ -250,8 +269,8 @@
                     Buy Now <i class="fa-solid fa-cart-shopping"></i>
                 </button>
             </div>
-                                                                           </div>
-            <!-- Bottom Navigation Bar -->
+        </div>
+                <!-- Bottom Navigation Bar -->
         <div class="bottom-nav">
             <a href="index.html" class="nav-item active">
                 <i class="fa-solid fa-house"></i>
@@ -328,7 +347,22 @@
                 </button>
             </div>
         </div>
-    </div>
+
+        <!-- Official Telegram Join Modal -->
+        <div id="telegramModal" class="tg-modal-overlay">
+            <div class="tg-modal-card">
+                <i class="fa-brands fa-telegram tg-icon"></i>
+                <h3 class="tg-title">Join Official Channel</h3>
+                <p class="tg-text">Sabse pehle daily updates, withdrawal proofs aur new bonuses ke liye hamara Telegram channel join karein!</p>
+                <a href="https://t.me/Earnflowseeds" target="_blank" class="btn-tg-join" onclick="closeTelegramModal()">
+                    <i class="fa-brands fa-telegram"></i> Join Telegram Now
+                </a>
+                <button onclick="closeTelegramModal()" style="margin-top: 14px; background: none; border: none; color: #94a3b8; font-weight: 700; font-size: 13px; cursor: pointer;">
+                    Maybe Later
+                </button>
+            </div>
+        </div>
+                    </div>
         <!-- Script Configuration -->
     <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
@@ -342,11 +376,11 @@
         document.addEventListener("DOMContentLoaded", () => {
             initApp();
             
-            // Har page open/login par popup show hoga
+            // 1. Flash Offer Popup (1 second baad load hoga)
             setTimeout(() => {
-                const modal = document.getElementById("flashOfferModal");
-                if (modal) {
-                    modal.style.display = "flex";
+                const flashModal = document.getElementById("flashOfferModal");
+                if (flashModal) {
+                    flashModal.style.display = "flex";
                     startFlashCountdown(300);
                 }
             }, 1000);
@@ -398,6 +432,12 @@
         function closeFlashOffer() {
             const modal = document.getElementById("flashOfferModal");
             if (modal) modal.style.display = "none";
+
+            // Flash modal band hone ke 500ms baad Telegram Modal show hoga
+            setTimeout(() => {
+                const tgModal = document.getElementById("telegramModal");
+                if (tgModal) tgModal.style.display = "flex";
+            }, 500);
         }
 
         function startFlashCountdown(durationInSeconds) {
@@ -416,6 +456,12 @@
                     if (timerDisplay) timerDisplay.textContent = "00:00 (Expired)";
                 }
             }, 1000);
+        }
+
+        // ================= TELEGRAM MODAL ENGINE =================
+        function closeTelegramModal() {
+            const modal = document.getElementById("telegramModal");
+            if (modal) modal.style.display = "none";
         }
 
         // ================= INVITE LINK SYSTEM =================
@@ -462,7 +508,7 @@
                 alert("Copied: " + linkText);
                 closeInviteModal();
             });
-        }
+                }
                 // ================= UNIFIED BUY PLAN SYSTEM =================
         async function buyPlan(productName, price, dailyIncome, totalDays) {
             const planPrice = parseFloat(price);
