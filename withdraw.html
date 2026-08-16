@@ -304,7 +304,47 @@
             document.getElementById('dispFeeAmount').innerText = `- ₹${fee.toFixed(2)}`;
             document.getElementById('dispNetAmount').innerText = `₹${net.toFixed(2)}`;
         }
+async function handleWithdrawalSubmit() {
+    const btn = document.getElementById('withdrawSubmitBtn');
+    btn.disabled = true;
+    btn.innerText = "Checking Plan...";
 
+    try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+            window.location.replace('login.html');
+            return;
+        }
+        const userId = session.user.id;
+
+        // 1. Check karein ki user ke paas active plan hai ya nahi
+        const { data: activeOrders, error: orderErr } = await supabaseClient
+            .from('orders')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('status', 'active')
+            .gt('days_remaining', 0);
+
+        if (orderErr) throw orderErr;
+
+        if (!activeOrders || activeOrders.length === 0) {
+            alert("⚠️ Withdrawal Blocked!\n\nPehle koi ek Seed Plan activate karein, uske baad hi withdrawal unlock hoga.");
+            btn.disabled = false;
+            btn.innerText = "Confirm Withdraw";
+            return;
+        }
+
+        // 2. Agar active plan hai, toh normal withdrawal process aage badhayein
+        executeWithdrawalRequest(userId);
+
+    } catch (err) {
+        console.error("Withdraw validation error:", err);
+        alert("Verification failed: " + err.message);
+        btn.disabled = false;
+        btn.innerText = "Confirm Withdraw";
+    }
+}
+            
         // 5. Strict 1 Withdrawal Per Day Check
         async function checkTodayWithdrawalExists(userId) {
             const now = new Date();
