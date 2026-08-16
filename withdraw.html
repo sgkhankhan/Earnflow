@@ -25,7 +25,7 @@
         .form-card { background: #1e293b; border: 1px solid #334155; border-radius: 18px; padding: 18px; margin-bottom: 20px; }
         .form-group { margin-bottom: 14px; text-align: left; }
         .form-group label { display: block; font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 6px; }
-        .input-box { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; font-size: 14px; color: #ffffff; outline: none; }
+        .input-box { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; font-size: 14px; color: #ffffff; outline: none; transition: all 0.2s ease; }
         .input-box:focus { border-color: #22c55e; }
 
         .fee-box { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 14px; margin-bottom: 16px; font-size: 12px; }
@@ -55,7 +55,7 @@
             <div style="width: 36px;"></div>
         </div>
 
-        <!-- Timing Badge -->
+        <!-- Live Timing Status Badge -->
         <div class="timing-badge">
             <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: #94a3b8;">
                 <i class="fa-solid fa-clock" style="color: #22c55e;"></i>
@@ -64,7 +64,7 @@
             <span id="timingStatusText" style="font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 20px;">Checking...</span>
         </div>
 
-        <!-- Available Balance -->
+        <!-- Available Balance Display -->
         <div class="balance-card">
             <p>Available Withdrawable Balance</p>
             <h3 id="currentBalanceDisplay">₹0.00</h3>
@@ -72,6 +72,9 @@
 
         <!-- Form Card -->
         <div class="form-card">
+            <!-- Dynamic Bank Lock Notice Placeholder -->
+            <div id="bankLockNoticeContainer"></div>
+
             <div class="form-group">
                 <label>Withdrawal Amount (₹)</label>
                 <input type="number" id="withdrawAmountInput" oninput="calculateBreakdown()" class="input-box" placeholder="Min ₹200">
@@ -97,18 +100,18 @@
                 <input type="text" id="ifscCodeInput" class="input-box" placeholder="Enter IFSC (e.g. SBIN0001234)">
             </div>
 
-            <!-- Fee Breakdown -->
+            <!-- Fee Breakdown Calculation -->
             <div class="fee-box">
                 <div class="fee-row">
                     <span>Requested Amount:</span>
                     <b id="dispGrossAmount" style="color: #ffffff;">₹0.00</b>
                 </div>
                 <div class="fee-row">
-                    <span>Handling Fee (10%):</span>
+                    <span id="feePercentLabel">Handling Fee (10%):</span>
                     <b id="dispFeeAmount" style="color: #ef4444;">- ₹0.00</b>
                 </div>
                 <div class="fee-row total">
-                    <span>Net Bank Payout (90%):</span>
+                    <span>Net Bank Payout:</span>
                     <b id="dispNetAmount">₹0.00</b>
                 </div>
             </div>
@@ -123,11 +126,11 @@
             <h4><i class="fa-solid fa-circle-info" style="color: #22c55e;"></i> Important Rules:</h4>
             <p>• Timing: <b>10:00 AM se 06:00 PM</b> tak active rehti hai.</p>
             <p>• Daily Limit: <b>1 din me sirf 1 withdrawal</b> allowed hai.</p>
-            <p>• Minimum withdrawal limit: <b>₹200</b>.</p>
-            <p>• Government tax aur platform handling fee: <b>10%</b>.</p>
+            <p id="dynamicRangeRule">• Amount Range: <b>Min ₹200 | Max ₹50,000</b> per transaction.</p>
+            <p>• Bank Details: Ek baar save hone ke baad permanent lock ho jaati hain.</p>
         </div>
 
-        <!-- Bottom Navigation -->
+        <!-- Bottom Nav -->
         <div class="bottom-nav">
             <a href="index.html" class="nav-item">
                 <i class="fa-solid fa-house"></i>
@@ -152,21 +155,27 @@
             </a>
         </div>
     </div>
+
         <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
-        let RAW_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
-        const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentUser = null;
         let userWalletBalance = 0;
+        let isBankAlreadyLocked = false;
+
+        let dynamicMinLimit = 200;
+        let dynamicMaxLimit = 50000;
+        let dynamicFeePercent = 10;
 
         document.addEventListener("DOMContentLoaded", async () => {
             updateTimingUI();
+            await fetchDynamicSettings();
             await initializeUser();
         });
 
-        // 1. Check IST Timing (10 AM to 6 PM)
+        // 1. Check Indian Standard Time (10 AM to 6 PM IST)
         function isWithdrawalTimeOpen() {
             const now = new Date();
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
@@ -194,7 +203,39 @@
             }
         }
 
-        // 2. Fetch User Profile & Balance
+        // 2. Fetch Global Dynamic Limits & Fees from Admin Settings
+        async function fetchDynamicSettings() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('app_settings')
+                    .select('min_withdraw, max_withdraw, withdraw_fee_percent')
+                    .eq('id', 1)
+                    .single();
+
+                if (!error && data) {
+                    dynamicMinLimit = parseFloat(data.min_withdraw) || 200;
+                    dynamicMaxLimit = parseFloat(data.max_withdraw) || 50000;
+                    dynamicFeePercent = parseFloat(data.withdraw_fee_percent) !== undefined ? parseFloat(data.withdraw_fee_percent) : 10;
+
+                    const feeLabel = document.getElementById('feePercentLabel');
+                    if (feeLabel) feeLabel.innerText = `Handling Fee (${dynamicFeePercent}%):`;
+
+                    const inputField = document.getElementById('withdrawAmountInput');
+                    if (inputField) {
+                        inputField.placeholder = `Min ₹${dynamicMinLimit} - Max ₹${dynamicMaxLimit.toLocaleString('en-IN')}`;
+                    }
+
+                    const ruleText = document.getElementById('dynamicRangeRule');
+                    if (ruleText) {
+                        ruleText.innerHTML = `• Amount Range: <b>Min ₹${dynamicMinLimit} | Max ₹${dynamicMaxLimit.toLocaleString('en-IN')}</b> per transaction.`;
+                    }
+                }
+            } catch (e) {
+                console.error("Settings load error:", e);
+            }
+        }
+
+        // 3. User Authentication & Bank Freeze / Auto-fill
         async function initializeUser() {
             try {
                 const { data: { session } } = await supabaseClient.auth.getSession();
@@ -206,61 +247,93 @@
 
                 const { data: prof, error } = await supabaseClient
                     .from('profiles')
-                    .select('balance')
+                    .select('balance, is_banned, holder_name, bank_name, account_number, ifsc_code')
                     .eq('id', currentUser.id)
-                    .maybeSingle();
+                    .single();
 
-                if (error) {
-                    console.error("Profile query error:", error);
+                if (error) throw error;
+
+                if (prof.is_banned) {
+                    alert("⚠️ Aapka account suspended hai. Withdrawal allowed nahi hai.");
+                    window.location.replace('index.html');
                     return;
                 }
 
-                if (prof && prof.balance !== null && prof.balance !== undefined) {
-                    userWalletBalance = parseFloat(prof.balance) || 0;
-                    document.getElementById('currentBalanceDisplay').innerText = `₹${userWalletBalance.toFixed(2)}`;
-                } else {
-                    document.getElementById('currentBalanceDisplay').innerText = "₹0.00";
+                userWalletBalance = parseFloat(prof.balance || 0);
+                document.getElementById('currentBalanceDisplay').innerText = `₹${userWalletBalance.toFixed(2)}`;
+
+                // Agar bank details pehle se hain toh lock karein
+                if (prof.account_number && prof.account_number.trim() !== '') {
+                    isBankAlreadyLocked = true;
+
+                    const nameInput = document.getElementById('holderNameInput');
+                    const bankInput = document.getElementById('bankNameInput');
+                    const accInput = document.getElementById('accountNumberInput');
+                    const ifscInput = document.getElementById('ifscCodeInput');
+
+                    nameInput.value = prof.holder_name || '';
+                    bankInput.value = prof.bank_name || '';
+                    accInput.value = prof.account_number || '';
+                    ifscInput.value = prof.ifsc_code || '';
+
+                    [nameInput, bankInput, accInput, ifscInput].forEach(inp => {
+                        inp.readOnly = true;
+                        inp.style.background = "#1e293b";
+                        inp.style.color = "#94a3b8";
+                        inp.style.cursor = "not-allowed";
+                        inp.style.borderColor = "#334155";
+                    });
+
+                    document.getElementById('bankLockNoticeContainer').innerHTML = `
+                        <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 8px 12px; margin-bottom: 14px; font-size: 11px; color: #38bdf8; display: flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-lock"></i> Bank account details locked hain aur change nahi ho sakti.
+                        </div>
+                    `;
                 }
             } catch (err) {
                 console.error("Profile load error:", err);
             }
         }
-
-        // 3. Realtime Fee Calculation
+                    // 4. Real-time Calculation
         function calculateBreakdown() {
             const gross = parseFloat(document.getElementById('withdrawAmountInput').value) || 0;
-            const fee = gross * 0.10;
+            const fee = gross * (dynamicFeePercent / 100);
             const net = gross - fee;
 
             document.getElementById('dispGrossAmount').innerText = `₹${gross.toFixed(2)}`;
             document.getElementById('dispFeeAmount').innerText = `- ₹${fee.toFixed(2)}`;
             document.getElementById('dispNetAmount').innerText = `₹${net.toFixed(2)}`;
         }
-                    // 4. Daily 1 Withdrawal Check
-        async function checkDailyWithdrawalLimit(userId) {
+
+        // 5. Strict 1 Withdrawal Per Day Check
+        async function checkTodayWithdrawalExists(userId) {
             const now = new Date();
-            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
 
-            const { data: todayRequests, error } = await supabaseClient
+            const { data: requests, error } = await supabaseClient
                 .from('withdrawals')
-                .select('id')
+                .select('id, status, created_at')
                 .eq('user_id', userId)
-                .gte('created_at', startOfDay)
-                .neq('status', 'rejected');
+                .gte('created_at', startOfToday);
 
-            if (error) return false;
-            return todayRequests && todayRequests.length > 0;
+            if (error) {
+                console.error("Limit check error:", error);
+                return false;
+            }
+
+            const activeRequestsToday = (requests || []).filter(r => r.status !== 'rejected');
+            return activeRequestsToday.length > 0;
         }
 
-        // 5. Submit Withdrawal Request
+        // 6. Submit Withdrawal Request
         async function submitWithdrawal() {
             if (!isWithdrawalTimeOpen()) {
                 return alert("⏰ Withdrawal Window Closed!\n\nWithdrawal timing subah 10:00 AM se shaam 06:00 PM tak hai.");
             }
 
-            const hasLimitReached = await checkDailyWithdrawalLimit(currentUser.id);
-            if (hasLimitReached) {
-                return alert("⚠️ Limit Reached!\n\nAap 1 din me sirf 1 withdrawal laga sakte hain. Kripya kal try karein.");
+            const alreadyAppliedToday = await checkTodayWithdrawalExists(currentUser.id);
+            if (alreadyAppliedToday) {
+                return alert("⚠️ Daily Limit Reached!\n\nAap aaj ka 1 withdrawal order already lga chuke hain. Ek din mein sirf 1 baar withdrawal allowed hai. Kripya kal subah 10:00 AM par try karein.");
             }
 
             const gross = parseFloat(document.getElementById('withdrawAmountInput').value);
@@ -269,18 +342,20 @@
             const accountNum = document.getElementById('accountNumberInput').value.trim();
             const ifscCode = document.getElementById('ifscCodeInput').value.trim() || 'UPI';
 
-            const minLimit = 200;
+            if (!gross || gross < dynamicMinLimit) {
+                return alert(`Minimum withdrawal amount ₹${dynamicMinLimit} hai.`);
+            }
 
-            if (!gross || gross < minLimit) {
-                return alert(`Minimum withdrawal amount ₹${minLimit} hai.`);
+            if (gross > dynamicMaxLimit) {
+                return alert(`Maximum withdrawal limit ₹${dynamicMaxLimit.toLocaleString('en-IN')} hai.`);
             }
 
             if (gross > userWalletBalance) {
-                return alert("Aapke wallet me paryapt balance nahi hai!");
+                return alert("Aapke wallet mein paryapt balance nahi hai!");
             }
 
             if (!holderName || !bankName || !accountNum) {
-                return alert("Kripya saari Bank / UPI details bharein.");
+                return alert("Kripya saari Bank details bharein.");
             }
 
             const btn = document.getElementById('btnSubmitWithdrawal');
@@ -288,19 +363,28 @@
             btn.innerText = "Processing...";
 
             try {
-                const fee = gross * 0.10;
+                const fee = gross * (dynamicFeePercent / 100);
                 const net = gross - fee;
 
-                // 1. Deduct balance from profile
+                // Wallet balance deduct karein aur bank details pehli baar save karein
                 const updatedBalance = userWalletBalance - gross;
+                const updatePayload = { balance: updatedBalance };
+
+                if (!isBankAlreadyLocked) {
+                    updatePayload.holder_name = holderName;
+                    updatePayload.bank_name = bankName;
+                    updatePayload.account_number = accountNum;
+                    updatePayload.ifsc_code = ifscCode;
+                }
+
                 const { error: profErr } = await supabaseClient
                     .from('profiles')
-                    .update({ balance: updatedBalance })
+                    .update(updatePayload)
                     .eq('id', currentUser.id);
 
                 if (profErr) throw profErr;
 
-                // 2. Insert into withdrawals table
+                // Insert withdrawal request
                 const { error: wErr } = await supabaseClient
                     .from('withdrawals')
                     .insert([{
@@ -317,20 +401,20 @@
 
                 if (wErr) throw wErr;
 
-                // 3. Insert into transactions table
+                // Insert passbook transaction record
                 await supabaseClient.from('transactions').insert([{
                     user_id: currentUser.id,
                     type: 'expense',
                     amount: gross,
                     status: 'pending',
-                    payment_details: `Withdrawal: ₹${gross} (10% Fee: ₹${fee.toFixed(1)}, Payout: ₹${net.toFixed(1)})`
+                    payment_details: `Withdrawal: ₹${gross} (${dynamicFeePercent}% Fee: ₹${fee.toFixed(1)}, Payout: ₹${net.toFixed(1)})`
                 }]);
 
-                alert(`🎉 Withdrawal Request Submitted Successfully!\n\nRequested: ₹${gross}\n10% Handling Fee: ₹${fee.toFixed(1)}\nBank Account me aayenge: ₹${net.toFixed(1)}`);
+                alert(`🎉 Withdrawal Request Successfully Submit Ho Gayi!\n\nRequested: ₹${gross}\nFee (${dynamicFeePercent}%): ₹${fee.toFixed(1)}\nBank Payout: ₹${net.toFixed(1)}\n\nAaj ke liye aapki 1 withdrawal limit complete ho gayi hai.`);
                 window.location.replace('profile.html');
 
             } catch (err) {
-                alert("Withdrawal submission failed: " + err.message);
+                alert("Submission failed: " + err.message);
                 btn.disabled = false;
                 btn.innerText = "Submit Withdrawal Request";
             }
