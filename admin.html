@@ -3,44 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Earnflow Seeds - Master Admin Control</title>
+    <title>Admin Control Dashboard - Earnflow Seeds</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: #f0fdf4; display: flex; justify-content: center; min-height: 100vh; color: #0f172a; }
-        .admin-container { width: 100%; max-width: 500px; background: #ffffff; min-height: 100vh; padding: 20px 16px 60px; box-shadow: 0 0 30px rgba(0,0,0,0.06); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f1f5f9; color: #0f172a; display: flex; justify-content: center; min-height: 100vh; padding: 16px 8px 60px; }
+        .admin-container { width: 100%; max-width: 650px; }
         
-        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; background: #ffffff; padding: 16px; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .header h2 { font-size: 18px; font-weight: 800; color: #0f172a; }
-        .back-btn { text-decoration: none; color: #0f172a; width: 36px; height: 36px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-        
-        .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
-        .metric-card { padding: 12px 10px; border-radius: 14px; color: white; text-align: center; }
-        .metric-card.users { background: linear-gradient(135deg, #0f172a, #1e293b); }
-        .metric-card.recharge { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
-        .metric-card.withdraw { background: linear-gradient(135deg, #dc2626, #b91c1c); }
-        .metric-card h4 { font-size: 11px; opacity: 0.9; text-transform: uppercase; margin-bottom: 4px; font-weight: 700; }
-        .metric-card p { font-size: 15px; font-weight: 800; }
-        
-        .section-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-bottom: 20px; }
-        .section-title { font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-        
-        .form-group { margin-bottom: 12px; }
-        .input-box { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13px; outline: none; background: #ffffff; }
-        .btn-action { width: 100%; background: #16a34a; color: white; border: none; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; }
-        
-        .req-item { background: #ffffff; border: 1px solid #cbd5e1; padding: 12px; border-radius: 12px; margin-bottom: 10px; }
-        .req-info { font-size: 12px; color: #334155; margin-bottom: 4px; display: flex; justify-content: space-between; }
-        .action-btns { display: flex; gap: 10px; margin-top: 8px; }
-        .btn-approve { flex: 1; background: #16a34a; color: white; border: none; padding: 8px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 12px; }
-        .btn-reject { flex: 1; background: #ef4444; color: white; border: none; padding: 8px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 12px; }
-        .empty-text { text-align: center; color: #64748b; font-size: 12px; padding: 10px; font-weight: 600; }
+        .back-btn { text-decoration: none; color: #0f172a; width: 36px; height: 36px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
 
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 16px; }
-        .modal-card { background: #ffffff; width: 100%; max-width: 440px; border-radius: 20px; padding: 20px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+        .metric-box { background: #0f172a; color: #fff; padding: 14px 10px; border-radius: 14px; text-align: center; }
+        .metric-box.active { background: #15803d; }
+        .metric-box.inactive { background: #991b1b; }
+        .metric-box p { font-size: 10px; font-weight: 700; opacity: 0.8; text-transform: uppercase; margin-bottom: 4px; }
+        .metric-box h3 { font-size: 20px; font-weight: 800; }
+
+        .financial-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .fin-card { padding: 16px; border-radius: 14px; color: #ffffff; text-align: center; }
+        .fin-card.blue { background: #2563eb; }
+        .fin-card.red { background: #dc2626; }
+        .fin-card p { font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+        .fin-card h3 { font-size: 22px; font-weight: 800; }
+
+        .section-card { background: #ffffff; border-radius: 16px; padding: 16px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .section-title { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+
+        .form-group { margin-bottom: 10px; }
+        .input-box { width: 100%; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 12px; font-size: 13px; outline: none; }
+        .input-box:focus { border-color: #2563eb; }
+
+        .btn-action { width: 100%; border: none; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer; color: #ffffff; display: flex; align-items: center; justify-content: center; gap: 6px; text-transform: uppercase; }
+        .btn-action:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .data-table-wrap { overflow-x: auto; max-height: 420px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+        th { background: #f8fafc; padding: 10px; font-weight: 700; color: #475569; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; }
+        td { padding: 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        .badge { padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; display: inline-block; }
+        .badge.green { background: #dcfce7; color: #16a34a; }
+        .badge.red { background: #fee2e2; color: #dc2626; }
+        .badge.blue { background: #e0f2fe; color: #0284c7; }
+        .badge.gray { background: #f1f5f9; color: #64748b; }
     </style>
 </head>
 <body>
@@ -49,119 +57,164 @@
         <div class="header">
             <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
             <h2>Admin Control Dashboard</h2>
-            <div style="width: 36px;"></div>
+            <button onclick="location.reload()" class="back-btn"><i class="fa-solid fa-rotate-right"></i></button>
         </div>
 
-        <!-- 1. Realtime Metrics -->
+        <!-- Metrics Overview -->
         <div class="metrics-grid">
-            <div class="metric-card users" style="grid-column: span 2; display: flex; justify-content: space-around; padding: 14px 6px;">
-                <div>
-                    <h4>TOTAL</h4>
-                    <p id="totalUsersCount">0</p>
-                </div>
-                <div style="border-left: 1px solid rgba(255,255,255,0.2); padding-left: 12px;">
-                    <h4 style="color: #86efac;">● ACTIVE</h4>
-                    <p id="activeUsersCount" style="color: #86efac;">0</p>
-                </div>
-                <div style="border-left: 1px solid rgba(255,255,255,0.2); padding-left: 12px;">
-                    <h4 style="color: #fca5a5;">○ INACTIVE</h4>
-                    <p id="inactiveUsersCount" style="color: #fca5a5;">0</p>
-                </div>
+            <div class="metric-box">
+                <p>Total Users</p>
+                <h3 id="statTotalUsers">0</h3>
             </div>
-            <div class="metric-card recharge">
-                <h4>TOTAL RECHARGE</h4>
-                <p id="totalRechargeSum">₹0</p>
+            <div class="metric-box active">
+                <p>● Active</p>
+                <h3 id="statActiveUsers">0</h3>
             </div>
-            <div class="metric-card withdraw">
-                <h4>TOTAL WITHDRAWAL</h4>
-                <p id="totalWithdrawSum">₹0</p>
+            <div class="metric-box inactive">
+                <p>○ Inactive</p>
+                <h3 id="statInactiveUsers">0</h3>
             </div>
         </div>
 
-        <!-- 2. Master Users Directory with Plan & Downline View -->
-        <div class="section-card" style="background: #ffffff;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <div class="section-title" style="margin-bottom: 0;">
-                    <i class="fa-solid fa-users" style="color: #16a34a;"></i> Users & Active Plans (<span id="userCountBadge">0</span>)
-                </div>
-                <button onclick="fetchAllUsersList()" style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 5px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer;">
-                    <i class="fa-solid fa-rotate"></i> Refresh
-                </button>
+        <div class="financial-grid">
+            <div class="fin-card blue">
+                <p>Total Recharge</p>
+                <h3 id="statTotalRecharge">₹0</h3>
             </div>
-            <div style="overflow-x: auto; max-height: 380px; border-radius: 10px; border: 1px solid #f1f5f9;">
-                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 11px;">
+            <div class="fin-card red">
+                <p>Total Withdrawal</p>
+                <h3 id="statTotalWithdraw">₹0</h3>
+            </div>
+        </div>
+
+        <!-- 1-Click Midnight Income Trigger -->
+        <div class="section-card" style="background: linear-gradient(135deg, #15803d, #16a34a); color: white;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <div>
+                    <h3 style="font-size: 15px; font-weight: 800;"><i class="fa-solid fa-coins"></i> Daily Income Engine</h3>
+                    <p style="font-size: 11px; opacity: 0.9;">Har raat 12:00 AM auto-credit ke alawa manual click distribution</p>
+                </div>
+            </div>
+            <button onclick="distributeDailyIncomeManual(this)" class="btn-action" style="background: #ffffff; color: #15803d; font-weight: 800;">
+                <i class="fa-solid fa-bolt"></i> Distribute Today's Daily Income Now
+            </button>
+        </div>
+
+        <!-- Dynamic Settings & Fees Controller -->
+        <div class="section-card">
+            <div class="section-title"><i class="fa-solid fa-sliders" style="color: #2563eb;"></i> Global Withdrawal & Fee Settings</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+                <div class="form-group">
+                    <label style="font-size: 11px; font-weight: 700; color: #64748b;">Min Withdraw (₹)</label>
+                    <input type="number" id="admMinWithdraw" class="input-box" placeholder="200">
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 11px; font-weight: 700; color: #64748b;">Max Cap (₹)</label>
+                    <input type="number" id="admMaxWithdraw" class="input-box" placeholder="50000">
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 11px; font-weight: 700; color: #64748b;">Handling Fee (%)</label>
+                    <input type="number" id="admFeePercent" class="input-box" placeholder="10">
+                </div>
+            </div>
+            <button onclick="saveGlobalWithdrawSettings()" class="btn-action" style="background: #2563eb;">
+                <i class="fa-solid fa-floppy-disk"></i> Update Global Limits
+            </button>
+        </div>
+                <!-- User Search, Balance Modification & VIP Plan Assignment -->
+        <div class="section-card">
+            <div class="section-title"><i class="fa-solid fa-user-gear" style="color: #0f172a;"></i> Manage User & VIP Assign</div>
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <input type="text" id="searchPhoneInput" class="input-box" placeholder="Enter User Phone Number">
+                <button onclick="searchUserByPhone()" class="btn-action" style="width: auto; padding: 0 16px; background: #0f172a;">Search</button>
+            </div>
+
+            <!-- Searched User Details Container -->
+            <div id="userSearchResultBox" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div>
+                        <b id="resUserPhone" style="font-size: 14px;">+91 0000000000</b>
+                        <span id="resUserBanBadge" class="badge green" style="margin-left: 6px;">Active</span>
+                    </div>
+                    <span style="font-size: 13px; font-weight: 800; color: #16a34a;">₹<span id="resUserBalance">0.00</span></span>
+                </div>
+                <div style="display: flex; gap: 6px; margin-bottom: 12px;">
+                    <input type="number" id="balanceModInput" class="input-box" placeholder="Amount (₹)">
+                    <button onclick="modifyUserBalance('add')" class="btn-action" style="background: #16a34a; padding: 0 12px; width: auto;">+ Add</button>
+                    <button onclick="modifyUserBalance('cut')" class="btn-action" style="background: #dc2626; padding: 0 12px; width: auto;">- Deduct</button>
+                    <button onclick="toggleUserBanStatus()" id="btnToggleBan" class="btn-action" style="background: #475569; padding: 0 12px; width: auto;">Ban</button>
+                </div>
+
+                <!-- Custom VIP Plan Generator for Searched User -->
+                <div style="border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+                    <label style="font-size: 11px; font-weight: 700; color: #0f172a; display: block; margin-bottom: 6px;">
+                        <i class="fa-solid fa-crown" style="color: #eab308;"></i> Assign Custom VIP Plan:
+                    </label>
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 6px; margin-bottom: 8px;">
+                        <input type="text" id="vipPlanName" class="input-box" placeholder="Plan Title" value="VIP Diamond">
+                        <input type="number" id="vipPlanPrice" class="input-box" placeholder="Price (₹)">
+                        <input type="number" id="vipDailyIncome" class="input-box" placeholder="Daily (₹)">
+                        <input type="number" id="vipTotalDays" class="input-box" placeholder="Days" value="35">
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <button onclick="assignVipPlanToUser(false)" class="btn-action" style="background: #0f172a;">Free Gift</button>
+                        <button onclick="assignVipPlanToUser(true)" class="btn-action" style="background: #eab308; color: #000;">Deduct Wallet</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Recharges (With Auto-Plan Activation) -->
+        <div class="section-card">
+            <div class="section-title">
+                <span><i class="fa-solid fa-clock-rotate-left" style="color: #2563eb;"></i> Pending Recharges</span>
+                <span class="badge blue" id="countPendingRecharge">0</span>
+            </div>
+            <div class="data-table-wrap">
+                <table>
                     <thead>
-                        <tr style="background: #f8fafc; color: #64748b; font-weight: 700; border-bottom: 1px solid #e2e8f0;">
-                            <th style="padding: 8px;">User / Phone</th>
-                            <th style="padding: 8px;">Balance</th>
-                            <th style="padding: 8px;">Active Plan</th>
-                            <th style="padding: 8px; text-align: center;">Team</th>
-                        </tr>
+                        <tr><th>User</th><th>Amount</th><th>UTR</th><th>Action</th></tr>
                     </thead>
-                    <tbody id="allUsersTableBody">
-                        <tr>
-                            <td colspan="4" style="text-align: center; padding: 15px; color: #94a3b8;">Loading directory...</td>
-                        </tr>
+                    <tbody id="tablePendingRecharges">
+                        <tr><td colspan="4" style="text-align: center; color: #94a3b8;">No pending requests</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
-                <!-- 3. Daily Income Distribute Trigger Button -->
-        <div class="section-card" style="text-align: center;">
-            <button onclick="triggerDailyPayout()" class="btn-action" style="background: linear-gradient(135deg, #16a34a, #15803d); padding: 12px; font-size: 14px;">
-                <i class="fa-solid fa-bolt"></i> Distribute Today's Daily Income
-            </button>
-        </div>
 
-        <!-- 4. User Search & Balance Control -->
+        <!-- Pending Withdrawals (With 10% Fee Breakdown) -->
         <div class="section-card">
-            <div class="section-title"><i class="fa-solid fa-user-gear"></i> User Search, Balance & Suspend</div>
-            <div class="form-group" style="display: flex; gap: 8px;">
-                <input type="tel" id="searchPhone" class="input-box" placeholder="Enter Mobile Number">
-                <button class="btn-action" style="width: auto; padding: 0 16px;" onclick="searchUser()">Search</button>
+            <div class="section-title">
+                <span><i class="fa-solid fa-money-bill-transfer" style="color: #dc2626;"></i> Pending Withdrawals</span>
+                <span class="badge red" id="countPendingWithdraw">0</span>
             </div>
-            <div id="searchResult" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1;">
-                <p style="font-size: 12px; font-weight: 700; margin-bottom: 6px;">User: <span id="resUserPhone"></span> (<span id="resUserId"></span>)</p>
-                <p style="font-size: 12px; font-weight: 700; margin-bottom: 10px;">Balance: ₹<span id="resUserBalance">0</span></p>
-                <div class="form-group">
-                    <input type="number" id="manualAmount" class="input-box" placeholder="Enter Amount">
-                </div>
-                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                    <button class="btn-action" onclick="updateUserBalance('add')">+ Add Balance</button>
-                    <button class="btn-action" style="background: #ef4444;" onclick="updateUserBalance('subtract')">- Deduct</button>
-                </div>
+            <div class="data-table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>User</th><th>Gross / Fee / Payout</th><th>Bank Info</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="tablePendingWithdrawals">
+                        <tr><td colspan="4" style="text-align: center; color: #94a3b8;">No pending withdrawals</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <!-- 5. Pending Recharges List -->
+        <!-- All Users & Active Plans Table -->
         <div class="section-card">
-            <div class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Pending Recharges</div>
-            <div id="rechargeList">
-                <div class="empty-text">Loading requests...</div>
+            <div class="section-title">
+                <span><i class="fa-solid fa-users" style="color: #16a34a;"></i> Users & Active Plans (<span id="countAllUsers">0</span>)</span>
+                <button onclick="fetchAllUsersAndPlans()" class="btn-action" style="width: auto; padding: 4px 10px; font-size: 11px; background: #0f172a;">Refresh</button>
             </div>
-        </div>
-
-        <!-- 6. Pending Withdrawals List -->
-        <div class="section-card">
-            <div class="section-title"><i class="fa-solid fa-money-bill-transfer"></i> Pending Withdrawals</div>
-            <div id="withdrawalList">
-                <div class="empty-text">Loading requests...</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Downline Team Modal -->
-    <div id="teamModal" class="modal-overlay">
-        <div class="modal-card">
-            <div class="modal-header">
-                <div>
-                    <h3 style="font-size: 15px; font-weight: 800; color: #0f172a;" id="modalTeamTitle">Direct Team</h3>
-                    <p style="font-size: 11px; color: #64748b;" id="modalTeamSubtitle"></p>
-                </div>
-                <button onclick="closeTeamModal()" style="background: #f1f5f9; border: none; border-radius: 50%; width: 30px; height: 30px; font-weight: 800; cursor: pointer;">✕</button>
-            </div>
-            <div id="teamMembersList" style="display: flex; flex-direction: column; gap: 8px;">
-                <div style="text-align: center; color: #94a3b8; font-size: 12px; padding: 20px;">Loading team members...</div>
+            <div class="data-table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>User / Phone</th><th>Balance</th><th>Active Plan</th><th>Days Left</th></tr>
+                    </thead>
+                    <tbody id="tableAllUsers">
+                        <tr><td colspan="4" style="text-align: center; color: #94a3b8;">Loading user list...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -171,378 +224,303 @@
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let searchedUserId = null;
-        let allUsersCached = [];
+        let searchedUserIsBanned = false;
 
-        document.addEventListener("DOMContentLoaded", () => {
-            fetchDashboardMetrics();
-            fetchAllUsersList();
-            loadPendingRecharges();
-            loadPendingWithdrawals();
+        document.addEventListener("DOMContentLoaded", async () => {
+            await loadGlobalSettings();
+            await fetchDashboardMetrics();
+            await fetchPendingRecharges();
+            await fetchPendingWithdrawals();
+            await fetchAllUsersAndPlans();
         });
 
-        // 1. Dashboard Metrics Loader (Accurate Active/Inactive Logic)
+        // 1. Load Settings
+        async function loadGlobalSettings() {
+            try {
+                const { data } = await supabaseClient.from('app_settings').select('*').eq('id', 1).single();
+                if (data) {
+                    document.getElementById('admMinWithdraw').value = data.min_withdraw || 200;
+                    document.getElementById('admMaxWithdraw').value = data.max_withdraw || 50000;
+                    document.getElementById('admFeePercent').value = data.withdraw_fee_percent || 10;
+                }
+            } catch (err) { console.error("Settings error:", err); }
+        }
+
+        async function saveGlobalWithdrawSettings() {
+            const minW = parseFloat(document.getElementById('admMinWithdraw').value);
+            const maxW = parseFloat(document.getElementById('admMaxWithdraw').value);
+            const feeP = parseFloat(document.getElementById('admFeePercent').value);
+
+            if (isNaN(minW) || isNaN(maxW) || isNaN(feeP)) return alert("Valid numbers enter karein!");
+
+            const { error } = await supabaseClient.from('app_settings').update({
+                min_withdraw: minW, max_withdraw: maxW, withdraw_fee_percent: feeP, updated_at: new Date().toISOString()
+            }).eq('id', 1);
+
+            if (error) alert("Error: " + error.message);
+            else alert("✅ Settings updated successfully!");
+        }
+
+        // 2. Metrics Calculation
         async function fetchDashboardMetrics() {
             try {
-                // Total users
-                const { data: allProfiles, error: pErr } = await supabaseClient
-                    .from('profiles')
-                    .select('id, total_recharge, balance');
-                
-                if (pErr) throw pErr;
-                const totalCount = allProfiles ? allProfiles.length : 0;
-                document.getElementById('totalUsersCount').innerText = totalCount;
+                const { data: users } = await supabaseClient.from('profiles').select('id, balance');
+                const { data: activeOrders } = await supabaseClient.from('orders').select('user_id').eq('status', 'active');
+                const { data: recharges } = await supabaseClient.from('recharges').select('amount').eq('status', 'approved');
+                const { data: withdraws } = await supabaseClient.from('withdrawals').select('amount').eq('status', 'approved');
 
-                // Active orders fetch karein
-                const { data: activeOrders } = await supabaseClient
-                    .from('orders')
-                    .select('user_id')
-                    .eq('status', 'active');
+                const totalUsers = users ? users.length : 0;
+                const uniqueActiveUsers = new Set((activeOrders || []).map(o => o.user_id)).size;
+                const inactiveUsers = totalUsers - uniqueActiveUsers;
 
-                const activeOrderUserIds = new Set((activeOrders || []).map(o => o.user_id));
+                const totalR = (recharges || []).reduce((sum, r) => sum + parseFloat(r.amount || 0), 0);
+                const totalW = (withdraws || []).reduce((sum, w) => sum + parseFloat(w.amount || 0), 0);
 
-                // Jo user recharge kar chuka hai (total_recharge > 0) YA jiska order active hai = ACTIVE USER
-                let activeCount = 0;
-                (allProfiles || []).forEach(p => {
-                    const hasRecharge = parseFloat(p.total_recharge || 0) > 0;
-                    const hasOrder = activeOrderUserIds.has(p.id);
-                    if (hasRecharge || hasOrder) {
-                        activeCount++;
-                    }
-                });
-
-                document.getElementById('activeUsersCount').innerText = activeCount;
-                document.getElementById('inactiveUsersCount').innerText = Math.max(0, totalCount - activeCount);
-
-                // Total Recharges & Withdrawals
-                const { data: recs } = await supabaseClient.from('recharges').select('amount').eq('status', 'approved');
-                const recTotal = (recs || []).reduce((acc, r) => acc + parseFloat(r.amount || 0), 0);
-                document.getElementById('totalRechargeSum').innerText = "₹" + recTotal.toFixed(0);
-
-                const { data: withs } = await supabaseClient.from('withdrawals').select('amount').eq('status', 'approved');
-                const withTotal = (withs || []).reduce((acc, w) => acc + parseFloat(w.amount || 0), 0);
-                document.getElementById('totalWithdrawSum').innerText = "₹" + withTotal.toFixed(0);
-            } catch (err) {
-                console.error("Metrics error:", err);
-            }
+                document.getElementById('statTotalUsers').innerText = totalUsers;
+                document.getElementById('statActiveUsers').innerText = uniqueActiveUsers;
+                document.getElementById('statInactiveUsers').innerText = Math.max(0, inactiveUsers);
+                document.getElementById('statTotalRecharge').innerText = `₹${totalR.toFixed(0)}`;
+                document.getElementById('statTotalWithdraw').innerText = `₹${totalW.toFixed(0)}`;
+            } catch (err) { console.error("Metrics error:", err); }
         }
 
-        // 2. Directory with Safe Column Fallback
-        async function fetchAllUsersList() {
-            const tbody = document.getElementById('allUsersTableBody');
-            const badge = document.getElementById('userCountBadge');
-            try {
-                const { data: users, error: uErr } = await supabaseClient
-                    .from('profiles')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (uErr) throw uErr;
-                allUsersCached = users || [];
-                if (badge) badge.innerText = users.length;
-
-                const { data: orders } = await supabaseClient
-                    .from('orders')
-                    .select('user_id, daily_income, days_remaining, status')
-                    .eq('status', 'active');
-
-                const userOrdersMap = {};
-                (orders || []).forEach(o => {
-                    if (!userOrdersMap[o.user_id]) userOrdersMap[o.user_id] = [];
-                    userOrdersMap[o.user_id].push(o);
-                });
-
-                if (!users || users.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 15px; color: #94a3b8;">No registered users.</td></tr>`;
-                    return;
-                }
-
-                let html = '';
-                users.forEach((u) => {
-                    const activePlans = userOrdersMap[u.id] || [];
-                    const hasRecharge = parseFloat(u.total_recharge || 0) > 0;
-                    const isActive = activePlans.length > 0 || hasRecharge;
-                    
-                    let planBadge = `<span style="background: #fee2e2; color: #ef4444; font-weight: 700; font-size: 10px; padding: 2px 6px; border-radius: 6px;">No Plan</span>`;
-                    if (activePlans.length > 0) {
-                        const planDetails = activePlans.map(p => `₹${p.daily_income}/d (${p.days_remaining}d)`).join(', ');
-                        planBadge = `<span style="background: #dcfce7; color: #16a34a; font-weight: 800; font-size: 10px; padding: 2px 6px; border-radius: 6px; display: inline-block;">${planDetails}</span>`;
-                    } else if (hasRecharge) {
-                        planBadge = `<span style="background: #e0f2fe; color: #0284c7; font-weight: 800; font-size: 10px; padding: 2px 6px; border-radius: 6px;">Recharged (₹${u.total_recharge})</span>`;
-                    }
-
-                    const refCode = u.invite_code || u.phone || u.id.substring(0, 6);
-
-                    html += `
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 8px;">
-                                <div style="font-weight: 800; color: #0f172a;">+91 ${u.phone || '---'}</div>
-                                <div style="font-size: 9px; color: #94a3b8;">Code: <b>${refCode}</b></div>
-                            </td>
-                            <td style="padding: 8px; font-weight: 800; color: #16a34a;">₹${parseFloat(u.balance || 0).toFixed(1)}</td>
-                            <td style="padding: 8px;">${planBadge}</td>
-                            <td style="padding: 8px; text-align: center;">
-                                <button onclick="viewUserDownline('${refCode}', '${u.phone || ''}')" style="background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; cursor: pointer;">
-                                    <i class="fa-solid fa-users-viewfinder"></i> Team
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                tbody.innerHTML = html;
-            } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 15px; color: #ef4444;">Error: ${err.message}</td></tr>`;
-            }
-        }
-            
-        // 3. View User Downline Team
-        async function viewUserDownline(inviteCode, userPhone) {
-            if (!inviteCode) return alert("Is user ka referral code available nahi hai.");
-
-            const modal = document.getElementById('teamModal');
-            const list = document.getElementById('teamMembersList');
-            document.getElementById('modalTeamTitle').innerText = `Team of +91 ${userPhone}`;
-            document.getElementById('modalTeamSubtitle').innerText = `Referral Code: ${inviteCode}`;
-            
-            modal.style.display = 'flex';
-            list.innerHTML = `<div style="text-align: center; padding: 20px; color: #94a3b8;">Fetching team members...</div>`;
-
-            try {
-                const { data: team, error } = await supabaseClient
-                    .from('profiles')
-                    .select('id, phone, balance, created_at')
-                    .eq('referred_by', inviteCode);
-
-                if (error) throw error;
-
-                if (!team || team.length === 0) {
-                    list.innerHTML = `<div style="text-align: center; padding: 20px; color: #64748b; font-size: 13px;">Is user ke downline mein koi member nahi hai.</div>`;
-                    return;
-                }
-
-                let html = '';
-                team.forEach((m, idx) => {
-                    const joined = new Date(m.created_at).toLocaleDateString('en-IN');
-                    html += `
-                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <div style="font-weight: 800; font-size: 13px; color: #0f172a;">${idx + 1}. +91 ${m.phone || '---'}</div>
-                                <div style="font-size: 10px; color: #94a3b8;">Joined: ${joined}</div>
-                            </div>
-                            <div style="font-weight: 800; color: #16a34a; font-size: 13px;">
-                                ₹${parseFloat(m.balance || 0).toFixed(2)}
-                            </div>
-                        </div>
-                    `;
-                });
-                list.innerHTML = html;
-            } catch (err) {
-                list.innerHTML = `<div style="text-align: center; padding: 20px; color: #ef4444;">Error: ${err.message}</div>`;
-            }
-        }
-
-        function closeTeamModal() {
-            document.getElementById('teamModal').style.display = 'none';
-        }
-
-        // 4. Daily Income RPC
-        async function triggerDailyPayout() {
-            if (!confirm("Kya aap sabhi active users ko aaj ki Daily Income distribute karna chahte hain?")) return;
+        // 3. Daily Income 1-Click Distribution Engine
+        async function distributeDailyIncomeManual(btn) {
+            btn.disabled = true;
+            btn.innerText = "Distributing Yield...";
             try {
                 const { data, error } = await supabaseClient.rpc('distribute_daily_income');
                 if (error) throw error;
-                if (data && data.success === false) throw new Error(data.error || "Execution failed");
-                alert(`🎉 Daily income successfully distributed!\nOrders Credited: ${data.credited_orders || 0}\nTotal Amount: ₹${data.total_amount || 0}`);
-                fetchDashboardMetrics();
-                fetchAllUsersList();
+                alert(`✅ Daily Income Distributed!\n\nTotal Orders Credited: ${data.credited_orders}\nTotal Amount Credited: ₹${data.total_amount}`);
+                location.reload();
             } catch (err) {
                 alert("Distribution failed: " + err.message);
-            }
-            }
-                    // 5. User Search & Balance Control
-        async function searchUser() {
-            const phone = document.getElementById('searchPhone').value.trim();
-            if (!phone) return alert("Phone number enter karein");
-            try {
-                const { data, error } = await supabaseClient.from('profiles').select('*').eq('phone', phone).single();
-                if (error || !data) return alert("User nahi mila!");
-                searchedUserId = data.id;
-                document.getElementById('resUserPhone').innerText = data.phone;
-                document.getElementById('resUserId').innerText = data.id.substring(0, 6).toUpperCase();
-                document.getElementById('resUserBalance').innerText = parseFloat(data.balance || 0).toFixed(2);
-                document.getElementById('searchResult').style.display = 'block';
-            } catch (err) {
-                alert("Search error: " + err.message);
+                btn.disabled = false;
+                btn.innerText = "Distribute Today's Daily Income Now";
             }
         }
+                    // 4. Recharge Approvals with Auto Plan Activation
+        async function fetchPendingRecharges() {
+            const { data, error } = await supabaseClient
+                .from('recharges')
+                .select('id, user_id, amount, utr, created_at, profiles(phone)')
+                .eq('status', 'pending')
+                .order('created_at', { ascending: false });
 
-        async function updateUserBalance(type) {
-            const amt = parseFloat(document.getElementById('manualAmount').value);
-            if (!amt || amt <= 0 || !searchedUserId) return alert("Valid amount enter karein");
+            const tbody = document.getElementById('tablePendingRecharges');
+            document.getElementById('countPendingRecharge').innerText = data ? data.length : 0;
+
+            if (error || !data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#94a3b8;">No pending requests</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = data.map(r => `
+                <tr>
+                    <td><b>${r.profiles ? r.profiles.phone : 'User'}</b></td>
+                    <td><b>₹${r.amount}</b></td>
+                    <td><span style="font-family:monospace; background:#f1f5f9; padding:2px 6px; border-radius:4px;">${r.utr}</span></td>
+                    <td style="display:flex; gap:4px;">
+                        <button onclick="approveRechargeWithPlan('${r.id}', '${r.user_id}', ${r.amount})" class="badge green" style="border:none; cursor:pointer;">Approve & Buy</button>
+                        <button onclick="rejectRecharge('${r.id}')" class="badge red" style="border:none; cursor:pointer;">Reject</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function approveRechargeWithPlan(rechargeId, userId, amount) {
+            const amt = parseFloat(amount);
+            let planName = "Rice Seed Plan", dailyInc = 210, days = 35;
+
+            if (amt >= 18000) { planName = "Sunflower Seed Plan"; dailyInc = 8640; }
+            else if (amt >= 8500) { planName = "Cotton Seed Plan"; dailyInc = 3910; }
+            else if (amt >= 3800) { planName = "Corn Seed Plan"; dailyInc = 1672; }
+            else if (amt >= 1500) { planName = "Wheat Seed Plan"; dailyInc = 630; }
+
             try {
-                const { data: prof } = await supabaseClient.from('profiles').select('balance').eq('id', searchedUserId).single();
-                const cur = parseFloat(prof.balance || 0);
-                const updated = type === 'add' ? cur + amt : Math.max(0, cur - amt);
+                // Update Recharge Status
+                await supabaseClient.from('recharges').update({ status: 'approved' }).eq('id', rechargeId);
 
-                await supabaseClient.from('profiles').update({ balance: updated }).eq('id', searchedUserId);
-                await supabaseClient.from('transactions').insert([{
-                    user_id: searchedUserId,
-                    type: type === 'add' ? 'income' : 'expense',
-                    amount: amt,
-                    status: 'success',
-                    payment_details: `Admin Manual Adjustment (${type})`
+                // Auto Activate Plan in Orders table
+                await supabaseClient.from('orders').insert([{
+                    user_id: userId,
+                    plan_name: planName,
+                    price: amt,
+                    daily_income: dailyInc,
+                    validity_days: days,
+                    days_remaining: days,
+                    status: 'active'
                 }]);
 
-                document.getElementById('resUserBalance').innerText = updated.toFixed(2);
-                document.getElementById('manualAmount').value = '';
-                fetchAllUsersList();
-                fetchDashboardMetrics();
-                alert(`Balance successfully updated to ₹${updated.toFixed(2)}`);
-            } catch (err) {
-                alert("Balance update failed: " + err.message);
-            }
-        }
-
-        // 6. Pending Recharges
-        async function loadPendingRecharges() {
-            const list = document.getElementById('rechargeList');
-            try {
-                const { data, error } = await supabaseClient.from('recharges').select('*').eq('status', 'pending').order('id', { ascending: false });
-                if (error) throw error;
-                if (!data || data.length === 0) return list.innerHTML = `<div class="empty-text">No pending recharge requests.</div>`;
-
-                let html = '';
-                data.forEach(r => {
-                    html += `
-                        <div class="req-item">
-                            <div class="req-info"><span>Phone:</span> <b>+91 ${r.phone || '---'}</b></div>
-                            <div class="req-info"><span>Amount:</span> <b style="color: #16a34a;">₹${r.amount}</b></div>
-                            <div class="req-info"><span>UTR:</span> <b>${r.utr_number || r.utr || '---'}</b></div>
-                            <div class="action-btns">
-                                <button class="btn-approve" onclick="approveRecharge('${r.id}', '${r.user_id}', ${r.amount})">Approve</button>
-                                <button class="btn-reject" onclick="rejectRecharge('${r.id}')">Reject</button>
-                            </div>
-                        </div>
-                    `;
-                });
-                list.innerHTML = html;
-            } catch (err) {
-                list.innerHTML = `<div class="empty-text" style="color:#ef4444;">Error: ${err.message}</div>`;
-            }
-        }
-
-        async function approveRecharge(id, userId, amount) {
-    if (!confirm(`₹${amount} ka recharge Approve karein?`)) return;
-    try {
-        // 1. User wallet aur total recharge update
-        const { data: prof } = await supabaseClient.from('profiles').select('balance, total_recharge').eq('id', userId).single();
-        const newBal = (parseFloat(prof?.balance) || 0) + parseFloat(amount);
-        const newRec = (parseFloat(prof?.total_recharge) || 0) + parseFloat(amount);
-
-        await supabaseClient.from('profiles').update({ balance: newBal, total_recharge: newRec }).eq('id', userId);
-        await supabaseClient.from('recharges').update({ status: 'approved' }).eq('id', id);
-        
-        await supabaseClient.from('transactions').insert([{
-            user_id: userId,
-            type: 'income',
-            amount: parseFloat(amount),
-            status: 'success',
-            payment_details: 'Recharge Approved by Admin'
-        }]);
-
-        // 2. Level 1, 2, 3 Referral Commission Trigger
-        const { error: commErr } = await supabaseClient.rpc('distribute_referral_commission', {
-            paying_user_id: userId,
-            purchase_amount: parseFloat(amount)
-        });
-
-        if (commErr) console.error("Commission error:", commErr);
-
-        alert("✅ Recharge approved aur Level 1, 2, 3 Commission credit ho gaya!");
-        loadPendingRecharges();
-        fetchDashboardMetrics();
-        fetchAllUsersList();
-    } catch (err) {
-        alert("Approval failed: " + err.message);
-    }
-        }
-            
-
-        async function rejectRecharge(id) {
-            if (!confirm("Recharge request ko Reject karein?")) return;
-            try {
-                await supabaseClient.from('recharges').update({ status: 'rejected' }).eq('id', id);
-                alert("❌ Recharge rejected!");
-                loadPendingRecharges();
-                fetchDashboardMetrics();
-            } catch (err) {
-                alert("Rejection failed: " + err.message);
-            }
-        }
-
-        // 7. Pending Withdrawals
-        async function loadPendingWithdrawals() {
-            const list = document.getElementById('withdrawalList');
-            try {
-                const { data, error } = await supabaseClient.from('withdrawals').select('*').eq('status', 'pending').order('id', { ascending: false });
-                if (error) throw error;
-                if (!data || data.length === 0) return list.innerHTML = `<div class="empty-text">No pending withdrawal requests.</div>`;
-
-                let html = '';
-                data.forEach(w => {
-                    html += `
-                        <div class="req-item">
-                            <div class="req-info"><span>Phone:</span> <b>+91 ${w.phone || '---'}</b></div>
-                            <div class="req-info"><span>Amount:</span> <b style="color: #dc2626;">₹${w.amount}</b></div>
-                            <div class="req-info"><span>Bank / UPI:</span> <b>${w.bank_name || w.upi_id || 'UPI'}</b></div>
-                            <div class="req-info"><span>Account/IFSC:</span> <b>${w.account_number || w.upi_id || '---'} (${w.ifsc_code || 'UPI'})</b></div>
-                            <div class="action-btns">
-                                <button class="btn-approve" onclick="approveWithdrawal('${w.id}')">Approve (Paid)</button>
-                                <button class="btn-reject" onclick="rejectWithdrawal('${w.id}', '${w.user_id}', ${w.amount})">Reject & Refund</button>
-                            </div>
-                        </div>
-                    `;
-                });
-                list.innerHTML = html;
-            } catch (err) {
-                list.innerHTML = `<div class="empty-text" style="color:#ef4444;">Error: ${err.message}</div>`;
-            }
-        }
-
-        async function approveWithdrawal(id) {
-            if (!confirm("Withdrawal payment ho gaya hai? Is request ko Approved mark karein?")) return;
-            try {
-                await supabaseClient.from('withdrawals').update({ status: 'approved' }).eq('id', id);
-                alert("✅ Withdrawal marked as Approved!");
-                loadPendingWithdrawals();
-                fetchDashboardMetrics();
-            } catch (err) {
-                alert("Approval failed: " + err.message);
-            }
-        }
-
-        async function rejectWithdrawal(id, userId, amount) {
-            if (!confirm("Withdrawal Reject karein? Balance wapas user wallet me refund ho jayega.")) return;
-            try {
-                const { data: prof } = await supabaseClient.from('profiles').select('balance').eq('id', userId).single();
-                const refundedBal = (parseFloat(prof?.balance) || 0) + parseFloat(amount);
-
-                await supabaseClient.from('profiles').update({ balance: refundedBal }).eq('id', userId);
-                await supabaseClient.from('withdrawals').update({ status: 'rejected' }).eq('id', id);
+                // Record Passbook
                 await supabaseClient.from('transactions').insert([{
                     user_id: userId,
                     type: 'income',
-                    amount: parseFloat(amount),
+                    amount: amt,
                     status: 'success',
-                    payment_details: 'Withdrawal Rejected - Refunded to Wallet'
+                    payment_details: `Approved & Auto-Activated: ${planName}`
                 }]);
 
-                alert("❌ Withdrawal rejected and amount refunded!");
-                loadPendingWithdrawals();
-                fetchDashboardMetrics();
-                fetchAllUsersList();
-            } catch (err) {
-                alert("Rejection failed: " + err.message);
+                alert(`✅ Recharge Approved & ${planName} Activated!`);
+                location.reload();
+            } catch (err) { alert("Error: " + err.message); }
+        }
+
+        async function rejectRecharge(id) {
+            if (!confirm("Reject this recharge?")) return;
+            await supabaseClient.from('recharges').update({ status: 'rejected' }).eq('id', id);
+            fetchPendingRecharges();
+        }
+
+        // 5. Withdrawal Approvals with 10% Fee Breakdown
+        async function fetchPendingWithdrawals() {
+            const { data } = await supabaseClient
+                .from('withdrawals')
+                .select('id, user_id, amount, fee, net_amount, holder_name, bank_name, account_number, ifsc_code, profiles(phone)')
+                .eq('status', 'pending')
+                .order('created_at', { ascending: false });
+
+            const tbody = document.getElementById('tablePendingWithdrawals');
+            document.getElementById('countPendingWithdraw').innerText = data ? data.length : 0;
+
+            if (!data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#94a3b8;">No pending withdrawals</td></tr>`;
+                return;
             }
+
+            tbody.innerHTML = data.map(w => {
+                const gross = parseFloat(w.amount || 0);
+                const fee = w.fee ? parseFloat(w.fee) : gross * 0.10;
+                const net = w.net_amount ? parseFloat(w.net_amount) : (gross - fee);
+                return `
+                    <tr>
+                        <td><b>${w.profiles ? w.profiles.phone : 'User'}</b></td>
+                        <td>
+                            <div>Gross: ₹${gross}</div>
+                            <div style="color:#dc2626; font-size:10px;">Fee (10%): -₹${fee.toFixed(1)}</div>
+                            <div style="color:#16a34a; font-weight:800;">Pay: ₹${net.toFixed(1)}</div>
+                        </td>
+                        <td>
+                            <b>${w.holder_name}</b><br>
+                            <small>${w.bank_name} | ${w.account_number}</small><br>
+                            <small>${w.ifsc_code}</small>
+                        </td>
+                        <td style="display:flex; gap:4px;">
+                            <button onclick="approveWithdrawal('${w.id}')" class="badge green" style="border:none; cursor:pointer;">Paid</button>
+                            <button onclick="rejectWithdrawal('${w.id}', '${w.user_id}', ${gross})" class="badge red" style="border:none; cursor:pointer;">Refund</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function approveWithdrawal(id) {
+            await supabaseClient.from('withdrawals').update({ status: 'approved' }).eq('id', id);
+            alert("✅ Marked as Paid!");
+            fetchPendingWithdrawals();
+            fetchDashboardMetrics();
+        }
+
+        async function rejectWithdrawal(id, userId, grossAmt) {
+            if (!confirm("Reject and refund balance to user?")) return;
+            // Refund to user wallet
+            const { data: prof } = await supabaseClient.from('profiles').select('balance').eq('id', userId).single();
+            const refundedBalance = (parseFloat(prof.balance) || 0) + parseFloat(grossAmt);
+
+            await supabaseClient.from('profiles').update({ balance: refundedBalance }).eq('id', userId);
+            await supabaseClient.from('withdrawals').update({ status: 'rejected' }).eq('id', id);
+
+            alert("Refunded successfully!");
+            fetchPendingWithdrawals();
+        }
+
+        // 6. User Directory & VIP Plan Assign
+        async function fetchAllUsersAndPlans() {
+            const { data: users } = await supabaseClient.from('profiles').select('id, phone, balance, is_banned');
+            const { data: orders } = await supabaseClient.from('orders').select('*').eq('status', 'active');
+
+            const tbody = document.getElementById('tableAllUsers');
+            document.getElementById('countAllUsers').innerText = users ? users.length : 0;
+
+            if (!users) return;
+
+            tbody.innerHTML = users.map(u => {
+                const userOrder = (orders || []).find(o => o.user_id === u.id);
+                return `
+                    <tr>
+                        <td><b>${u.phone}</b> ${u.is_banned ? '<span class="badge red">Banned</span>' : ''}</td>
+                        <td style="color:#16a34a; font-weight:700;">₹${parseFloat(u.balance || 0).toFixed(1)}</td>
+                        <td>${userOrder ? `<span class="badge green">${userOrder.plan_name}</span>` : '<span class="badge gray">No Plan</span>'}</td>
+                        <td>${userOrder ? `<b>${userOrder.days_remaining}d</b>` : '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function searchUserByPhone() {
+            const phone = document.getElementById('searchPhoneInput').value.trim();
+            const { data, error } = await supabaseClient.from('profiles').select('*').eq('phone', phone).single();
+
+            if (error || !data) return alert("User not found!");
+            searchedUserId = data.id;
+            searchedUserIsBanned = data.is_banned;
+
+            document.getElementById('resUserPhone').innerText = data.phone;
+            document.getElementById('resUserBalance').innerText = parseFloat(data.balance || 0).toFixed(2);
+            document.getElementById('resUserBanBadge').className = data.is_banned ? 'badge red' : 'badge green';
+            document.getElementById('resUserBanBadge').innerText = data.is_banned ? 'Banned' : 'Active';
+            document.getElementById('btnToggleBan').innerText = data.is_banned ? 'Unban' : 'Ban';
+            document.getElementById('userSearchResultBox').style.display = 'block';
+        }
+
+        async function modifyUserBalance(type) {
+            const amt = parseFloat(document.getElementById('balanceModInput').value);
+            if (!amt || amt <= 0) return alert("Enter valid amount!");
+
+            const current = parseFloat(document.getElementById('resUserBalance').innerText);
+            const updated = type === 'add' ? (current + amt) : Math.max(0, current - amt);
+
+            await supabaseClient.from('profiles').update({ balance: updated }).eq('id', searchedUserId);
+            document.getElementById('resUserBalance').innerText = updated.toFixed(2);
+            alert(`✅ Balance updated: ₹${updated.toFixed(2)}`);
+            fetchAllUsersAndPlans();
+        }
+
+        async function toggleUserBanStatus() {
+            const newStatus = !searchedUserIsBanned;
+            await supabaseClient.from('profiles').update({ is_banned: newStatus }).eq('id', searchedUserId);
+            searchedUserIsBanned = newStatus;
+            alert(`User status changed: ${newStatus ? 'Banned' : 'Active'}`);
+            searchUserByPhone();
+        }
+
+        async function assignVipPlanToUser(deduct) {
+            const name = document.getElementById('vipPlanName').value.trim() || "VIP Plan";
+            const price = parseFloat(document.getElementById('vipPlanPrice').value);
+            const daily = parseFloat(document.getElementById('vipDailyIncome').value);
+            const days = parseInt(document.getElementById('vipTotalDays').value) || 35;
+
+            if (!price || !daily) return alert("Enter price and daily income!");
+
+            if (deduct) {
+                const bal = parseFloat(document.getElementById('resUserBalance').innerText);
+                if (bal < price) return alert("Insufficient user balance to deduct!");
+                await supabaseClient.from('profiles').update({ balance: bal - price }).eq('id', searchedUserId);
+            }
+
+            await supabaseClient.from('orders').insert([{
+                user_id: searchedUserId,
+                plan_name: `[VIP] ${name}`,
+                price: price,
+                daily_income: daily,
+                validity_days: days,
+                days_remaining: days,
+                status: 'active'
+            }]);
+
+            alert("🎉 VIP Plan successfully assigned!");
+            searchUserByPhone();
+            fetchAllUsersAndPlans();
         }
     </script>
 </body>
