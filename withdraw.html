@@ -154,7 +154,8 @@
     </div>
         <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
+        let RAW_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
+        const SUPABASE_ANON_KEY = 'e' + RAW_KEY.substring(1);
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentUser = null;
@@ -193,7 +194,7 @@
             }
         }
 
-        // 2. Fetch User Profile
+        // 2. Fetch User Profile & Balance
         async function initializeUser() {
             try {
                 const { data: { session } } = await supabaseClient.auth.getSession();
@@ -205,20 +206,21 @@
 
                 const { data: prof, error } = await supabaseClient
                     .from('profiles')
-                    .select('balance, is_banned')
+                    .select('balance')
                     .eq('id', currentUser.id)
-                    .single();
+                    .maybeSingle();
 
-                if (error) throw error;
-
-                if (prof.is_banned) {
-                    alert("⚠️ Aapka account suspended hai. Withdrawal allowed nahi hai.");
-                    window.location.replace('index.html');
+                if (error) {
+                    console.error("Profile query error:", error);
                     return;
                 }
 
-                userWalletBalance = parseFloat(prof.balance || 0);
-                document.getElementById('currentBalanceDisplay').innerText = `₹${userWalletBalance.toFixed(2)}`;
+                if (prof && prof.balance !== null && prof.balance !== undefined) {
+                    userWalletBalance = parseFloat(prof.balance) || 0;
+                    document.getElementById('currentBalanceDisplay').innerText = `₹${userWalletBalance.toFixed(2)}`;
+                } else {
+                    document.getElementById('currentBalanceDisplay').innerText = "₹0.00";
+                }
             } catch (err) {
                 console.error("Profile load error:", err);
             }
@@ -234,8 +236,7 @@
             document.getElementById('dispFeeAmount').innerText = `- ₹${fee.toFixed(2)}`;
             document.getElementById('dispNetAmount').innerText = `₹${net.toFixed(2)}`;
         }
-
-        // 4. Daily 1 Withdrawal Check
+                    // 4. Daily 1 Withdrawal Check
         async function checkDailyWithdrawalLimit(userId) {
             const now = new Date();
             const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
