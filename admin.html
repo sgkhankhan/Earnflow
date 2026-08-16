@@ -128,7 +128,16 @@
                 <input type="text" id="searchPhoneInput" class="input-box" placeholder="Enter User Phone Number">
                 <button onclick="searchUserByPhone()" class="btn-action" style="width: auto; padding: 0 16px; background: #0f172a;">Search</button>
             </div>
-
+<div class="section-title">
+    <span><i class="fa-solid fa-users" style="color: #16a34a;"></i> Users & Active Plans (<span id="countAllUsers">0</span>)</span>
+    <div style="display: flex; gap: 6px;">
+        <button onclick="exportUserDataToCSV()" class="btn-action" style="width: auto; padding: 4px 10px; font-size: 11px; background: #16a34a;">
+            <i class="fa-solid fa-file-excel"></i> Export CSV
+        </button>
+        <button onclick="fetchAllUsersAndPlans()" class="btn-action" style="width: auto; padding: 4px 10px; font-size: 11px; background: #0f172a;">Refresh</button>
+    </div>
+</div>
+            
             <!-- Searched User Details Container -->
             <div id="userSearchResultBox" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 14px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -528,7 +537,88 @@ async function fetchAllUsersAndPlans() {
             alert(`✅ Balance updated: ₹${updated.toFixed(2)}`);
             fetchAllUsersAndPlans();
         }
+// Export All Users & Financial Records to CSV
+async function exportUserDataToCSV() {
+    try {
+        // 1. Fetch complete data from Supabase
+        const { data: users, error: uErr } = await supabaseClient.from('profiles').select('*');
+        const { data: orders, error: oErr } = await supabaseClient.from('orders').select('*');
+        const { data: recharges, error: rErr } = await supabaseClient.from('recharges').select('*');
+        const { data: withdraws, error: wErr } = await supabaseClient.from('withdrawals').select('*');
 
+        if (uErr) throw uErr;
+
+        if (!users || users.length === 0) {
+            return alert("No users found to export.");
+        }
+
+        // 2. Build CSV Headers
+        const headers = [
+            "User ID",
+            "Phone Number",
+            "Wallet Balance (INR)",
+            "Account Status",
+            "Active Plan Name",
+            "Plan Price",
+            "Daily Yield",
+            "Days Remaining",
+            "Total Approved Recharge (INR)",
+            "Total Approved Withdrawal (INR)",
+            "Bank Holder Name",
+            "Bank Name",
+            "Account Number",
+            "IFSC Code"
+        ];
+
+        // 3. Map Rows
+        const rows = users.map(u => {
+            const userOrder = (orders || []).find(o => o.user_id === u.id && o.status === 'active');
+            
+            // Total deposits by user
+            const userRecharges = (recharges || []).filter(r => r.user_id === u.id && r.status === 'approved');
+            const totalRechargeAmt = userRecharges.reduce((sum, r) => sum + parseFloat(r.amount || 0), 0);
+
+            // Total withdrawals by user
+            const userWithdrawals = (withdraws || []).filter(w => w.user_id === u.id && w.status === 'approved');
+            const totalWithdrawAmt = userWithdrawals.reduce((sum, w) => sum + parseFloat(w.amount || 0), 0);
+
+            return [
+                `"${u.id}"`,
+                `"${u.phone || ''}"`,
+                parseFloat(u.balance || 0).toFixed(2),
+                u.is_banned ? "Banned" : "Active",
+                `"${userOrder ? userOrder.plan_name : 'No Plan'}"`,
+                userOrder ? userOrder.price : 0,
+                userOrder ? userOrder.daily_income : 0,
+                userOrder ? userOrder.days_remaining : 0,
+                totalRechargeAmt.toFixed(2),
+                totalWithdrawAmt.toFixed(2),
+                `"${u.holder_name || ''}"`,
+                `"${u.bank_name || ''}"`,
+                `"${u.account_number || ''}"`,
+                `"${u.ifsc_code || ''}"`
+            ];
+        });
+
+        // 4. Create CSV Content & Download Trigger
+        const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\r\n");
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement("a");
+        const currentDate = new Date().toISOString().slice(0, 10);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Earnflow_Users_Finance_${currentDate}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+    } catch (err) {
+        console.error("Export error:", err);
+        alert("Failed to export data: " + err.message);
+    }
+                    }
+    
         async function toggleUserBanStatus() {
             const newStatus = !searchedUserIsBanned;
             await supabaseClient.from('profiles').update({ is_banned: newStatus }).eq('id', searchedUserId);
