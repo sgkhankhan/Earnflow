@@ -338,42 +338,47 @@
         }
 
         async function approveRechargeWithPlan(rechargeId, userId, amount) {
-            const amt = parseFloat(amount);
-            let planName = "Rice Seed Plan", dailyInc = 210, days = 35;
+    const amt = parseFloat(amount);
+    let planName = "MAIZE SEED", dailyInc = 125, days = 150;
 
-            if (amt >= 18000) { planName = "Sunflower Seed Plan"; dailyInc = 8640; }
-            else if (amt >= 8500) { planName = "Cotton Seed Plan"; dailyInc = 3910; }
-            else if (amt >= 3800) { planName = "Corn Seed Plan"; dailyInc = 1672; }
-            else if (amt >= 1500) { planName = "Wheat Seed Plan"; dailyInc = 630; }
+    if (amt >= 1500) { 
+        planName = "WHEAT SEED"; 
+        dailyInc = 375; 
+        days = 150; 
+    } else { 
+        planName = "MAIZE SEED"; 
+        dailyInc = 125; 
+        days = 150; 
+    }
 
-            try {
-                // Update Recharge Status
-                await supabaseClient.from('recharges').update({ status: 'approved' }).eq('id', rechargeId);
+    try {
+        await supabaseClient.from('recharges').update({ status: 'approved' }).eq('id', rechargeId);
 
-                // Auto Activate Plan in Orders table
-                await supabaseClient.from('orders').insert([{
-                    user_id: userId,
-                    plan_name: planName,
-                    price: amt,
-                    daily_income: dailyInc,
-                    validity_days: days,
-                    days_remaining: days,
-                    status: 'active'
-                }]);
+        await supabaseClient.from('orders').insert([{
+            user_id: userId,
+            plan_name: planName,
+            price: amt,
+            daily_income: dailyInc,
+            validity_days: days,
+            days_remaining: days,
+            status: 'active'
+        }]);
 
-                // Record Passbook
-                await supabaseClient.from('transactions').insert([{
-                    user_id: userId,
-                    type: 'income',
-                    amount: amt,
-                    status: 'success',
-                    payment_details: `Approved & Auto-Activated: ${planName}`
-                }]);
+        await supabaseClient.from('transactions').insert([{
+            user_id: userId,
+            type: 'income',
+            amount: amt,
+            status: 'success',
+            payment_details: `Approved & Auto-Activated: ${planName}`
+        }]);
 
-                alert(`✅ Recharge Approved & ${planName} Activated!`);
-                location.reload();
-            } catch (err) { alert("Error: " + err.message); }
+        alert(`✅ Recharge Approved & ${planName} (₹${dailyInc}/day) Activated!`);
+        location.reload();
+    } catch (err) { 
+        alert("Error: " + err.message); 
+    }
         }
+            
 
         async function rejectRecharge(id) {
             if (!confirm("Reject this recharge?")) return;
