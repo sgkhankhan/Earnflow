@@ -434,28 +434,71 @@
             fetchPendingWithdrawals();
         }
 
-        // 6. User Directory & VIP Plan Assign
-        async function fetchAllUsersAndPlans() {
-            const { data: users } = await supabaseClient.from('profiles').select('id, phone, balance, is_banned');
-            const { data: orders } = await supabaseClient.from('orders').select('*').eq('status', 'active');
+        // Robust User & Active Plans Loader
+async function fetchAllUsersAndPlans() {
+    const tbody = document.getElementById('tableAllUsers');
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #94a3b8;">Loading user list...</td></tr>`;
 
-            const tbody = document.getElementById('tableAllUsers');
-            document.getElementById('countAllUsers').innerText = users ? users.length : 0;
+    try {
+        // 1. Fetch profiles
+        const { data: users, error: uErr } = await supabaseClient
+            .from('profiles')
+            .select('id, phone, balance, is_banned')
+            .order('created_at', { ascending: false });
 
-            if (!users) return;
+        if (uErr) throw uErr;
 
-            tbody.innerHTML = users.map(u => {
-                const userOrder = (orders || []).find(o => o.user_id === u.id);
-                return `
-                    <tr>
-                        <td><b>${u.phone}</b> ${u.is_banned ? '<span class="badge red">Banned</span>' : ''}</td>
-                        <td style="color:#16a34a; font-weight:700;">₹${parseFloat(u.balance || 0).toFixed(1)}</td>
-                        <td>${userOrder ? `<span class="badge green">${userOrder.plan_name}</span>` : '<span class="badge gray">No Plan</span>'}</td>
-                        <td>${userOrder ? `<b>${userOrder.days_remaining}d</b>` : '-'}</td>
-                    </tr>
-                `;
-            }).join('');
+        // 2. Fetch orders
+        const { data: orders, error: oErr } = await supabaseClient
+            .from('orders')
+            .select('user_id, plan_name, days_remaining, status')
+            .eq('status', 'active');
+
+        if (oErr) console.warn("Orders fetch warning:", oErr);
+
+        const safeUsers = users || [];
+        const safeOrders = orders || [];
+
+        document.getElementById('countAllUsers').innerText = safeUsers.length;
+
+        if (safeUsers.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #94a3b8;">No users found in database</td></tr>`;
+            return;
         }
+
+        // 3. Render table rows
+        tbody.innerHTML = safeUsers.map(u => {
+            const userOrder = safeOrders.find(o => o.user_id === u.id);
+            const phoneDisp = u.phone || "No Phone";
+            const balDisp = parseFloat(u.balance || 0).toFixed(1);
+            
+            const planBadge = userOrder 
+                ? `<span class="badge green" style="background:#dcfce7; color:#16a34a;">${userOrder.plan_name}</span>` 
+                : `<span class="badge gray" style="background:#f1f5f9; color:#64748b;">No Plan</span>`;
+            
+            const daysDisp = userOrder 
+                ? `<b>${userOrder.days_remaining || 0}d</b>` 
+                : `-`;
+
+            return `
+                <tr>
+                    <td>
+                        <b>${phoneDisp}</b> 
+                        ${u.is_banned ? '<span class="badge red" style="background:#fee2e2; color:#dc2626; font-size:9px;">Banned</span>' : ''}
+                    </td>
+                    <td style="color:#16a34a; font-weight:700;">₹${balDisp}</td>
+                    <td>${planBadge}</td>
+                    <td>${daysDisp}</td>
+                </tr>
+            `;
+        }).join('');
+
+    } catch (err) {
+        console.error("User list error:", err);
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #dc2626;">Error: ${err.message}</td></tr>`;
+    }
+                        }
+            
 
         async function searchUserByPhone() {
             const phone = document.getElementById('searchPhoneInput').value.trim();
