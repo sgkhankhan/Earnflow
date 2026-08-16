@@ -12,7 +12,7 @@
         body { background: #0f172a; display: flex; justify-content: center; min-height: 100vh; color: #f8fafc; }
         .app-container { width: 100%; max-width: 440px; background: #0b1329; min-height: 100vh; padding: 20px 16px 85px; position: relative; }
 
-        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #1e293b; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #1e293b; }
         .header h2 { font-size: 18px; font-weight: 800; color: #f8fafc; }
         .back-btn { text-decoration: none; color: #f8fafc; width: 36px; height: 36px; background: #1e293b; border: 1px solid #334155; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
 
@@ -55,7 +55,7 @@
             <div style="width: 36px;"></div>
         </div>
 
-        <!-- Live Timing Status Badge -->
+        <!-- Timing Badge -->
         <div class="timing-badge">
             <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: #94a3b8;">
                 <i class="fa-solid fa-clock" style="color: #22c55e;"></i>
@@ -122,12 +122,12 @@
         <div class="rules-box">
             <h4><i class="fa-solid fa-circle-info" style="color: #22c55e;"></i> Important Rules:</h4>
             <p>• Timing: <b>10:00 AM se 06:00 PM</b> tak active rehti hai.</p>
+            <p>• Daily Limit: <b>1 din me sirf 1 withdrawal</b> allowed hai.</p>
             <p>• Minimum withdrawal limit: <b>₹200</b>.</p>
             <p>• Government tax aur platform handling fee: <b>10%</b>.</p>
-            <p>• Payment verification ke baad bank me credit hoti hai.</p>
         </div>
 
-        <!-- Bottom Nav -->
+        <!-- Bottom Navigation -->
         <div class="bottom-nav">
             <a href="index.html" class="nav-item">
                 <i class="fa-solid fa-house"></i>
@@ -151,9 +151,8 @@
                 <span>Profile</span>
             </a>
         </div>
-            </div>
-        <!-- Script Logic -->
-    <script>
+    </div>
+        <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -194,7 +193,7 @@
             }
         }
 
-        // 2. Fetch User Data
+        // 2. Fetch User Profile
         async function initializeUser() {
             try {
                 const { data: { session } } = await supabaseClient.auth.getSession();
@@ -225,7 +224,7 @@
             }
         }
 
-        // 3. 10% Breakdown Calculation
+        // 3. Realtime Fee Calculation
         function calculateBreakdown() {
             const gross = parseFloat(document.getElementById('withdrawAmountInput').value) || 0;
             const fee = gross * 0.10;
@@ -236,10 +235,31 @@
             document.getElementById('dispNetAmount').innerText = `₹${net.toFixed(2)}`;
         }
 
-        // 4. Submit Withdrawal Request
+        // 4. Daily 1 Withdrawal Check
+        async function checkDailyWithdrawalLimit(userId) {
+            const now = new Date();
+            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+
+            const { data: todayRequests, error } = await supabaseClient
+                .from('withdrawals')
+                .select('id')
+                .eq('user_id', userId)
+                .gte('created_at', startOfDay)
+                .neq('status', 'rejected');
+
+            if (error) return false;
+            return todayRequests && todayRequests.length > 0;
+        }
+
+        // 5. Submit Withdrawal Request
         async function submitWithdrawal() {
             if (!isWithdrawalTimeOpen()) {
                 return alert("⏰ Withdrawal Window Closed!\n\nWithdrawal timing subah 10:00 AM se shaam 06:00 PM tak hai.");
+            }
+
+            const hasLimitReached = await checkDailyWithdrawalLimit(currentUser.id);
+            if (hasLimitReached) {
+                return alert("⚠️ Limit Reached!\n\nAap 1 din me sirf 1 withdrawal laga sakte hain. Kripya kal try karein.");
             }
 
             const gross = parseFloat(document.getElementById('withdrawAmountInput').value);
@@ -270,7 +290,7 @@
                 const fee = gross * 0.10;
                 const net = gross - fee;
 
-                // Deduct from wallet
+                // 1. Deduct balance from profile
                 const updatedBalance = userWalletBalance - gross;
                 const { error: profErr } = await supabaseClient
                     .from('profiles')
@@ -279,7 +299,7 @@
 
                 if (profErr) throw profErr;
 
-                // Insert into withdrawals table
+                // 2. Insert into withdrawals table
                 const { error: wErr } = await supabaseClient
                     .from('withdrawals')
                     .insert([{
@@ -296,7 +316,7 @@
 
                 if (wErr) throw wErr;
 
-                // Insert into transactions table
+                // 3. Insert into transactions table
                 await supabaseClient.from('transactions').insert([{
                     user_id: currentUser.id,
                     type: 'expense',
@@ -305,7 +325,7 @@
                     payment_details: `Withdrawal: ₹${gross} (10% Fee: ₹${fee.toFixed(1)}, Payout: ₹${net.toFixed(1)})`
                 }]);
 
-                alert(`🎉 Withdrawal Request Submitted Successfully!\n\nRequested: ₹${gross}\n10% Fee: ₹${fee.toFixed(1)}\nBank Payout: ₹${net.toFixed(1)}`);
+                alert(`🎉 Withdrawal Request Submitted Successfully!\n\nRequested: ₹${gross}\n10% Handling Fee: ₹${fee.toFixed(1)}\nBank Account me aayenge: ₹${net.toFixed(1)}`);
                 window.location.replace('profile.html');
 
             } catch (err) {
