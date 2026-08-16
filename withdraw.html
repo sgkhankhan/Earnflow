@@ -12,37 +12,32 @@
         body { background: #0f172a; display: flex; justify-content: center; min-height: 100vh; color: #f8fafc; }
         .app-container { width: 100%; max-width: 440px; background: #0b1329; min-height: 100vh; padding: 20px 16px 85px; position: relative; }
 
-        /* Header */
         .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #1e293b; }
         .header h2 { font-size: 18px; font-weight: 800; color: #f8fafc; }
         .back-btn { text-decoration: none; color: #f8fafc; width: 36px; height: 36px; background: #1e293b; border: 1px solid #334155; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
 
-        /* Balance Card */
+        .timing-badge { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 10px 14px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+        
         .balance-card { background: linear-gradient(135deg, #15803d, #16a34a); border-radius: 18px; padding: 18px; color: white; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(22, 163, 74, 0.25); text-align: center; }
         .balance-card p { font-size: 12px; font-weight: 600; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
         .balance-card h3 { font-size: 28px; font-weight: 800; }
 
-        /* Form Controls */
         .form-card { background: #1e293b; border: 1px solid #334155; border-radius: 18px; padding: 18px; margin-bottom: 20px; }
         .form-group { margin-bottom: 14px; text-align: left; }
         .form-group label { display: block; font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 6px; }
         .input-box { width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; font-size: 14px; color: #ffffff; outline: none; }
         .input-box:focus { border-color: #22c55e; }
 
-        /* Realtime Fee Breakdown */
         .fee-box { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 14px; margin-bottom: 16px; font-size: 12px; }
         .fee-row { display: flex; justify-content: space-between; margin-bottom: 6px; color: #94a3b8; }
         .fee-row.total { border-top: 1px dashed #334155; padding-top: 8px; margin-top: 8px; font-size: 13px; font-weight: 800; color: #22c55e; }
 
-        /* Submit Button */
         .btn-submit { width: 100%; background: #22c55e; color: #ffffff; border: none; padding: 14px; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35); text-transform: uppercase; letter-spacing: 0.5px; }
         .btn-submit:disabled { background: #475569; cursor: not-allowed; box-shadow: none; }
 
-        /* Guidelines */
         .rules-box { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 14px; margin-top: 15px; font-size: 11px; color: #94a3b8; line-height: 1.6; text-align: left; }
         .rules-box h4 { color: #f8fafc; font-size: 12px; margin-bottom: 6px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
 
-        /* Bottom Nav */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 440px; background: #0f172a; border-top: 1px solid #1e293b; display: flex; justify-content: space-around; align-items: center; padding: 8px 0; z-index: 100; }
         .nav-item { text-align: center; text-decoration: none; color: #64748b; font-size: 10px; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .nav-item i { font-size: 18px; }
@@ -60,13 +55,22 @@
             <div style="width: 36px;"></div>
         </div>
 
-        <!-- Available Balance Display -->
+        <!-- Live Timing Status Badge -->
+        <div class="timing-badge">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: #94a3b8;">
+                <i class="fa-solid fa-clock" style="color: #22c55e;"></i>
+                <span>Window: <b>10:00 AM - 06:00 PM</b></span>
+            </div>
+            <span id="timingStatusText" style="font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 20px;">Checking...</span>
+        </div>
+
+        <!-- Available Balance -->
         <div class="balance-card">
             <p>Available Withdrawable Balance</p>
             <h3 id="currentBalanceDisplay">₹0.00</h3>
         </div>
 
-        <!-- Withdrawal Form -->
+        <!-- Form Card -->
         <div class="form-card">
             <div class="form-group">
                 <label>Withdrawal Amount (₹)</label>
@@ -93,7 +97,7 @@
                 <input type="text" id="ifscCodeInput" class="input-box" placeholder="Enter IFSC (e.g. SBIN0001234)">
             </div>
 
-            <!-- 10% Fee Calculation Breakdown -->
+            <!-- Fee Breakdown -->
             <div class="fee-box">
                 <div class="fee-row">
                     <span>Requested Amount:</span>
@@ -114,15 +118,16 @@
             </button>
         </div>
 
-        <!-- Guidelines -->
+        <!-- Rules -->
         <div class="rules-box">
             <h4><i class="fa-solid fa-circle-info" style="color: #22c55e;"></i> Important Rules:</h4>
+            <p>• Timing: <b>10:00 AM se 06:00 PM</b> tak active rehti hai.</p>
             <p>• Minimum withdrawal limit: <b>₹200</b>.</p>
             <p>• Government tax aur platform handling fee: <b>10%</b>.</p>
-            <p>• Payment verification ke baad seedha aapke bank account me credit hogi.</p>
+            <p>• Payment verification ke baad bank me credit hoti hai.</p>
         </div>
 
-        <!-- Bottom Navigation -->
+        <!-- Bottom Nav -->
         <div class="bottom-nav">
             <a href="index.html" class="nav-item">
                 <i class="fa-solid fa-house"></i>
@@ -146,9 +151,8 @@
                 <span>Profile</span>
             </a>
         </div>
-    </div>
-
-    <!-- Script Logic -->
+            </div>
+        <!-- Script Logic -->
     <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
@@ -158,10 +162,39 @@
         let userWalletBalance = 0;
 
         document.addEventListener("DOMContentLoaded", async () => {
+            updateTimingUI();
             await initializeUser();
         });
 
-        // 1. Fetch User Data & Available Balance
+        // 1. Check IST Timing (10 AM to 6 PM)
+        function isWithdrawalTimeOpen() {
+            const now = new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const istTime = new Date(utc + (3600000 * 5.5));
+            const currentHour = istTime.getHours();
+            return (currentHour >= 10 && currentHour < 18);
+        }
+
+        function updateTimingUI() {
+            const isOpen = isWithdrawalTimeOpen();
+            const statusBadge = document.getElementById('timingStatusText');
+            const submitBtn = document.getElementById('btnSubmitWithdrawal');
+
+            if (isOpen) {
+                statusBadge.innerText = "OPEN NOW";
+                statusBadge.style.background = "#dcfce7";
+                statusBadge.style.color = "#16a34a";
+            } else {
+                statusBadge.innerText = "CLOSED";
+                statusBadge.style.background = "#fee2e2";
+                statusBadge.style.color = "#ef4444";
+                if (submitBtn) {
+                    submitBtn.innerText = "Withdrawals Open at 10:00 AM";
+                }
+            }
+        }
+
+        // 2. Fetch User Data
         async function initializeUser() {
             try {
                 const { data: { session } } = await supabaseClient.auth.getSession();
@@ -173,7 +206,7 @@
 
                 const { data: prof, error } = await supabaseClient
                     .from('profiles')
-                    .select('balance, phone, is_banned')
+                    .select('balance, is_banned')
                     .eq('id', currentUser.id)
                     .single();
 
@@ -192,7 +225,7 @@
             }
         }
 
-        // 2. Real-time 10% Calculation Display
+        // 3. 10% Breakdown Calculation
         function calculateBreakdown() {
             const gross = parseFloat(document.getElementById('withdrawAmountInput').value) || 0;
             const fee = gross * 0.10;
@@ -203,8 +236,12 @@
             document.getElementById('dispNetAmount').innerText = `₹${net.toFixed(2)}`;
         }
 
-        // 3. Submit Withdrawal Request
+        // 4. Submit Withdrawal Request
         async function submitWithdrawal() {
+            if (!isWithdrawalTimeOpen()) {
+                return alert("⏰ Withdrawal Window Closed!\n\nWithdrawal timing subah 10:00 AM se shaam 06:00 PM tak hai.");
+            }
+
             const gross = parseFloat(document.getElementById('withdrawAmountInput').value);
             const holderName = document.getElementById('holderNameInput').value.trim();
             const bankName = document.getElementById('bankNameInput').value.trim();
@@ -233,7 +270,7 @@
                 const fee = gross * 0.10;
                 const net = gross - fee;
 
-                // 1. Deduct full requested balance from wallet
+                // Deduct from wallet
                 const updatedBalance = userWalletBalance - gross;
                 const { error: profErr } = await supabaseClient
                     .from('profiles')
@@ -242,7 +279,7 @@
 
                 if (profErr) throw profErr;
 
-                // 2. Insert into withdrawals table
+                // Insert into withdrawals table
                 const { error: wErr } = await supabaseClient
                     .from('withdrawals')
                     .insert([{
@@ -259,7 +296,7 @@
 
                 if (wErr) throw wErr;
 
-                // 3. Insert transaction log
+                // Insert into transactions table
                 await supabaseClient.from('transactions').insert([{
                     user_id: currentUser.id,
                     type: 'expense',
@@ -268,7 +305,7 @@
                     payment_details: `Withdrawal: ₹${gross} (10% Fee: ₹${fee.toFixed(1)}, Payout: ₹${net.toFixed(1)})`
                 }]);
 
-                alert(`🎉 Withdrawal Request Submitted Successfully!\n\nRequested: ₹${gross}\n10% Handling Fee: ₹${fee.toFixed(1)}\nBank Account me aayenge: ₹${net.toFixed(1)}`);
+                alert(`🎉 Withdrawal Request Submitted Successfully!\n\nRequested: ₹${gross}\n10% Fee: ₹${fee.toFixed(1)}\nBank Payout: ₹${net.toFixed(1)}`);
                 window.location.replace('profile.html');
 
             } catch (err) {
@@ -279,5 +316,4 @@
         }
     </script>
 </body>
-    </html>
-    
+</html>
