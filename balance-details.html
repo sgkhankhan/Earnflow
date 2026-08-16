@@ -2,179 +2,205 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earnflow Seeds - Balance Details & Passbook</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Account Passbook</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: #f1f7f2; display: flex; justify-content: center; min-height: 100vh; padding: 15px; }
-        .app-container { width: 100%; max-width: 430px; background: #ffffff; min-height: 100vh; padding: 20px; padding-bottom: 90px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        body { background: #f8fafc; color: #0f172a; display: flex; justify-content: center; min-height: 100vh; padding: 16px 12px 60px; }
+        .passbook-container { width: 100%; max-width: 480px; }
 
-        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0; }
-        .header h2 { font-size: 18px; font-weight: 800; color: #0f172a; }
-        .back-btn { text-decoration: none; color: #0f172a; font-size: 18px; }
+        .top-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .back-link { width: 40px; height: 40px; background: #ffffff; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #0f172a; text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,0.04); font-size: 16px; }
+        .page-title { font-size: 18px; font-weight: 800; color: #0f172a; }
 
-        .summary-card { background: linear-gradient(135deg, #16a34a, #15803d); color: white; border-radius: 18px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(22,163,74,0.2); }
-        .summary-card .top-label { font-size: 12px; font-weight: 600; opacity: 0.9; text-transform: uppercase; }
-        .summary-card .main-bal { font-size: 30px; font-weight: 800; margin: 6px 0 16px; }
-        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px; }
-        .summary-item h5 { font-size: 11px; opacity: 0.85; font-weight: 600; }
-        .summary-item p { font-size: 16px; font-weight: 800; margin-top: 2px; }
+        .balance-card { background: linear-gradient(135deg, #16a34a, #15803d); border-radius: 20px; padding: 22px; color: #ffffff; box-shadow: 0 10px 25px rgba(22, 163, 74, 0.25); margin-bottom: 20px; }
+        .balance-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.85; }
+        .balance-val { font-size: 34px; font-weight: 800; margin: 4px 0 16px; }
+        .stats-row { display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 14px; }
+        .stat-item p { font-size: 11px; font-weight: 600; opacity: 0.85; margin-bottom: 2px; }
+        .stat-item h4 { font-size: 16px; font-weight: 800; }
 
-        .filter-tabs { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 4px; }
-        .tab-btn { flex: 1; min-width: 70px; background: #f1f5f9; border: none; padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; color: #64748b; cursor: pointer; text-align: center; }
-        .tab-btn.active { background: #16a34a; color: #ffffff; }
+        .filter-tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
+        .filter-tab { padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; background: #ffffff; color: #64748b; box-shadow: 0 2px 4px rgba(0,0,0,0.04); transition: 0.2s; white-space: nowrap; }
+        .filter-tab.active { background: #16a34a; color: #ffffff; }
 
-        .tx-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .tx-list { display: flex; flex-direction: column; gap: 10px; }
+        .tx-card { background: #ffffff; border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; }
         .tx-left { display: flex; align-items: center; gap: 12px; }
-        .tx-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-        .tx-icon.credit { background: #dcfce7; color: #16a34a; }
-        .tx-icon.debit { background: #fee2e2; color: #dc2626; }
-        .tx-title { font-size: 13px; font-weight: 700; color: #0f172a; }
-        .tx-time { font-size: 11px; color: #94a3b8; margin-top: 2px; }
-
+        .tx-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .tx-icon.income { background: #dcfce7; color: #16a34a; }
+        .tx-icon.expense { background: #fee2e2; color: #dc2626; }
+        .tx-title { font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
+        .tx-time { font-size: 11px; font-weight: 500; color: #94a3b8; }
         .tx-right { text-align: right; }
-        .tx-amount { font-size: 15px; font-weight: 800; }
-        .tx-amount.credit { color: #16a34a; }
-        .tx-amount.debit { color: #dc2626; }
-        .tx-status { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b; }
+        .tx-amount { font-size: 14px; font-weight: 800; }
+        .tx-amount.income { color: #16a34a; }
+        .tx-amount.expense { color: #dc2626; }
+        .tx-status { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; }
 
-        .empty-box { text-align: center; padding: 40px 20px; color: #94a3b8; }
-        .empty-box i { font-size: 40px; color: #cbd5e1; margin-bottom: 10px; }
-        .empty-box p { font-size: 13px; font-weight: 600; }
+        .empty-box { text-align: center; padding: 40px 10px; color: #94a3b8; font-size: 13px; font-weight: 600; }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <div class="header">
-            <a href="profile.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
-            <h2>Account Passbook</h2>
-            <div></div>
+    <div class="passbook-container">
+        <!-- Header -->
+        <div class="top-header">
+            <a href="profile.html" class="back-link"><i class="fa-solid fa-arrow-left"></i></a>
+            <h2 class="page-title">Account Passbook</h2>
+            <div style="width: 40px;"></div>
         </div>
 
-        <div class="summary-card">
-            <div class="top-label">Available Balance</div>
-            <div class="main-bal" id="dispAvailableBal">₹0.00</div>
-            <div class="summary-grid">
-                <div class="summary-item">
-                    <h5>Total Recharge</h5>
-                    <p id="dispTotalRec">₹0.00</p>
+        <!-- Live Balance & Overview Card -->
+        <div class="balance-card">
+            <p class="balance-label">Available Balance</p>
+            <h1 class="balance-val" id="dispAvailableBalance">₹0.00</h1>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <p>Total Recharge</p>
+                    <h4 id="dispTotalRecharge">₹0.00</h4>
                 </div>
-                <div class="summary-item">
-                    <h5>Total Income</h5>
-                    <p id="dispTotalInc">₹0.00</p>
+                <div class="stat-item" style="text-align: right;">
+                    <p>Total Income</p>
+                    <h4 id="dispTotalIncome">₹0.00</h4>
                 </div>
             </div>
         </div>
 
+        <!-- Category Tabs -->
         <div class="filter-tabs">
-            <button class="tab-btn active" onclick="filterTransactions('all', this)">All</button>
-            <button class="tab-btn" onclick="filterTransactions('income', this)">Income</button>
-            <button class="tab-btn" onclick="filterTransactions('recharge', this)">Recharge</button>
-            <button class="tab-btn" onclick="filterTransactions('withdraw', this)">Withdraw</button>
+            <button class="filter-tab active" onclick="switchFilterTab('all', this)">All</button>
+            <button class="filter-tab" onclick="switchFilterTab('income', this)">Income</button>
+            <button class="filter-tab" onclick="switchFilterTab('recharge', this)">Recharge</button>
+            <button class="filter-tab" onclick="switchFilterTab('withdraw', this)">Withdraw</button>
         </div>
 
-        <div id="transactionsContainer">
-            <div class="empty-box"><i class="fa-solid fa-spinner fa-spin"></i><p>Loading transactions...</p></div>
+        <!-- Transaction Feed -->
+        <div class="tx-list" id="txContainer">
+            <div class="empty-box"><i class="fa-solid fa-spinner fa-spin"></i> Loading records...</div>
         </div>
     </div>
-
-    <script>
+        <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
-
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        let allTransactions = [];
-        let activeFilter = 'all';
 
-        document.addEventListener("DOMContentLoaded", async function() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) return window.location.replace('login.html');
+        let currentTransactions = [];
+        let activeTab = 'all';
 
-            await loadUserDataAndPassbook(session.user.id);
+        document.addEventListener("DOMContentLoaded", async () => {
+            await initializePassbook();
         });
 
-        async function loadUserDataAndPassbook(userId) {
+        async function initializePassbook() {
             try {
-                // 1. Fetch user summary balances
+                // 1. Check Session
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session || !session.user) {
+                    window.location.replace('login.html');
+                    return;
+                }
+                const userId = session.user.id;
+
+                // 2. Fetch User Profile Balance
                 const { data: profile } = await supabaseClient
                     .from('profiles')
-                    .select('balance, total_recharge, total_income')
+                    .select('balance')
                     .eq('id', userId)
                     .single();
 
-                if (profile) {
-                    document.getElementById('dispAvailableBal').innerText = '₹' + parseFloat(profile.balance || 0).toFixed(2);
-                    document.getElementById('dispTotalRec').innerText = '₹' + parseFloat(profile.total_recharge || 0).toFixed(2);
-                    document.getElementById('dispTotalInc').innerText = '₹' + parseFloat(profile.total_income || 0).toFixed(2);
-                }
+                const currentBal = parseFloat(profile?.balance || 0);
+                document.getElementById('dispAvailableBalance').innerText = `₹${currentBal.toFixed(2)}`;
 
-                // 2. Fetch all transaction records
-                const { data: txs, error } = await supabaseClient
+                // 3. Fetch Transaction History
+                const { data: txs, error: txErr } = await supabaseClient
                     .from('transactions')
                     .select('*')
                     .eq('user_id', userId)
                     .order('created_at', { ascending: false });
 
-                if (error) throw error;
-                allTransactions = txs || [];
-                renderTransactions();
+                if (txErr) throw txErr;
+
+                currentTransactions = txs || [];
+
+                // 4. Calculate Financial Metrics
+                let totalRecharge = 0;
+                let totalIncome = 0;
+
+                currentTransactions.forEach(t => {
+                    const amt = parseFloat(t.amount || 0);
+                    const detail = (t.payment_details || '').toLowerCase();
+
+                    if (t.type === 'income' && (detail.includes('recharge') || detail.includes('deposit'))) {
+                        totalRecharge += amt;
+                    } else if (t.type === 'income' && !detail.includes('recharge') && !detail.includes('purchased')) {
+                        totalIncome += amt;
+                    }
+                });
+
+                document.getElementById('dispTotalRecharge').innerText = `₹${totalRecharge.toFixed(2)}`;
+                document.getElementById('dispTotalIncome').innerText = `₹${totalIncome.toFixed(2)}`;
+
+                // 5. Render List
+                renderTransactionList();
 
             } catch (err) {
-                console.error("Passbook load error:", err);
-                document.getElementById('transactionsContainer').innerHTML = '<div class="empty-box"><p style="color:#ef4444;">Error loading passbook records</p></div>';
+                console.error("Passbook Error:", err);
+                document.getElementById('txContainer').innerHTML = `<div class="empty-box" style="color:#dc2626;">Error loading records</div>`;
             }
         }
 
-        function filterTransactions(type, btn) {
-            activeFilter = type;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            if (btn) btn.classList.add('active');
-            renderTransactions();
+        function switchFilterTab(tabName, btn) {
+            document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeTab = tabName;
+            renderTransactionList();
         }
 
-        function renderTransactions() {
-            const container = document.getElementById('transactionsContainer');
-            let list = allTransactions;
-
-            if (activeFilter === 'income') {
-                list = allTransactions.filter(t => t.type === 'deposit' || (t.payment_details && (t.payment_details.includes('Daily') || t.payment_details.includes('Bonus') || t.payment_details.includes('Reward') || t.payment_details.includes('Commission'))));
-            } else if (activeFilter === 'recharge') {
-                list = allTransactions.filter(t => t.payment_details && t.payment_details.includes('Recharge'));
-            } else if (activeFilter === 'withdraw') {
-                list = allTransactions.filter(t => t.type === 'withdraw' || (t.payment_details && t.payment_details.includes('Withdraw')));
+        function renderTransactionList() {
+            const container = document.getElementById('txContainer');
+            
+            let filtered = currentTransactions;
+            if (activeTab === 'income') {
+                filtered = currentTransactions.filter(t => t.type === 'income' && !(t.payment_details || '').toLowerCase().includes('recharge'));
+            } else if (activeTab === 'recharge') {
+                filtered = currentTransactions.filter(t => t.type === 'income' && (t.payment_details || '').toLowerCase().includes('recharge'));
+            } else if (activeTab === 'withdraw') {
+                filtered = currentTransactions.filter(t => t.type === 'withdraw' || t.type === 'expense');
             }
 
-            if (!list || list.length === 0) {
-                container.innerHTML = '<div class="empty-box"><i class="fa-solid fa-receipt"></i><p>No transaction history found</p></div>';
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="empty-box"><i class="fa-solid fa-receipt" style="font-size:24px; margin-bottom:8px; display:block;"></i>No transactions found</div>`;
                 return;
             }
 
-            container.innerHTML = list.map(tx => {
-                const isDebit = tx.type === 'withdraw' || (tx.payment_details && tx.payment_details.toLowerCase().includes('plan buy'));
-                const amountSign = isDebit ? '-' : '+';
-                const colorClass = isDebit ? 'debit' : 'credit';
-                const iconName = isDebit ? 'fa-arrow-up-right-from-square' : 'fa-arrow-down-left-and-up-right-to-center';
-                const dateStr = new Date(tx.created_at).toLocaleString('en-IN', {
-                    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                });
+            container.innerHTML = filtered.map(t => {
+                const isIncome = t.type === 'income';
+                const sign = isIncome ? '+' : '-';
+                const amt = parseFloat(t.amount || 0).toFixed(2);
+                const iconClass = isIncome ? 'fa-arrow-down-left' : 'fa-arrow-up-right';
+                const typeClass = isIncome ? 'income' : 'expense';
+                
+                const dateObj = new Date(t.created_at);
+                const formattedDate = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + 
+                                      dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase();
 
                 return `
                     <div class="tx-card">
                         <div class="tx-left">
-                            <div class="tx-icon ${colorClass}">
-                                <i class="fa-solid ${isDebit ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
+                            <div class="tx-icon ${typeClass}">
+                                <i class="fa-solid ${iconClass}"></i>
                             </div>
                             <div>
-                                <div class="tx-title">${tx.payment_details || (isDebit ? 'Payout / Purchase' : 'Credit / Bonus')}</div>
-                                <div class="tx-time">${dateStr}</div>
+                                <div class="tx-title">${t.payment_details || 'Transaction'}</div>
+                                <div class="tx-time">${formattedDate}</div>
                             </div>
                         </div>
                         <div class="tx-right">
-                            <div class="tx-amount ${colorClass}">${amountSign}₹${parseFloat(tx.amount).toFixed(2)}</div>
-                            <div class="tx-status">${tx.status || 'Success'}</div>
+                            <div class="tx-amount ${typeClass}">${sign}₹${amt}</div>
+                            <div class="tx-status">${t.status || 'SUCCESS'}</div>
                         </div>
                     </div>
                 `;
