@@ -431,30 +431,41 @@
         }
 
         async function approveRecharge(id, userId, amount) {
-            if (!confirm(`₹${amount} ka recharge Approve karein?`)) return;
-            try {
-                const { data: prof } = await supabaseClient.from('profiles').select('balance, total_recharge').eq('id', userId).single();
-                const newBal = (parseFloat(prof?.balance) || 0) + parseFloat(amount);
-                const newRec = (parseFloat(prof?.total_recharge) || 0) + parseFloat(amount);
+    if (!confirm(`₹${amount} ka recharge Approve karein?`)) return;
+    try {
+        // 1. User wallet aur total recharge update
+        const { data: prof } = await supabaseClient.from('profiles').select('balance, total_recharge').eq('id', userId).single();
+        const newBal = (parseFloat(prof?.balance) || 0) + parseFloat(amount);
+        const newRec = (parseFloat(prof?.total_recharge) || 0) + parseFloat(amount);
 
-                await supabaseClient.from('profiles').update({ balance: newBal, total_recharge: newRec }).eq('id', userId);
-                await supabaseClient.from('recharges').update({ status: 'approved' }).eq('id', id);
-                await supabaseClient.from('transactions').insert([{
-                    user_id: userId,
-                    type: 'income',
-                    amount: parseFloat(amount),
-                    status: 'success',
-                    payment_details: 'Recharge Approved by Admin'
-                }]);
+        await supabaseClient.from('profiles').update({ balance: newBal, total_recharge: newRec }).eq('id', userId);
+        await supabaseClient.from('recharges').update({ status: 'approved' }).eq('id', id);
+        
+        await supabaseClient.from('transactions').insert([{
+            user_id: userId,
+            type: 'income',
+            amount: parseFloat(amount),
+            status: 'success',
+            payment_details: 'Recharge Approved by Admin'
+        }]);
 
-                alert("✅ Recharge approved successfully!");
-                loadPendingRecharges();
-                fetchDashboardMetrics();
-                fetchAllUsersList();
-            } catch (err) {
-                alert("Approval failed: " + err.message);
-            }
+        // 2. Level 1, 2, 3 Referral Commission Trigger
+        const { error: commErr } = await supabaseClient.rpc('distribute_referral_commission', {
+            paying_user_id: userId,
+            purchase_amount: parseFloat(amount)
+        });
+
+        if (commErr) console.error("Commission error:", commErr);
+
+        alert("✅ Recharge approved aur Level 1, 2, 3 Commission credit ho gaya!");
+        loadPendingRecharges();
+        fetchDashboardMetrics();
+        fetchAllUsersList();
+    } catch (err) {
+        alert("Approval failed: " + err.message);
+    }
         }
+            
 
         async function rejectRecharge(id) {
             if (!confirm("Recharge request ko Reject karein?")) return;
