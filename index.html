@@ -40,7 +40,8 @@
         .icon-mission { background: #fef3c7; color: #d97706; }
         .icon-invite { background: #f3e8ff; color: #9333ea; }
         .icon-online { background: #e0f2fe; color: #0284c7; }
-                /* Section Titles */
+
+        /* Section Titles */
         .section-header { padding: 8px 18px 12px; display: flex; justify-content: space-between; align-items: center; }
         .section-header h2 { font-size: 17px; font-weight: 800; color: #0f172a; }
         .section-header span { font-size: 12px; color: #16a34a; font-weight: 700; }
@@ -76,7 +77,7 @@
         .nav-wheel { margin-top: -24px; }
         .wheel-btn { width: 52px; height: 52px; background: radial-gradient(circle, #22c55e, #15803d); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35); border: 3px solid #ffffff; }
 
-        /* Generic Modal */
+        /* Modals */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
         .modal-box { background: white; width: 100%; max-width: 380px; border-radius: 20px; padding: 24px; text-align: center; }
         .modal-box h3 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
@@ -127,7 +128,7 @@
         }
         .btn-buy-flash:active { transform: scale(0.98); }
 
-        /* Telegram Modal Styles */
+        /* Telegram Modal */
         .tg-modal-overlay {
             display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(5px); z-index: 9999999; justify-content: center; align-items: center; padding: 20px;
@@ -307,7 +308,7 @@
             </div>
         </div>
 
-        <!-- Special Flash Offer Popup Modal -->
+        <!-- Flash Offer Popup Modal -->
         <div id="flashOfferModal" class="flash-modal-overlay">
             <div class="flash-modal-card">
                 <button class="flash-close-btn" onclick="closeFlashOffer()">&times;</button>
@@ -348,7 +349,7 @@
             </div>
         </div>
 
-        <!-- Official Telegram Join Modal -->
+        <!-- Telegram Join Modal -->
         <div id="telegramModal" class="tg-modal-overlay">
             <div class="tg-modal-card">
                 <i class="fa-brands fa-telegram tg-icon"></i>
@@ -376,7 +377,7 @@
         document.addEventListener("DOMContentLoaded", () => {
             initApp();
             
-            // 1. Flash Offer Popup (1 second baad load hoga)
+            // Flash Offer Popup
             setTimeout(() => {
                 const flashModal = document.getElementById("flashOfferModal");
                 if (flashModal) {
@@ -386,54 +387,65 @@
             }, 1000);
         });
 
+        // Unified Session Initializer (Direct LocalStorage + Database Sync)
         async function initApp() {
             try {
-                const { data: sessionData, error: sessionErr } = await supabaseClient.auth.getSession();
-                
-                if (sessionErr || !sessionData || !sessionData.session) {
+                const storedUser = localStorage.getItem('earnflow_user');
+                const userPhone = localStorage.getItem('user_phone');
+
+                if (!storedUser && !userPhone) {
                     window.location.replace('login.html');
                     return;
                 }
 
-                currentUser = sessionData.session.user;
-                const rawPhone = currentUser.email ? currentUser.email.split('@')[0] : "User";
+                let cleanPhone = userPhone ? userPhone.replace(/[^0-9]/g, '').slice(-10) : '';
+                if (storedUser) {
+                    try {
+                        const parsed = JSON.parse(storedUser);
+                        currentUser = parsed;
+                        if (!cleanPhone && parsed.phone) cleanPhone = parsed.phone.replace(/[^0-9]/g, '').slice(-10);
+                    } catch(e) {}
+                }
 
-                document.getElementById('userPhoneDisplay').innerText = "+91 " + rawPhone;
-                document.getElementById('userUidDisplay').innerText = "UID: " + currentUser.id.substring(0, 8).toUpperCase();
+                // Initial UI set from cache
+                document.getElementById('userPhoneDisplay').innerText = "+91 " + (cleanPhone || "User");
+                const initialUid = currentUser?.id ? currentUser.id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase() : '572C7DC9';
+                document.getElementById('userUidDisplay').innerText = "UID: " + initialUid;
 
+                if (currentUser) {
+                    document.getElementById('totalBalText').innerText = "₹" + parseFloat(currentUser.balance || 0).toFixed(2);
+                    document.getElementById('teamIncText').innerText = "₹" + parseFloat(currentUser.team_income || 0).toFixed(2);
+                }
+
+                // Fetch latest profile state from Supabase
                 const { data: prof, error: profErr } = await supabaseClient
                     .from('profiles')
                     .select('*')
-                    .eq('id', currentUser.id)
+                    .or(`phone.eq.${cleanPhone},phone.eq.+91${cleanPhone}`)
                     .maybeSingle();
 
                 if (prof) {
+                    currentUser = prof;
                     userProfileData = prof;
-                    const phone = prof.phone || rawPhone;
-                    document.getElementById('userPhoneDisplay').innerText = "+91 " + phone;
-                    document.getElementById('userUidDisplay').innerText = "UID: " + prof.id.substring(0, 8).toUpperCase();
+                    localStorage.setItem('earnflow_user', JSON.stringify(prof));
+                    localStorage.setItem('user_phone', cleanPhone);
+
+                    const finalPhone = prof.phone ? prof.phone.replace(/[^0-9]/g, '').slice(-10) : cleanPhone;
+                    document.getElementById('userPhoneDisplay').innerText = "+91 " + finalPhone;
+                    document.getElementById('userUidDisplay').innerText = "UID: " + prof.id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase();
                     document.getElementById('totalBalText').innerText = "₹" + parseFloat(prof.balance || 0).toFixed(2);
                     document.getElementById('teamIncText').innerText = "₹" + parseFloat(prof.team_income || 0).toFixed(2);
-                } else {
-                    await supabaseClient.from('profiles').upsert([{
-                        id: currentUser.id,
-                        phone: rawPhone,
-                        referral_code: rawPhone,
-                        balance: 50,
-                        team_income: 0
-                    }]);
-                    document.getElementById('totalBalText').innerText = "₹50.00";
                 }
             } catch (err) {
                 console.error("Initialization error:", err);
             }
         }
-                // ================= FLASH POPUP ENGINE =================
+
+        // Flash Offer Engine
         function closeFlashOffer() {
             const modal = document.getElementById("flashOfferModal");
             if (modal) modal.style.display = "none";
 
-            // Flash modal band hone ke 500ms baad Telegram Modal show hoga
             setTimeout(() => {
                 const tgModal = document.getElementById("telegramModal");
                 if (tgModal) tgModal.style.display = "flex";
@@ -458,23 +470,17 @@
             }, 1000);
         }
 
-        // ================= TELEGRAM MODAL ENGINE =================
+        // Telegram Modal Engine
         function closeTelegramModal() {
             const modal = document.getElementById("telegramModal");
             if (modal) modal.style.display = "none";
         }
 
-        // ================= INVITE LINK SYSTEM =================
+        // Invite Link System
         function openInviteModal() {
             try {
-                let refCode = "";
-                if (userProfileData && userProfileData.referral_code) {
-                    refCode = userProfileData.referral_code;
-                } else if (currentUser && currentUser.email) {
-                    refCode = currentUser.email.split('@')[0];
-                } else {
-                    refCode = "8433184064";
-                }
+                const phone = localStorage.getItem('user_phone') || '8433184064';
+                const refCode = userProfileData?.referral_code || phone.slice(-10);
 
                 const currentPath = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
                 const fullUrl = `${currentPath}register.html?ref=${refCode}`;
@@ -509,13 +515,13 @@
                 closeInviteModal();
             });
         }
-                // ================= UNIFIED BUY PLAN SYSTEM =================
+                // Unified Buy Plan System
         async function buyPlan(productName, price, dailyIncome, totalDays) {
             const planPrice = parseFloat(price);
             const dailyInc = parseFloat(dailyIncome);
             const days = parseInt(totalDays) || 150;
 
-            if (!currentUser) {
+            if (!currentUser || !currentUser.id) {
                 alert("Kripya pehle login karein!");
                 window.location.href = 'login.html';
                 return;
