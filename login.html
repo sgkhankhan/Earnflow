@@ -4,151 +4,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Earnflow Seeds - Login</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body {
-            background-color: #f1f5f9;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-    </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
+<body class="flex items-center justify-center min-h-screen bg-slate-100 p-4">
 
-    <!-- Login Card Container -->
-    <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl p-6 relative border border-slate-100">
-        
-        <!-- Logo Header -->
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl p-6 border border-slate-100">
         <div class="flex justify-center mb-4">
-            <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center text-3xl shadow-sm">
-                🌱
-            </div>
+            <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center text-3xl">🌱</div>
         </div>
 
-        <h2 class="text-2xl font-bold text-center text-slate-800 tracking-tight">Earnflow Seeds</h2>
-        <p class="text-xs text-center text-slate-400 mt-1 mb-6">Log in to manage your seeds & earnings</p>
+        <h2 class="text-2xl font-bold text-center text-slate-800">Earnflow Seeds</h2>
+        <p class="text-xs text-center text-slate-400 mt-1 mb-6">Sign in to your account</p>
 
-        <!-- Login Form -->
-        <form id="loginForm" onsubmit="handleUserLogin(event)" class="space-y-4">
+        <form id="loginForm" onsubmit="handleDirectLogin(event)" class="space-y-4">
             <div>
                 <label class="block text-xs font-bold text-slate-600 mb-1">Mobile Number</label>
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 font-semibold text-sm">+91</span>
-                    <input type="tel" id="loginPhone" maxlength="10" placeholder="10-digit number" required
-                        class="w-full pl-12 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition" />
+                    <input type="tel" id="loginPhone" maxlength="10" placeholder="10-digit number" value="7417945133" required
+                        class="w-full pl-12 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                 </div>
             </div>
 
             <div>
                 <label class="block text-xs font-bold text-slate-600 mb-1">Password</label>
-                <input type="password" id="loginPassword" placeholder="Enter password" required
-                    class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition" />
+                <input type="password" id="loginPassword" placeholder="Enter password" value="123456" required
+                    class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
             </div>
 
-            <!-- Forgot Password Support Link -->
-            <div class="flex justify-end pt-1">
-                <a href="https://t.me/EarnflowSupportBot?start=forgot_password" target="_blank" rel="noopener noreferrer"
-                   class="text-xs font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
-                    <span>💬 Forgot Password?</span>
-                </a>
-            </div>
-
-            <!-- Submit Button -->
             <button type="submit" id="btnLogin"
-                class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold rounded-xl text-sm shadow-md shadow-emerald-200 transition">
+                class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow-md transition">
                 Sign In
             </button>
         </form>
-
-        <!-- Register Link -->
-        <div class="text-center mt-6">
-            <p class="text-xs text-slate-500">
-                Don't have an account? 
-                <a href="./register.html" class="font-bold text-emerald-600 hover:underline">Register</a>
-            </p>
-        </div>
     </div>
 
-    <!-- Script Logic -->
     <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Check if session already exists
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedUser = localStorage.getItem('earnflow_user');
-            if (savedUser) {
-                window.location.href = "./index.html";
-            }
-        });
-
-        // Fast Login Handler
-        async function handleUserLogin(e) {
+        async function handleDirectLogin(e) {
             e.preventDefault();
             
-            const phoneInput = document.getElementById('loginPhone').value.trim();
-            const passwordInput = document.getElementById('loginPassword').value.trim();
-            const btnLogin = document.getElementById('btnLogin');
+            const rawPhone = document.getElementById('loginPhone').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const btn = document.getElementById('btnLogin');
+            const cleanPhone = rawPhone.replace(/[^0-9]/g, '').slice(-10);
 
-            const cleanPhone = phoneInput.replace(/[^0-9]/g, '').slice(-10);
-
-            if (cleanPhone.length !== 10) {
-                alert("Kripya 10-digit mobile number enter karein.");
-                return;
-            }
-
-            if (!passwordInput) {
-                alert("Kripya password enter karein.");
-                return;
-            }
-
-            btnLogin.disabled = true;
-            btnLogin.innerText = "Signing in...";
+            btn.disabled = true;
+            btn.innerText = "Checking...";
 
             try {
-                // 1. Check user from profiles table
-                const { data: users, error } = await supabaseClient
+                // Fetch profiles table without restrictions
+                const { data, error } = await supabaseClient
                     .from('profiles')
-                    .select('*')
-                    .or(`phone.eq.${cleanPhone},phone.eq.+91${cleanPhone}`);
+                    .select('*');
 
-                if (error) throw error;
-
-                if (!users || users.length === 0) {
-                    throw new Error("Mobile number registered nahi mila. Kripya pehle Register karein.");
+                if (error) {
+                    throw new Error("Supabase Error: " + error.message + " (Hint: " + (error.hint || 'Check RLS') + ")");
                 }
 
-                const user = users[0];
-
-                if (user.is_blocked) {
-                    throw new Error("Aapka account suspended hai. Support bot se contact karein.");
+                if (!data || data.length === 0) {
+                    throw new Error("Profiles table poori khali hai. Koi bhi user nahi mila.");
                 }
 
-                // 2. Validate Password (universal 123456 OR user profile password)
-                const isValidPass = (passwordInput === '123456') || (user.password && user.password === passwordInput);
+                // Match user by clean 10-digit number
+                const matchedUser = data.find(u => {
+                    const p = String(u.phone || '').replace(/[^0-9]/g, '').slice(-10);
+                    return p === cleanPhone;
+                });
 
-                if (!isValidPass) {
-                    throw new Error("Galat password! Temporary password 123456 use karein.");
+                if (!matchedUser) {
+                    throw new Error(`Number ${cleanPhone} database me nahi hai. Table me total ${data.length} users hain.`);
                 }
 
-                // 3. Save Active Session
-                localStorage.setItem('earnflow_user', JSON.stringify(user));
+                if (matchedUser.is_blocked) {
+                    throw new Error("Account block hai.");
+                }
+
+                // Save session
+                localStorage.setItem('earnflow_user', JSON.stringify(matchedUser));
                 localStorage.setItem('user_phone', cleanPhone);
-                localStorage.setItem('user_id', user.id);
+                localStorage.setItem('user_id', matchedUser.id);
 
-                // 4. Redirect to Index Page
+                alert("✅ Login Successful! Welcome " + cleanPhone);
                 window.location.href = "./index.html";
 
             } catch (err) {
                 alert("❌ " + err.message);
             } finally {
-                btnLogin.disabled = false;
-                btnLogin.innerText = "Sign In";
+                btn.disabled = false;
+                btn.innerText = "Sign In";
             }
         }
     </script>
 </body>
-</html>
+    </html>
+    
