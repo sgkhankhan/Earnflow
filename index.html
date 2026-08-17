@@ -1,669 +1,281 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Earnflow Seeds - Smart Agriculture Investment</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Earnflow Seeds - Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: #f0fdf4; display: flex; justify-content: center; min-height: 100vh; color: #0f172a; }
-        .app-container { width: 100%; max-width: 440px; background: #ffffff; min-height: 100vh; padding-bottom: 90px; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.06); }
-
-        /* Top Header */
-        .top-header { background: linear-gradient(135deg, #15803d, #16a34a); padding: 20px 18px 25px; border-radius: 0 0 24px 24px; color: white; }
-        .user-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-        .user-profile { display: flex; align-items: center; gap: 12px; }
-        .avatar-box { width: 44px; height: 44px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1.5px solid rgba(255,255,255,0.4); }
-        .user-details h3 { font-size: 15px; font-weight: 800; }
-        .user-details p { font-size: 11px; opacity: 0.85; font-weight: 600; }
-        .vip-badge { background: #fef08a; color: #854d0e; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 4px; }
-
-        /* Wallet Card */
-        .wallet-card { background: rgba(255,255,255,0.12); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.25); border-radius: 18px; padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; }
-        .wallet-item:first-child { border-right: 1px solid rgba(255,255,255,0.2); }
-        .wallet-item p { font-size: 11px; opacity: 0.9; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
-        .wallet-item h2 { font-size: 20px; font-weight: 800; }
-
-        /* Quick Action Grid */
-        .action-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; padding: 18px 16px; margin-top: -12px; }
-        .action-btn { background: #ffffff; border-radius: 16px; padding: 12px 6px; text-align: center; text-decoration: none; color: #1e293b; box-shadow: 0 4px 14px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; transition: transform 0.15s; position: relative; }
-        .action-btn:active { transform: scale(0.95); }
-        .action-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin: 0 auto 6px; }
-        .action-btn span { font-size: 11px; font-weight: 700; display: block; }
-        .badge-new { position: absolute; top: -6px; right: 8px; background: #ef4444; color: white; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 8px; }
-
-        .icon-recharge { background: #dcfce7; color: #16a34a; }
-        .icon-withdraw { background: #dbeafe; color: #2563eb; }
-        .icon-mission { background: #fef3c7; color: #d97706; }
-        .icon-invite { background: #f3e8ff; color: #9333ea; }
-        .icon-online { background: #e0f2fe; color: #0284c7; }
-                /* Section Titles */
-        .section-header { padding: 8px 18px 12px; display: flex; justify-content: space-between; align-items: center; }
-        .section-header h2 { font-size: 17px; font-weight: 800; color: #0f172a; }
-        .section-header span { font-size: 12px; color: #16a34a; font-weight: 700; }
-
-        /* Plan Card Container */
-        .plans-list { padding: 0 16px; display: flex; flex-direction: column; gap: 16px; }
-        .plan-card { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 20px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); position: relative; overflow: hidden; }
-        .plan-tag { position: absolute; top: 0; right: 0; background: linear-gradient(135deg, #16a34a, #15803d); color: white; font-size: 10px; font-weight: 800; padding: 5px 14px; border-radius: 0 0 0 14px; text-transform: uppercase; }
-        .plan-tag.best { background: linear-gradient(135deg, #0284c7, #0369a1); }
-        .plan-tag.vip { background: linear-gradient(135deg, #d97706, #b45309); }
-
-        .plan-main { display: flex; gap: 14px; align-items: center; margin-bottom: 14px; }
-        .plan-img-box { width: 105px; height: 105px; background: linear-gradient(135deg, #0f3923, #15803d); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; position: relative; padding: 8px; }
-        .plan-img-box .limit { position: absolute; top: 6px; left: 6px; font-size: 9px; font-weight: 700; background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 6px; }
-        .plan-img-box i { font-size: 32px; margin-bottom: 6px; color: #86efac; }
-        .plan-img-box h4 { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-
-        .plan-info { flex: 1; }
-        .info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 13px; }
-        .info-row span.label { color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 6px; }
-        .info-row span.label::before { content: "•"; color: #16a34a; font-size: 16px; line-height: 0; }
-        .info-row span.val { font-weight: 800; color: #0f172a; }
-        .info-row span.val.green { color: #16a34a; }
-
-        .btn-buy { width: 100%; background: linear-gradient(135deg, #16a34a, #15803d); color: white; border: none; padding: 13px; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25); transition: transform 0.15s; }
-        .btn-buy:active { transform: scale(0.98); }
-
-        /* Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 440px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; align-items: center; padding: 8px 0; z-index: 100; box-shadow: 0 -4px 15px rgba(0,0,0,0.03); }
-        .nav-item { text-align: center; text-decoration: none; color: #64748b; font-size: 10px; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .nav-item i { font-size: 18px; }
-        .nav-item.active { color: #16a34a; }
-        .nav-wheel { margin-top: -24px; }
-        .wheel-btn { width: 52px; height: 52px; background: radial-gradient(circle, #22c55e, #15803d); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35); border: 3px solid #ffffff; }
-
-        /* Generic Modal */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
-        .modal-box { background: white; width: 100%; max-width: 380px; border-radius: 20px; padding: 24px; text-align: center; }
-        .modal-box h3 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
-        .modal-box p { font-size: 12px; color: #64748b; margin-bottom: 16px; }
-        .ref-code-box { background: #f8fafc; border: 1.5px dashed #16a34a; padding: 12px; border-radius: 12px; font-size: 15px; font-weight: 800; color: #16a34a; margin-bottom: 16px; word-break: break-all; }
-        .btn-modal { width: 100%; background: #16a34a; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; }
-
-        /* Flash Offer Popup Modal */
-        .flash-modal-overlay {
-            display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(5px); z-index: 999999; justify-content: center; align-items: center; padding: 18px;
+        body {
+            background-color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
-        .flash-modal-card {
-            background: #ffffff; width: 100%; max-width: 360px; border-radius: 24px;
-            padding: 24px 20px; position: relative; text-align: center; box-shadow: 0 20px 45px rgba(0,0,0,0.35);
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes popIn {
-            from { transform: scale(0.85); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        .flash-close-btn {
-            position: absolute; right: 14px; top: 12px; background: #f1f5f9; border: none;
-            font-size: 22px; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: #64748b;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .flash-badge {
-            background: #ef4444; color: #fff; display: inline-block; font-size: 10px; font-weight: 800;
-            padding: 4px 12px; border-radius: 20px; letter-spacing: 0.5px; margin-bottom: 8px;
-        }
-        .flash-title { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 2px; }
-        .flash-sub { font-size: 12px; color: #64748b; margin-bottom: 14px; }
-        .flash-plan-box {
-            background: #f8fafc; border: 1.5px dashed #16a34a; border-radius: 16px;
-            padding: 14px; margin-bottom: 14px; text-align: left;
-        }
-        .plan-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; color: #334155; }
-        .plan-row.total-row { border-top: 1px solid #e2e8f0; padding-top: 8px; margin-top: 8px; margin-bottom: 0; }
-        .price-strike { text-decoration: line-through; color: #94a3b8; font-size: 11px; margin-right: 4px; }
-        .offer-price { color: #dc2626; font-size: 15px; font-weight: 800; }
-        .profit-highlight { color: #16a34a; font-weight: 800; }
-        .total-highlight { color: #0f172a; font-size: 15px; font-weight: 800; }
-        .flash-timer { font-size: 11px; font-weight: 700; color: #d97706; margin-bottom: 14px; }
-        .btn-buy-flash {
-            background: linear-gradient(135deg, #16a34a, #15803d); color: #ffffff; border: none;
-            width: 100%; padding: 13px; border-radius: 14px; font-size: 14px; font-weight: 800;
-            cursor: pointer; box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35); transition: 0.2s;
-        }
-        .btn-buy-flash:active { transform: scale(0.98); }
-
-        /* Telegram Modal Styles */
-        .tg-modal-overlay {
-            display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px); z-index: 9999999; justify-content: center; align-items: center; padding: 20px;
-        }
-        .tg-modal-card {
-            background: #ffffff; width: 100%; max-width: 320px; border-radius: 24px;
-            padding: 26px 20px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .tg-icon { font-size: 48px; color: #229ED9; margin-bottom: 14px; }
-        .tg-title { font-size: 19px; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
-        .tg-text { font-size: 12px; color: #64748b; margin-bottom: 20px; line-height: 1.5; }
-        .btn-tg-join {
-            background: #229ED9; color: white; border: none; width: 100%; padding: 13px;
-            border-radius: 14px; font-weight: 800; font-size: 14px; cursor: pointer; text-decoration: none;
-            display: block; box-shadow: 0 4px 12px rgba(34, 158, 217, 0.3);
-        }
-        /* VIP Offer Top Sticky Banner */
-.top-flash-banner {
-    background: linear-gradient(135deg, #b45309, #d97706);
-    color: #ffffff;
-    padding: 10px 14px;
-    margin: 12px 16px 0;
-    border-radius: 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 4px 14px rgba(217, 119, 6, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    cursor: pointer;
-    animation: pulseBorder 2s infinite;
-}
-@keyframes pulseBorder {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4); }
-    50% { box-shadow: 0 0 0 6px rgba(217, 119, 6, 0); }
-}
-.banner-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.banner-badge {
-    background: #ef4444;
-    color: #ffffff;
-    font-size: 9px;
-    font-weight: 800;
-    padding: 2px 6px;
-    border-radius: 6px;
-    text-transform: uppercase;
-}
-.banner-text h4 {
-    font-size: 13px;
-    font-weight: 800;
-    line-height: 1.2;
-}
-.banner-text p {
-    font-size: 11px;
-    opacity: 0.9;
-    font-weight: 600;
-}
-.banner-action-btn {
-    background: #ffffff;
-    color: #b45309;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 800;
-    cursor: pointer;
-    white-space: nowrap;
-    }
-        
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body>
-    <div class="app-container">
-        <!-- Top Bar Header -->
-        <div class="top-header">
-            <div class="user-row">
-                <div class="user-profile">
-                    <div class="avatar-box"><i class="fa-solid fa-seedling"></i></div>
-                    <div class="user-details">
-                        <h3 id="userPhoneDisplay">Loading...</h3>
-                        <p id="userUidDisplay">UID: ---</p>
-                    </div>
-                </div>
-                <div class="vip-badge"><i class="fa-solid fa-crown"></i> VIP Member</div>
-            </div>
-
-            <!-- Wallet Overview -->
-            <div class="wallet-card">
-                <div class="wallet-item">
-                    <p>Total Balance</p>
-                    <h2 id="totalBalText">₹0.00</h2>
-                </div>
-                <div class="wallet-item">
-                    <p>Team Income</p>
-                    <h2 id="teamIncText">₹0.00</h2>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions Grid -->
-        <div class="action-grid">
-            <a href="recharge.html" class="action-btn">
-                <div class="action-icon icon-recharge"><i class="fa-solid fa-wallet"></i></div>
-                <span>Recharge</span>
-            </a>
-            <a href="withdraw.html" class="action-btn">
-                <div class="action-icon icon-withdraw"><i class="fa-solid fa-money-bill-transfer"></i></div>
-                <span>Withdraw</span>
-            </a>
-            <a href="mission.html" class="action-btn">
-                <span class="badge-new">New</span>
-                <div class="action-icon icon-mission"><i class="fa-solid fa-list-check"></i></div>
-                <span>Mission</span>
-            </a>
-            <div onclick="openInviteModal()" class="action-btn" style="cursor: pointer;">
-                <div class="action-icon icon-invite"><i class="fa-solid fa-share-nodes"></i></div>
-                <span>Invite</span>
-            </div>
-            <a href="https://t.me/Earnflowseeds" target="_blank" class="action-btn">
-                <div class="action-icon icon-online"><i class="fa-brands fa-telegram"></i></div>
-                <span>Online</span>
-            </a>
-        </div>
-                <!-- Section Header -->
-        <div class="section-header">
-            <h2>Earnflow Seed Plans</h2>
-            <span>Daily Withdrawal</span>
-        </div>
-        <!-- VIP Starter Special Top Banner -->
-<div class="top-flash-banner" onclick="openFlashOfferFromBanner()">
-    <div class="banner-left">
-        <i class="fa-solid fa-bolt" style="font-size: 20px; color: #fef08a;"></i>
-        <div class="banner-text">
-            <div><span class="banner-badge">🔥 Flash Offer</span> <b>SUPER SEED VIP</b></div>
-            <p>Pay ₹299 & Earn ₹85.00/Day (30 Days)</p>
-        </div>
-    </div>
-    <button class="banner-action-btn">Grab ₹299 <i class="fa-solid fa-chevron-right"></i></button>
-</div>
-    
-
-        <!-- Plans List -->
-        <div class="plans-list">
-            <!-- Plan 1: Maize Seed -->
-            <div class="plan-card">
-                <div class="plan-tag">★ Popular</div>
-                <div class="plan-main">
-                    <div class="plan-img-box">
-                        <span class="limit">Limit 0/10</span>
-                        <i class="fa-solid fa-seedling"></i>
-                        <h4>Maize Seed</h4>
-                    </div>
-                    <div class="plan-info">
-                        <div class="info-row"><span class="label">Price</span><span class="val green">₹525</span></div>
-                        <div class="info-row"><span class="label">Daily</span><span class="val green">₹125</span></div>
-                        <div class="info-row"><span class="label">Total</span><span class="val">₹18,750</span></div>
-                        <div class="info-row"><span class="label">End day</span><span class="val">150 day</span></div>
-                    </div>
-                </div>
-                <button onclick="buyPlan('Maize Seed', 525, 125, 150)" class="btn-buy">
-                    Buy Now <i class="fa-solid fa-cart-shopping"></i>
-                </button>
-            </div>
-
-            <!-- Plan 2: Wheat Seed -->
-            <div class="plan-card">
-                <div class="plan-tag best">👑 Best Value</div>
-                <div class="plan-main">
-                    <div class="plan-img-box" style="background: linear-gradient(135deg, #075985, #0284c7);">
-                        <span class="limit">Limit 0/5</span>
-                        <i class="fa-solid fa-wheat-awn"></i>
-                        <h4>Wheat Seed</h4>
-                    </div>
-                    <div class="plan-info">
-                        <div class="info-row"><span class="label">Price</span><span class="val green">₹1,500</span></div>
-                        <div class="info-row"><span class="label">Daily</span><span class="val green">₹375</span></div>
-                        <div class="info-row"><span class="label">Total</span><span class="val">₹56,250</span></div>
-                        <div class="info-row"><span class="label">End day</span><span class="val">150 day</span></div>
-                    </div>
-                </div>
-                <button onclick="buyPlan('Wheat Seed', 1500, 375, 150)" class="btn-buy" style="background: linear-gradient(135deg, #0284c7, #0369a1);">
-                    Buy Now <i class="fa-solid fa-cart-shopping"></i>
-                </button>
-            </div>
-
-            <!-- Plan 3: Paddy Hybrid Seed -->
-            <div class="plan-card">
-                <div class="plan-tag vip">🔥 High Yield</div>
-                <div class="plan-main">
-                    <div class="plan-img-box" style="background: linear-gradient(135deg, #854d0e, #d97706);">
-                        <span class="limit">Limit 0/3</span>
-                        <i class="fa-solid fa-plant-wilt"></i>
-                        <h4>Paddy Seed</h4>
-                    </div>
-                    <div class="plan-info">
-                        <div class="info-row"><span class="label">Price</span><span class="val green">₹3,500</span></div>
-                        <div class="info-row"><span class="label">Daily</span><span class="val green">₹920</span></div>
-                        <div class="info-row"><span class="label">Total</span><span class="val">₹1,38,000</span></div>
-                        <div class="info-row"><span class="label">End day</span><span class="val">150 day</span></div>
-                    </div>
-                </div>
-                <button onclick="buyPlan('Paddy Hybrid Seed', 3500, 920, 150)" class="btn-buy" style="background: linear-gradient(135deg, #d97706, #b45309);">
-                    Buy Now <i class="fa-solid fa-cart-shopping"></i>
-                </button>
-            </div>
-        </div>
-                <!-- Bottom Navigation Bar -->
-        <div class="bottom-nav">
-            <a href="index.html" class="nav-item active">
-                <i class="fa-solid fa-house"></i>
-                <span>Home</span>
-            </a>
-            <a href="treasure.html" class="nav-item">
-                <i class="fa-solid fa-box-archive"></i>
-                <span>Treasure</span>
-            </a>
-            <div class="nav-wheel">
-                <a href="wheel.html" class="wheel-btn">
-                    <i class="fa-solid fa-dharmachakra"></i>
-                </a>
-            </div>
-            <a href="team.html" class="nav-item">
-                <i class="fa-solid fa-users"></i>
-                <span>Team</span>
-            </a>
-            <a href="profile.html" class="nav-item">
-                <i class="fa-solid fa-user"></i>
-                <span>Profile</span>
-            </a>
-        </div>
-
-        <!-- Invite Modal -->
-        <div id="inviteModal" class="modal">
-            <div class="modal-box">
-                <i class="fa-solid fa-gift" style="font-size: 40px; color: #16a34a; margin-bottom: 10px;"></i>
-                <h3>Invite & Earn 27%</h3>
-                <p>Share your referral link and earn Level 1 (27%), Level 2 (3%), and Level 3 (1%) instant commissions!</p>
-                <div id="refLinkBox" class="ref-code-box">Generating link...</div>
-                <button onclick="copyInviteLink()" class="btn-modal">Copy Link & Share</button>
-                <button onclick="closeInviteModal()" style="margin-top: 10px; background: none; border: none; color: #64748b; font-weight: 700; font-size: 13px; cursor: pointer;">Close</button>
-            </div>
-        </div>
-
-        <!-- Special Flash Offer Popup Modal -->
-        <div id="flashOfferModal" class="flash-modal-overlay">
-            <div class="flash-modal-card">
-                <button class="flash-close-btn" onclick="closeFlashOffer()">&times;</button>
-                <div class="flash-badge"><i class="fa-solid fa-bolt"></i> LIMITED TIME OFFER</div>
-                <h3 class="flash-title">🔥 VIP Starter Special</h3>
-                <p class="flash-sub">Sirf aaj ke liye special high yield launch!</p>
-                
-                <div class="flash-plan-box">
-                    <div class="plan-row">
-                        <span>Plan Name:</span>
-                        <b>SUPER SEED VIP</b>
-                    </div>
-                    <div class="plan-row">
-                        <span>Plan Price:</span>
-                        <span><b class="price-strike">₹600</b> <b class="offer-price">₹299 Only</b></span>
-                    </div>
-                    <div class="plan-row">
-                        <span>Daily Yield:</span>
-                        <b class="profit-highlight">₹85.00 / Day</b>
-                    </div>
-                    <div class="plan-row">
-                        <span>Validity:</span>
-                        <b>30 Days</b>
-                    </div>
-                    <div class="plan-row total-row">
-                        <span>Total Income:</span>
-                        <b class="total-highlight">₹2,550.00</b>
-                    </div>
-                </div>
-
-                <div class="flash-timer">
-                    <i class="fa-regular fa-clock"></i> Offer ends in: <span id="flashTimer">04:59</span>
-                </div>
-
-                <button class="btn-buy-flash" onclick="buyPlan('SUPER SEED VIP', 299, 85, 30)">
-                    <i class="fa-solid fa-cart-shopping"></i> Grab Offer Now
-                </button>
-            </div>
-        </div>
-
-        <!-- Official Telegram Join Modal -->
-        <div id="telegramModal" class="tg-modal-overlay">
-            <div class="tg-modal-card">
-                <i class="fa-brands fa-telegram tg-icon"></i>
-                <h3 class="tg-title">Join Official Channel</h3>
-                <p class="tg-text">Sabse pehle daily updates, withdrawal proofs aur new bonuses ke liye hamara Telegram channel join karein!</p>
-                <a href="https://t.me/Earnflowseeds" target="_blank" class="btn-tg-join" onclick="closeTelegramModal()">
-                    <i class="fa-brands fa-telegram"></i> Join Telegram Now
-                </a>
-                <button onclick="closeTelegramModal()" style="margin-top: 14px; background: none; border: none; color: #94a3b8; font-weight: 700; font-size: 13px; cursor: pointer;">
-                    Maybe Later
-                </button>
-            </div>
-        </div>
-                    </div>
-        <!-- Script Configuration -->
+<body class="pb-24 select-none">
+        <!-- 1. AUTH GUARD & DATA SYNC -->
     <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentUser = null;
-        let userProfileData = null;
-        window.flashTimerInterval = null;
 
-        document.addEventListener("DOMContentLoaded", () => {
-            initApp();
-            
-            // 1. Flash Offer Popup (1 second baad load hoga)
-            setTimeout(() => {
-                const flashModal = document.getElementById("flashOfferModal");
-                if (flashModal) {
-                    flashModal.style.display = "flex";
-                    startFlashCountdown(300);
-                }
-            }, 1000);
-        });
-function openFlashOfferFromBanner() {
-    const modal = document.getElementById("flashOfferModal");
-    if (modal) {
-        modal.style.display = "flex";
-        startFlashCountdown(300);
-    }
-}
-        
-        async function initApp() {
+        // Session validation immediately on execution
+        (function initAuth() {
+            const raw = localStorage.getItem('earnflow_user');
+            const phone = localStorage.getItem('user_phone');
+
+            if (!raw || !phone) {
+                localStorage.clear();
+                window.location.replace("./login.html");
+                return;
+            }
+
             try {
-                const { data: sessionData, error: sessionErr } = await supabaseClient.auth.getSession();
-                
-                if (sessionErr || !sessionData || !sessionData.session) {
-                    window.location.replace('login.html');
-                    return;
-                }
+                currentUser = JSON.parse(raw);
+            } catch (e) {
+                localStorage.clear();
+                window.location.replace("./login.html");
+            }
+        })();
+            </script>
+                <!-- Top Header -->
+    <header class="bg-emerald-600 text-white px-4 pt-4 pb-6 rounded-b-[28px] shadow-lg sticky top-0 z-40">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-2">
+                <div class="w-9 h-9 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-xl">🌱</div>
+                <div>
+                    <h1 class="text-sm font-extrabold tracking-wide leading-none">EARNFLOW</h1>
+                    <p class="text-[10px] text-emerald-100 font-medium">Smart Agro Growth</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <a href="./support.html" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20">
+                    <i class="fa-solid fa-headset text-xs"></i>
+                </a>
+                <button onclick="handleLogout()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-rose-200 hover:bg-rose-500 hover:text-white transition">
+                    <i class="fa-solid fa-power-off text-xs"></i>
+                </button>
+            </div>
+        </div>
 
-                currentUser = sessionData.session.user;
-                const rawPhone = currentUser.email ? currentUser.email.split('@')[0] : "User";
+        <!-- Wallet Card -->
+        <div class="bg-gradient-to-br from-emerald-700/80 to-emerald-900/90 border border-white/10 rounded-2xl p-4 backdrop-blur-md">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="text-[11px] text-emerald-200 font-semibold uppercase tracking-wider">Total Available Balance</span>
+                    <h2 class="text-2xl font-black mt-0.5 tracking-tight text-white" id="displayBalance">₹0.00</h2>
+                    <span class="text-[10px] text-emerald-200 font-medium" id="displayUserPhone">+91 User</span>
+                </div>
+                <div class="flex gap-2">
+                    <a href="./recharge.html" class="px-3.5 py-2 bg-white text-emerald-800 text-xs font-bold rounded-xl shadow-md active:scale-95 transition">Recharge</a>
+                    <a href="./withdraw.html" class="px-3.5 py-2 bg-emerald-500/40 border border-white/20 text-white text-xs font-bold rounded-xl active:scale-95 transition">Withdraw</a>
+                </div>
+            </div>
+        </div>
+    </header>
 
-                document.getElementById('userPhoneDisplay').innerText = "+91 " + rawPhone;
-                document.getElementById('userUidDisplay').innerText = "UID: " + currentUser.id.substring(0, 8).toUpperCase();
+        <!-- Quick Actions Grid -->
+    <section class="px-4 -mt-3 relative z-30">
+        <div class="bg-white rounded-2xl p-3 shadow-md border border-slate-100 grid grid-cols-4 gap-2 text-center">
+            <a href="./recharge.html" class="flex flex-col items-center py-1">
+                <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-base mb-1 shadow-sm"><i class="fa-solid fa-wallet"></i></div>
+                <span class="text-[10px] font-bold text-slate-700">Recharge</span>
+            </a>
+            <a href="./withdraw.html" class="flex flex-col items-center py-1">
+                <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-base mb-1 shadow-sm"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                <span class="text-[10px] font-bold text-slate-700">Withdraw</span>
+            </a>
+            <a href="./invite.html" class="flex flex-col items-center py-1">
+                <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-base mb-1 shadow-sm"><i class="fa-solid fa-user-plus"></i></div>
+                <span class="text-[10px] font-bold text-slate-700">Invite</span>
+            </a>
+            <a href="https://t.me/EarnflowSupportBot" target="_blank" class="flex flex-col items-center py-1">
+                <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-base mb-1 shadow-sm"><i class="fa-brands fa-telegram"></i></div>
+                <span class="text-[10px] font-bold text-slate-700">Support</span>
+            </a>
+        </div>
+    </section>
 
-                const { data: prof, error: profErr } = await supabaseClient
+    <!-- Marquee Notice -->
+    <section class="px-4 mt-3">
+        <div class="bg-emerald-50/80 border border-emerald-100 rounded-xl px-3 py-2 flex items-center space-x-2 text-emerald-800 text-xs font-semibold">
+            <i class="fa-solid fa-bullhorn text-emerald-600 text-xs"></i>
+            <div class="overflow-hidden whitespace-nowrap w-full">
+                <p class="animate-marquee inline-block">Daily seed rewards credit every 24 hours. Invite friends to earn up to 10% commission!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Agro Seed Investment Plans -->
+    <main class="px-4 mt-4 space-y-3">
+        <div class="flex items-center justify-between mb-1">
+            <h3 class="text-sm font-extrabold text-slate-800 tracking-tight">Active Growth Seeds 🌱</h3>
+            <span class="text-[11px] font-bold text-emerald-600">Daily Returns</span>
+        </div>
+
+        <div id="seedPlansContainer" class="space-y-3">
+            <!-- Dynamic Plans loaded by Script -->
+            <div class="text-center py-8 text-xs text-slate-400">Loading available seeds...</div>
+        </div>
+    </main>
+
+        <!-- Bottom Floating Navigation -->
+    <nav class="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-2 px-6 flex justify-between items-center z-50 shadow-lg">
+        <a href="./index.html" class="flex flex-col items-center text-emerald-600">
+            <i class="fa-solid fa-seedling text-lg"></i>
+            <span class="text-[10px] font-extrabold mt-0.5">Home</span>
+        </a>
+        <a href="./orders.html" class="flex flex-col items-center text-slate-400 hover:text-slate-600">
+            <i class="fa-solid fa-layer-group text-lg"></i>
+            <span class="text-[10px] font-bold mt-0.5">My Seeds</span>
+        </a>
+        <a href="./team.html" class="flex flex-col items-center text-slate-400 hover:text-slate-600">
+            <i class="fa-solid fa-users text-lg"></i>
+            <span class="text-[10px] font-bold mt-0.5">Team</span>
+        </a>
+        <a href="./profile.html" class="flex flex-col items-center text-slate-400 hover:text-slate-600">
+            <i class="fa-solid fa-circle-user text-lg"></i>
+            <span class="text-[10px] font-bold mt-0.5">Profile</span>
+        </a>
+    </nav>
+
+        <script>
+        // Seed Products Data
+        const SEED_PLANS = [
+            { id: 1, name: "Wheat Mini Seed", price: 500, daily: 50, days: 30, total: 1500, icon: "🌾", tag: "Hot" },
+            { id: 2, name: "Corn Growth Seed", price: 1200, daily: 130, days: 35, total: 4550, icon: "🌽", tag: "Popular" },
+            { id: 3, name: "Soybean High Seed", price: 3000, daily: 350, days: 40, total: 14000, icon: "🌱", tag: "High Yield" },
+            { id: 4, name: "Cotton Gold Seed", price: 6500, daily: 800, days: 45, total: 36000, icon: "🪴", tag: "Premium" }
+        ];
+
+        // 1. Refresh live profile balance from Supabase
+        async function syncLiveUserData() {
+            if (!currentUser || !currentUser.id) return;
+
+            const phone = localStorage.getItem('user_phone');
+            document.getElementById('displayUserPhone').innerText = phone ? `+91 ${phone}` : '+91 User';
+
+            try {
+                const { data: profile, error } = await supabaseClient
                     .from('profiles')
                     .select('*')
                     .eq('id', currentUser.id)
                     .maybeSingle();
 
-                if (prof) {
-                    userProfileData = prof;
-                    const phone = prof.phone || rawPhone;
-                    document.getElementById('userPhoneDisplay').innerText = "+91 " + phone;
-                    document.getElementById('userUidDisplay').innerText = "UID: " + prof.id.substring(0, 8).toUpperCase();
-                    document.getElementById('totalBalText').innerText = "₹" + parseFloat(prof.balance || 0).toFixed(2);
-                    document.getElementById('teamIncText').innerText = "₹" + parseFloat(prof.team_income || 0).toFixed(2);
-                } else {
-                    await supabaseClient.from('profiles').upsert([{
-                        id: currentUser.id,
-                        phone: rawPhone,
-                        referral_code: rawPhone,
-                        balance: 50,
-                        team_income: 0
-                    }]);
-                    document.getElementById('totalBalText').innerText = "₹50.00";
+                if (profile) {
+                    currentUser = profile;
+                    localStorage.setItem('earnflow_user', JSON.stringify(profile));
+                    document.getElementById('displayBalance').innerText = `₹${parseFloat(profile.balance || 0).toFixed(2)}`;
                 }
             } catch (err) {
-                console.error("Initialization error:", err);
-            }
-        }
-                // ================= FLASH POPUP ENGINE =================
-        function closeFlashOffer() {
-            const modal = document.getElementById("flashOfferModal");
-            if (modal) modal.style.display = "none";
-
-            // Flash modal band hone ke 500ms baad Telegram Modal show hoga
-            setTimeout(() => {
-                const tgModal = document.getElementById("telegramModal");
-                if (tgModal) tgModal.style.display = "flex";
-            }, 500);
-        }
-
-        function startFlashCountdown(durationInSeconds) {
-            let timer = durationInSeconds;
-            const timerDisplay = document.getElementById("flashTimer");
-            
-            if (window.flashTimerInterval) clearInterval(window.flashTimerInterval);
-
-            window.flashTimerInterval = setInterval(() => {
-                const minutes = String(Math.floor(timer / 60)).padStart(2, '0');
-                const seconds = String(timer % 60).padStart(2, '0');
-                if (timerDisplay) timerDisplay.textContent = `${minutes}:${seconds}`;
-                
-                if (--timer < 0) {
-                    clearInterval(window.flashTimerInterval);
-                    if (timerDisplay) timerDisplay.textContent = "00:00 (Expired)";
-                }
-            }, 1000);
-        }
-
-        // ================= TELEGRAM MODAL ENGINE =================
-        function closeTelegramModal() {
-            const modal = document.getElementById("telegramModal");
-            if (modal) modal.style.display = "none";
-        }
-
-        // ================= INVITE LINK SYSTEM =================
-        function openInviteModal() {
-            try {
-                let refCode = "";
-                if (userProfileData && userProfileData.referral_code) {
-                    refCode = userProfileData.referral_code;
-                } else if (currentUser && currentUser.email) {
-                    refCode = currentUser.email.split('@')[0];
-                } else {
-                    refCode = "8433184064";
-                }
-
-                const currentPath = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-                const fullUrl = `${currentPath}register.html?ref=${refCode}`;
-
-                const modal = document.getElementById('inviteModal');
-                const linkBox = document.getElementById('refLinkBox');
-
-                if (modal && linkBox) {
-                    linkBox.innerText = fullUrl;
-                    modal.style.display = 'flex';
-                } else {
-                    navigator.clipboard.writeText(fullUrl);
-                    alert("🎉 Referral Link Copied:\n" + fullUrl);
-                }
-            } catch (e) {
-                alert("Invite link error: " + e.message);
+                console.error("Balance sync error:", err);
             }
         }
 
-        function closeInviteModal() {
-            const modal = document.getElementById('inviteModal');
-            if (modal) modal.style.display = 'none';
+        // 2. Render Plans into HTML
+        function renderPlans() {
+            const container = document.getElementById('seedPlansContainer');
+            container.innerHTML = SEED_PLANS.map(p => `
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col justify-between">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-2xl">${p.icon}</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-800">${p.name}</h4>
+                                <span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">${p.tag}</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[10px] text-slate-400 font-semibold block">Seed Price</span>
+                            <span class="text-sm font-black text-slate-800">₹${p.price}</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 py-3 text-center">
+                        <div class="bg-slate-50 rounded-xl p-1.5">
+                            <span class="text-[9px] text-slate-400 font-bold block">Daily</span>
+                            <span class="text-xs font-black text-emerald-600">₹${p.daily}</span>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-1.5">
+                            <span class="text-[9px] text-slate-400 font-bold block">Cycle</span>
+                            <span class="text-xs font-black text-slate-700">${p.days} Days</span>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-1.5">
+                            <span class="text-[9px] text-slate-400 font-bold block">Total</span>
+                            <span class="text-xs font-black text-slate-800">₹${p.total}</span>
+                        </div>
+                    </div>
+                    <button onclick="buySeedPlan(${p.id}, ${p.price})" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md active:scale-95 transition">
+                        Plant Now (₹${p.price})
+                    </button>
+                </div>
+            `).join('');
         }
 
-        function copyInviteLink() {
-            const linkText = document.getElementById('refLinkBox').innerText;
-            navigator.clipboard.writeText(linkText).then(() => {
-                alert("Referral link copied successfully!");
-                closeInviteModal();
-            }).catch(() => {
-                alert("Copied: " + linkText);
-                closeInviteModal();
-            });
-                }
-                // ================= UNIFIED BUY PLAN SYSTEM =================
-        async function buyPlan(productName, price, dailyIncome, totalDays) {
-            const planPrice = parseFloat(price);
-            const dailyInc = parseFloat(dailyIncome);
-            const days = parseInt(totalDays) || 150;
+                    // 3. Buy Seed Order Handler
+        async function buySeedPlan(planId, price) {
+            const currentBal = parseFloat(currentUser.balance || 0);
 
-            if (!currentUser) {
-                alert("Kripya pehle login karein!");
-                window.location.href = 'login.html';
+            if (currentBal < price) {
+                if (confirm(`Insufficient Balance! ₹${price} required.\nDo you want to recharge now?`)) {
+                    window.location.href = "./recharge.html";
+                }
                 return;
             }
 
-            if (!confirm(`Kya aap ₹${planPrice} ka "${productName}" plan khareedna chahte hain?`)) return;
+            if (!confirm(`Are you sure you want to buy this seed for ₹${price}?`)) {
+                return;
+            }
 
             try {
-                const { data: prof, error: pErr } = await supabaseClient
+                // Deduct Balance
+                const newBal = currentBal - price;
+                const { error: updateErr } = await supabaseClient
                     .from('profiles')
-                    .select('balance, phone')
-                    .eq('id', currentUser.id)
-                    .single();
-
-                if (pErr || !prof) throw new Error("Balance check karne me error aayi.");
-
-                const currentBal = parseFloat(prof.balance || 0);
-                if (currentBal < planPrice) {
-                    alert(`Wallet me balance kam hai (Available: ₹${currentBal.toFixed(2)}).\nKripya pehle Recharge karein!`);
-                    window.location.href = 'recharge.html';
-                    return;
-                }
-
-                // 1. Balance Deduct
-                const { error: balErr } = await supabaseClient
-                    .from('profiles')
-                    .update({ balance: currentBal - planPrice })
+                    .update({ balance: newBal })
                     .eq('id', currentUser.id);
 
-                if (balErr) throw balErr;
+                if (updateErr) throw updateErr;
 
-                // 2. Orders Entry
-                const { error: ordErr } = await supabaseClient
-                    .from('orders')
-                    .insert([{
-                        user_id: currentUser.id,
-                        plan_name: productName,
-                        price: planPrice,
-                        daily_income: dailyInc,
-                        validity_days: days,
-                        days_remaining: days,
-                        status: 'active'
-                    }]);
-
-                if (ordErr) throw ordErr;
-
-                // 3. Passbook Log
-                await supabaseClient.from('transactions').insert([{
+                // Create Order record (optional table insert)
+                await supabaseClient.from('orders').insert({
                     user_id: currentUser.id,
-                    type: 'expense',
-                    amount: planPrice,
-                    status: 'success',
-                    payment_details: `Purchased: ${productName}`
-                }]);
+                    phone: localStorage.getItem('user_phone'),
+                    plan_id: planId,
+                    amount: price,
+                    status: 'active'
+                });
 
-                // 4. Multi-Level Commission Trigger
-                try {
-                    await supabaseClient.rpc('distribute_plan_commission', {
-                        buyer_user_id: currentUser.id,
-                        plan_amount: planPrice,
-                        plan_title: productName
-                    });
-                } catch (cErr) {
-                    console.log("Commission trigger notice:", cErr);
-                }
+                currentUser.balance = newBal;
+                localStorage.setItem('earnflow_user', JSON.stringify(currentUser));
+                document.getElementById('displayBalance').innerText = `₹${newBal.toFixed(2)}`;
 
-                alert(`🎉 Mubarak ho! ${productName} successfully activate ho gaya hai.`);
-                closeFlashOffer();
-                window.location.reload();
-
+                alert("🎉 Seed successfully planted! Daily returns will start crediting.");
             } catch (err) {
-                alert("Plan purchase failed: " + err.message);
+                alert("❌ Transaction failed: " + err.message);
             }
         }
+
+        // Global Logout Handler
+        function handleLogout() {
+            if (confirm("Are you sure you want to log out?")) {
+                localStorage.clear();
+                window.location.replace("./login.html");
+            }
+        }
+
+        // Run On Page Load
+        window.addEventListener('DOMContentLoaded', () => {
+            syncLiveUserData();
+            renderPlans();
+        });
     </script>
 </body>
 </html>
+
