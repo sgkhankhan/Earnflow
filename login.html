@@ -20,7 +20,7 @@
     <!-- Login Card Container -->
     <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl p-6 relative border border-slate-100">
         
-        <!-- Logo / Icon -->
+        <!-- Logo Header -->
         <div class="flex justify-center mb-4">
             <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center text-3xl shadow-sm">
                 🌱
@@ -49,7 +49,7 @@
 
             <!-- Forgot Password Support Link -->
             <div class="flex justify-end pt-1">
-                <a href="https://t.me/EarnflowSupportBot?start=forgot_password" target="_blank"
+                <a href="https://t.me/EarnflowSupportBot?start=forgot_password" target="_blank" rel="noopener noreferrer"
                    class="text-xs font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
                     <span>💬 Forgot Password?</span>
                 </a>
@@ -62,7 +62,7 @@
             </button>
         </form>
 
-        <!-- Register Redirection -->
+        <!-- Register Link -->
         <div class="text-center mt-6">
             <p class="text-xs text-slate-500">
                 Don't have an account? 
@@ -70,9 +70,10 @@
             </p>
         </div>
     </div>
-        <!-- Script Logic -->
+
+    <!-- Script Logic -->
     <script>
-        // Supabase Initialization
+        // Supabase Initialization (Apne project keys yahan check karein)
         const SUPABASE_URL = "https://YOUR_SUPABASE_PROJECT_URL.supabase.co";
         const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -109,21 +110,36 @@
             btnLogin.innerText = "Signing in...";
 
             try {
-                // Construct internal auth email identifier
-                const authEmail = `${cleanPhone}@earnflow.internal`;
-
-                // 1. Authenticate with Supabase
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email: authEmail,
+                // Fallback attempt 1: Internal Email Format
+                let authResponse = await supabaseClient.auth.signInWithPassword({
+                    email: `${cleanPhone}@earnflow.internal`,
                     password: passwordInput
                 });
 
-                if (error) {
+                // Fallback attempt 2: Phone with +91
+                if (authResponse.error) {
+                    authResponse = await supabaseClient.auth.signInWithPassword({
+                        phone: `+91${cleanPhone}`,
+                        password: passwordInput
+                    });
+                }
+
+                // Fallback attempt 3: 10-Digit Direct Phone
+                if (authResponse.error) {
+                    authResponse = await supabaseClient.auth.signInWithPassword({
+                        phone: cleanPhone,
+                        password: passwordInput
+                    });
+                }
+
+                if (authResponse.error) {
                     throw new Error("Invalid mobile number or password.");
                 }
 
-                // 2. Check if user profile is blocked
-                const { data: profile, error: profileErr } = await supabaseClient
+                const { data } = authResponse;
+
+                // Check profile block status
+                const { data: profile } = await supabaseClient
                     .from('profiles')
                     .select('is_blocked')
                     .eq('id', data.user.id)
@@ -134,7 +150,7 @@
                     throw new Error("Your account has been suspended. Please contact support.");
                 }
 
-                // 3. Success Redirect
+                // Redirect to Dashboard
                 window.location.href = "dashboard.html";
 
             } catch (err) {
