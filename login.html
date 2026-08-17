@@ -1,306 +1,149 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Earnflow Seeds - Login</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: #f1f7f2; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; }
-        .app-container { width: 100%; max-width: 420px; background: #ffffff; padding: 30px 20px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); text-align: center; }
-        .logo-box { width: 64px; height: 64px; background: #dcfce7; color: #16a34a; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 15px; }
-        h2 { font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
-        p.sub { font-size: 13px; color: #64748b; margin-bottom: 25px; }
-        .form-group { margin-bottom: 15px; text-align: left; }
-        .form-group label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; }
-        .input-box { width: 100%; padding: 12px 14px; border: 1.5px solid #cbd5e1; border-radius: 12px; font-size: 14px; font-weight: 600; outline: none; background: #f8fafc; transition: 0.2s; }
-        .input-box:focus { border-color: #16a34a; background: #ffffff; }
-        .btn-submit { width: 100%; background: #16a34a; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25); }
-        .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
-        .footer-text { font-size: 13px; color: #64748b; margin-top: 20px; }
-        .footer-text a { color: #16a34a; text-decoration: none; font-weight: 700; }
+        body {
+            background-color: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
     </style>
 </head>
-<body>
-    <div class="app-container">
-        <div class="logo-box"><i class="fa-solid fa-seedling"></i></div>
-        <h2>Earnflow Seeds</h2>
-        <p class="sub">Welcome back! Sign in to your account</p>
+<body class="flex items-center justify-center min-h-screen p-4">
 
-        <form id="loginForm" onsubmit="handleLogin(event)">
-            <div class="form-group">
-                <label>Mobile Number</label>
-                <input type="tel" id="mobile" class="input-box" placeholder="Enter mobile number" maxlength="10" required>
-            </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="password" class="input-box" placeholder="Enter password" required>
-            </div>
-            <button type="submit" id="loginBtn" class="btn-submit">Sign In</button>
-        </form>
-<!-- Forgot Password Link -->
-<div style="text-align: right; margin: -6px 0 14px;">
-    <a href="javascript:void(0)" onclick="openForgotModal()" style="font-size: 13px; color: #16a34a; text-decoration: none; font-weight: 600;">Forgot Password?</a>
-</div>
-
-<!-- Forgot Password Popup Modal -->
-<div id="forgotModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; padding: 16px;">
-    <div style="background: #ffffff; border-radius: 16px; padding: 24px; width: 100%; max-width: 360px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-        <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">Reset Password 🔑</h3>
-        <p style="font-size: 13px; color: #64748b; margin: 0 0 16px;">Apna registered 10-digit number aur naya password enter karein.</p>
-
-        <label style="font-size: 12px; font-weight: 700; color: #475569;">Mobile Number</label>
-        <input type="tel" id="forgotPhone" placeholder="Enter 10-digit number" maxlength="10" style="width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; margin: 6px 0 12px; font-size: 14px; box-sizing: border-box;" />
-
-        <label style="font-size: 12px; font-weight: 700; color: #475569;">New Password</label>
-        <input type="password" id="forgotNewPassword" placeholder="Enter new password" style="width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; margin: 6px 0 18px; font-size: 14px; box-sizing: border-box;" />
-
-        <div style="display: flex; gap: 10px;">
-            <button type="button" onclick="closeForgotModal()" style="flex: 1; padding: 11px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 8px; font-weight: 700; color: #475569; cursor: pointer;">Cancel</button>
-            <button type="button" id="btnSubmitReset" onclick="handlePasswordReset()" style="flex: 1; padding: 11px; border: none; background: #16a34a; color: #ffffff; border-radius: 8px; font-weight: 700; cursor: pointer;">Reset Now</button>
-        </div>
-    </div>
-</div>
+    <!-- Login Card Container -->
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl p-6 relative border border-slate-100">
         
-        <div class="footer-text">
-            Don't have an account? <a href="register.html">Register</a>
-        </div>
-    </div>
-<!-- Forgot Password 2-Step OTP Modal -->
-<div id="forgotModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 9999; justify-content: center; align-items: center; padding: 16px;">
-    <div style="background: #ffffff; border-radius: 16px; padding: 24px; width: 100%; max-width: 360px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-        
-        <!-- STEP 1: Phone Input -->
-        <div id="resetStep1">
-            <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 6px;">Reset Password 🔑</h3>
-            <p style="font-size: 13px; color: #64748b; margin: 0 0 16px;">Registered mobile number enter karein OTP pane ke liye.</p>
-
-            <label style="font-size: 12px; font-weight: 700; color: #475569;">Mobile Number</label>
-            <input type="tel" id="forgotPhone" placeholder="Enter 10-digit number" maxlength="10" style="width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; margin: 6px 0 16px; font-size: 14px; box-sizing: border-box;" />
-
-            <div style="display: flex; gap: 10px;">
-                <button type="button" onclick="closeForgotModal()" style="flex: 1; padding: 11px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 8px; font-weight: 700; color: #475569; cursor: pointer;">Cancel</button>
-                <button type="button" id="btnSendOtp" onclick="handleSendOtp()" style="flex: 1; padding: 11px; border: none; background: #16a34a; color: #ffffff; border-radius: 8px; font-weight: 700; cursor: pointer;">Get OTP</button>
+        <!-- Logo / Icon -->
+        <div class="flex justify-center mb-4">
+            <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center text-3xl shadow-sm">
+                🌱
             </div>
         </div>
 
-        <!-- STEP 2: OTP & New Password -->
-        <div id="resetStep2" style="display: none;">
-            <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 6px;">Enter OTP & Password 🔐</h3>
-            <p style="font-size: 13px; color: #64748b; margin: 0 0 14px;">OTP aur apna naya login password set karein.</p>
+        <h2 class="text-2xl font-bold text-center text-slate-800 tracking-tight">Earnflow Seeds</h2>
+        <p class="text-xs text-center text-slate-400 mt-1 mb-6">Log in to manage your seeds & earnings</p>
 
-            <label style="font-size: 12px; font-weight: 700; color: #475569;">6-Digit OTP</label>
-            <input type="text" id="forgotOtp" placeholder="Enter OTP" maxlength="6" style="width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; margin: 6px 0 12px; font-size: 14px; text-align: center; letter-spacing: 4px; font-weight: 700; box-sizing: border-box;" />
-
-            <label style="font-size: 12px; font-weight: 700; color: #475569;">New Password</label>
-            <input type="password" id="forgotNewPassword" placeholder="Minimum 6 characters" style="width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; margin: 6px 0 18px; font-size: 14px; box-sizing: border-box;" />
-
-            <div style="display: flex; gap: 10px;">
-                <button type="button" onclick="backToStep1()" style="flex: 1; padding: 11px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 8px; font-weight: 700; color: #475569; cursor: pointer;">Back</button>
-                <button type="button" id="btnVerifyReset" onclick="handleVerifyOtpAndReset()" style="flex: 1; padding: 11px; border: none; background: #16a34a; color: #ffffff; border-radius: 8px; font-weight: 700; cursor: pointer;">Save Password</button>
-            </div>
-        </div>
-
-    </div>
+        <!-- Login Form -->
+        <form id="loginForm" onsubmit="handleUserLogin(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Mobile Number</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 font-semibold text-sm">+91</span>
+                    <input type="tel" id="loginPhone" maxlength="10" placeholder="10-digit number" required
+                        class="w-full pl-12 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition" />
                 </div>
-    
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter password" required
+                    class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition" />
+            </div>
+
+            <!-- Forgot Password Support Link -->
+            <div class="flex justify-end pt-1">
+                <a href="https://t.me/EarnflowSupportBot?start=forgot_password" target="_blank"
+                   class="text-xs font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
+                    <span>💬 Forgot Password?</span>
+                </a>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="btnLogin"
+                class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold rounded-xl text-sm shadow-md shadow-emerald-200 transition">
+                Sign In
+            </button>
+        </form>
+
+        <!-- Register Redirection -->
+        <div class="text-center mt-6">
+            <p class="text-xs text-slate-500">
+                Don't have an account? 
+                <a href="register.html" class="font-bold text-emerald-600 hover:underline">Register</a>
+            </p>
+        </div>
+    </div>
+        <!-- Script Logic -->
     <script>
-        const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Supabase Initialization
+        const SUPABASE_URL = "https://YOUR_SUPABASE_PROJECT_URL.supabase.co";
+        const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        async function handleLogin(e) {
+        // Check if user is already logged in
+        window.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                window.location.href = "dashboard.html";
+            }
+        });
+
+        // Handle Login Submission
+        async function handleUserLogin(e) {
             e.preventDefault();
-            const btn = document.getElementById('loginBtn');
-            const phone = document.getElementById('mobile').value.trim();
-            const password = document.getElementById('password').value.trim();
+            
+            const phoneInput = document.getElementById('loginPhone').value.trim();
+            const passwordInput = document.getElementById('loginPassword').value.trim();
+            const btnLogin = document.getElementById('btnLogin');
 
-            if (!phone || !password) {
-                return alert("Mobile number aur password enter karein");
+            const cleanPhone = phoneInput.replace(/[^0-9]/g, '');
+
+            if (cleanPhone.length !== 10) {
+                alert("Please enter a valid 10-digit mobile number.");
+                return;
             }
 
-            btn.disabled = true;
-            btn.innerText = "Signing in...";
+            if (!passwordInput) {
+                alert("Please enter your password.");
+                return;
+            }
+
+            btnLogin.disabled = true;
+            btnLogin.innerText = "Signing in...";
 
             try {
-                // Register ke exact format se match karein
-                const authEmail = `${phone}@earnflow.seed`;
+                // Construct internal auth email identifier
+                const authEmail = `${cleanPhone}@earnflow.internal`;
 
+                // 1. Authenticate with Supabase
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: authEmail,
-                    password: password
+                    password: passwordInput
                 });
 
                 if (error) {
-                    // Agar puraane user ne @earnflow.app se banaya ho toh fallback check
-                    const fallbackEmail = `${phone}@earnflow.app`;
-                    const { data: fbData, error: fbErr } = await supabaseClient.auth.signInWithPassword({
-                        email: fallbackEmail,
-                        password: password
-                    });
-
-                    if (fbErr) throw error; // Agar dono fail ho tabhi error throw karein
+                    throw new Error("Invalid mobile number or password.");
                 }
 
-                window.location.replace('index.html');
+                // 2. Check if user profile is blocked
+                const { data: profile, error: profileErr } = await supabaseClient
+                    .from('profiles')
+                    .select('is_blocked')
+                    .eq('id', data.user.id)
+                    .single();
+
+                if (profile && profile.is_blocked) {
+                    await supabaseClient.auth.signOut();
+                    throw new Error("Your account has been suspended. Please contact support.");
+                }
+
+                // 3. Success Redirect
+                window.location.href = "dashboard.html";
+
             } catch (err) {
-                console.error("Login Error:", err);
-                alert("Login failed: " + (err.message || "Invalid mobile number or password"));
-                btn.disabled = false;
-                btn.innerText = "Sign In";
+                alert("❌ " + err.message);
+            } finally {
+                btnLogin.disabled = false;
+                btnLogin.innerText = "Sign In";
             }
         }
-        function openForgotModal() {
-    document.getElementById('forgotModal').style.display = 'flex';
-}
-
-function closeForgotModal() {
-    document.getElementById('forgotModal').style.display = 'none';
-    document.getElementById('forgotPhone').value = '';
-    document.getElementById('forgotNewPassword').value = '';
-}
-
-async function handlePasswordReset() {
-    const phone = document.getElementById('forgotPhone').value.trim();
-    const newPassword = document.getElementById('forgotNewPassword').value.trim();
-    const btn = document.getElementById('btnSubmitReset');
-
-    if (!phone || phone.length !== 10) {
-        alert("Please enter a valid 10-digit mobile number.");
-        return;
-    }
-    if (!newPassword || newPassword.length < 6) {
-        alert("New password must be at least 6 characters long.");
-        return;
-    }
-
-    btn.disabled = true;
-    btn.innerText = "Updating...";
-
-    try {
-        const { data, error } = await supabaseClient.rpc('reset_password_by_phone', {
-            target_phone: phone,
-            new_password: newPassword
-        });
-
-        if (error) throw error;
-
-        if (data === true) {
-            alert("✅ Password reset successful! Aap naye password se login kar sakte hain.");
-            closeForgotModal();
-        } else {
-            alert("❌ Mobile number not found. Kripya check karein ya naya account banayein.");
-        }
-    } catch (err) {
-        console.error("Reset error:", err);
-        alert("❌ Failed to reset password: " + err.message);
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "Reset Now";
-    }
-        let currentResetPhone = '';
-
-function openForgotModal() {
-    backToStep1();
-    document.getElementById('forgotModal').style.display = 'flex';
-}
-
-function closeForgotModal() {
-    document.getElementById('forgotModal').style.display = 'none';
-    document.getElementById('forgotPhone').value = '';
-    document.getElementById('forgotOtp').value = '';
-    document.getElementById('forgotNewPassword').value = '';
-}
-
-function backToStep1() {
-    document.getElementById('resetStep1').style.display = 'block';
-    document.getElementById('resetStep2').style.display = 'none';
-}
-
-// STEP 1: Request OTP
-async function handleSendOtp() {
-    const phone = document.getElementById('forgotPhone').value.trim();
-    const btn = document.getElementById('btnSendOtp');
-
-    if (!phone || phone.length !== 10) {
-        alert("Kripya 10-digit mobile number enter karein.");
-        return;
-    }
-
-    btn.disabled = true;
-    btn.innerText = "Sending...";
-
-    try {
-        const { data, error } = await supabaseClient.rpc('generate_reset_otp', {
-            target_phone: phone
-        });
-
-        if (error) throw error;
-
-        if (data === 'USER_NOT_FOUND') {
-            alert("❌ Yeh mobile number registered nahi hai.");
-        } else {
-            currentResetPhone = phone;
-            // Development/Demo alert: actual SMS gateway connect hone par alert ki zaroorat nahi
-            alert(`✅ OTP generate ho gaya hai: ${data}\n(Real SMS gateway ke sath yeh SMS pe aayega)`);
-            document.getElementById('resetStep1').style.display = 'none';
-            document.getElementById('resetStep2').style.display = 'block';
-        }
-    } catch (err) {
-        console.error("OTP send error:", err);
-        alert("❌ OTP send karne me error aaya: " + err.message);
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "Get OTP";
-    }
-}
-
-// STEP 2: Verify OTP & Update Password
-async function handleVerifyOtpAndReset() {
-    const otp = document.getElementById('forgotOtp').value.trim();
-    const newPass = document.getElementById('forgotNewPassword').value.trim();
-    const btn = document.getElementById('btnVerifyReset');
-
-    if (!otp || otp.length !== 6) {
-        alert("Kripya 6-digit OTP enter karein.");
-        return;
-    }
-    if (!newPass || newPass.length < 6) {
-        alert("Naya password kam se kam 6 characters ka hona chahiye.");
-        return;
-    }
-
-    btn.disabled = true;
-    btn.innerText = "Verifying...";
-
-    try {
-        const { data, error } = await supabaseClient.rpc('verify_otp_and_reset_password', {
-            target_phone: currentResetPhone,
-            entered_otp: otp,
-            new_password: newPass
-        });
-
-        if (error) throw error;
-
-        if (data === 'SUCCESS') {
-            alert("✅ Password successfully reset ho gaya hai! Ab naye password se login karein.");
-            closeForgotModal();
-        } else {
-            alert("❌ Galat ya expired OTP. Kripya dobara koshish karein.");
-        }
-    } catch (err) {
-        console.error("Verification error:", err);
-        alert("❌ Password reset fail ho gaya: " + err.message);
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "Save Password";
-    }
-                }
-        
-                
     </script>
 </body>
 </html>
