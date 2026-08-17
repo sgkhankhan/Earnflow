@@ -1,128 +1,158 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Earnflow Seeds - Register</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Earnflow Seeds - Create Account</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: #f1f7f2; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; }
-        .app-container { width: 100%; max-width: 420px; background: #ffffff; padding: 30px 20px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); text-align: center; }
-        .logo-box { width: 64px; height: 64px; background: #dcfce7; color: #16a34a; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 15px; }
-        h2 { font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
-        p.sub { font-size: 13px; color: #64748b; margin-bottom: 25px; }
-        .form-group { margin-bottom: 15px; text-align: left; }
-        .form-group label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; }
-        .input-box { width: 100%; padding: 12px 14px; border: 1.5px solid #cbd5e1; border-radius: 12px; font-size: 14px; font-weight: 600; outline: none; background: #f8fafc; }
-        .input-box:focus { border-color: #16a34a; background: #ffffff; }
-        .btn-submit { width: 100%; background: #16a34a; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25); }
-        .btn-submit:disabled { background: #94a3b8; }
-        .footer-text { font-size: 13px; color: #64748b; margin-top: 20px; }
-        .footer-text a { color: #16a34a; text-decoration: none; font-weight: 700; }
+        body {
+            background-color: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
     </style>
 </head>
-<body>
-    <div class="app-container">
-        <div class="logo-box"><i class="fa-solid fa-seedling"></i></div>
-        <h2>Create Account</h2>
-        <p class="sub">Register & start earning daily returns</p>
+<body class="flex items-center justify-center min-h-screen p-4">
 
-        <form onsubmit="handleRegister(event)">
-            <div class="form-group">
-                <label>Mobile Number</label>
-                <input type="tel" id="mobile" class="input-box" placeholder="10-digit mobile number" maxlength="10" required>
+    <!-- Register Card Container -->
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl p-6 relative border border-slate-100">
+        
+        <!-- Logo Header -->
+        <div class="flex justify-center mb-4">
+            <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center text-3xl shadow-sm">
+                🌱
             </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="password" class="input-box" placeholder="Create password" required minlength="6">
+        </div>
+
+        <h2 class="text-2xl font-bold text-center text-slate-800 tracking-tight">Create Account</h2>
+        <p class="text-xs text-center text-slate-400 mt-1 mb-6">Register & start earning daily returns</p>
+
+        <!-- Registration Form -->
+        <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Mobile Number</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 font-semibold text-sm">+91</span>
+                    <input type="tel" id="regPhone" maxlength="10" placeholder="10-digit mobile number" required
+                        class="w-full pl-12 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition" />
+                </div>
             </div>
-            <div class="form-group">
-                <label>Referral Code (Inviter Phone)</label>
-                <input type="text" id="refCode" class="input-box" placeholder="Optional referral code">
+
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Password</label>
+                <input type="password" id="regPassword" placeholder="Create password (min 6 chars)" minlength="6" required
+                    class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition" />
             </div>
-            <button type="submit" id="regBtn" class="btn-submit">Register Now</button>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Referral Code (Inviter Phone)</label>
+                <input type="tel" id="regInviter" maxlength="10" placeholder="Optional referral code"
+                    class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition" />
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="btnRegister"
+                class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold rounded-xl text-sm shadow-md shadow-emerald-200 transition">
+                Register Now
+            </button>
         </form>
 
-        <div class="footer-text">
-            Already have an account? <a href="login.html">Login</a>
+        <!-- Login Redirection Link -->
+        <div class="text-center mt-6">
+            <p class="text-xs text-slate-500">
+                Already have an account? 
+                <a href="./login.html" class="font-bold text-emerald-600 hover:underline">Login</a>
+            </p>
         </div>
     </div>
 
+    <!-- Script Logic -->
     <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        window.onload = function() {
+        // Extract referral code from URL query parameters (?ref=xxxx)
+        window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const ref = urlParams.get('ref') || urlParams.get('code') || urlParams.get('r');
-            
-            if (ref && ref.trim() !== "" && ref !== "undefined" && ref !== "null") {
-                const refInput = document.getElementById('refCode');
-                refInput.value = ref.trim();
-                refInput.readOnly = true;
-                refInput.style.backgroundColor = '#e2e8f0';
-            } else {
-                document.getElementById('refCode').value = '';
+            const refCode = urlParams.get('ref') || urlParams.get('inviter');
+            if (refCode) {
+                const inviterInput = document.getElementById('regInviter');
+                if (inviterInput) inviterInput.value = refCode.slice(-10);
             }
-        };
+        });
 
+        // Registration Submission Handler
         async function handleRegister(e) {
             e.preventDefault();
-            const btn = document.getElementById('regBtn');
-            const phone = document.getElementById('mobile').value.trim();
-            const password = document.getElementById('password').value.trim();
-            let refCode = document.getElementById('refCode').value.trim();
+            
+            const phoneInput = document.getElementById('regPhone').value.trim();
+            const passwordInput = document.getElementById('regPassword').value.trim();
+            const inviterInput = document.getElementById('regInviter').value.trim();
+            const btn = document.getElementById('btnRegister');
 
-            if (phone.length !== 10 || isNaN(phone)) {
-                return alert("10-digit valid mobile number enter karein");
+            const cleanPhone = phoneInput.replace(/[^0-9]/g, '').slice(-10);
+            const cleanInviter = inviterInput ? inviterInput.replace(/[^0-9]/g, '').slice(-10) : null;
+
+            if (cleanPhone.length !== 10) {
+                alert("Kripya valid 10-digit mobile number enter karein.");
+                return;
             }
 
-            if (refCode === "undefined" || refCode === "null") {
-                refCode = "";
+            if (passwordInput.length < 6) {
+                alert("Password kam se kam 6 characters ka hona chahiye.");
+                return;
             }
 
             btn.disabled = true;
-            btn.innerText = "Creating account...";
+            btn.innerText = "Creating Account...";
 
             try {
-                const authEmail = `${phone}@earnflow.seed`;
-                const { data: authData, error: authErr } = await supabaseClient.auth.signUp({
-                    email: authEmail,
-                    password: password
-                });
+                // 1. Check if mobile number is already registered
+                const { data: existingUser, error: checkErr } = await supabaseClient
+                    .from('profiles')
+                    .select('id, phone')
+                    .or(`phone.eq.${cleanPhone},phone.eq.+91${cleanPhone}`)
+                    .maybeSingle();
 
-                if (authErr) throw authErr;
-                const userId = authData.user ? authData.user.id : null;
-                if (!userId) throw new Error("User registration failed.");
+                if (checkErr) throw checkErr;
 
-                const { error: profErr } = await supabaseClient.from('profiles').upsert([{
-                    id: userId,
-                    phone: phone,
-                    referral_code: phone,
-                    referred_by: refCode !== "" ? refCode : null,
-                    balance: 50,
-                    total_recharge: 0,
-                    team_income: 0
-                }]);
+                if (existingUser) {
+                    throw new Error("Yeh mobile number pehle se registered hai. Kripya Login karein.");
+                }
 
-                if (profErr) throw profErr;
+                // 2. Insert new user into profiles table
+                const newUserId = crypto.randomUUID();
+                const { data: newUser, error: insertErr } = await supabaseClient
+                    .from('profiles')
+                    .insert({
+                        id: newUserId,
+                        phone: cleanPhone,
+                        password: passwordInput,
+                        balance: 0.00,
+                        inviter_phone: cleanInviter || null,
+                        is_blocked: false
+                    })
+                    .select()
+                    .single();
 
-                await supabaseClient.from('transactions').insert([{
-                    user_id: userId,
-                    type: 'income',
-                    amount: 50,
-                    status: 'success',
-                    payment_details: 'Welcome Signup Bonus'
-                }]);
+                if (insertErr) throw insertErr;
 
-                alert("🎉 Account successfully registered!\n₹50 Bonus Wallet me add ho gaya.");
-                window.location.href = 'login.html';
+                // 3. Save Active User Session
+                localStorage.setItem('earnflow_user', JSON.stringify(newUser));
+                localStorage.setItem('user_phone', cleanPhone);
+                localStorage.setItem('user_id', newUser.id);
+
+                alert("🎉 Registration successful! Account create ho chuka hai.");
+                window.location.replace("./index.html");
+
             } catch (err) {
-                alert("Registration failed: " + err.message);
+                alert("❌ " + err.message);
+            } finally {
                 btn.disabled = false;
                 btn.innerText = "Register Now";
             }
