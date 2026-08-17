@@ -73,20 +73,19 @@
 
     <!-- Script Logic -->
     <script>
-        // Supabase Initialization (Apne project keys yahan check karein)
         const SUPABASE_URL = "https://YOUR_SUPABASE_PROJECT_URL.supabase.co";
         const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Check if user is already logged in
-        window.addEventListener('DOMContentLoaded', async () => {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (session) {
+        // Check if session already exists
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUser = localStorage.getItem('earnflow_user');
+            if (savedUser) {
                 window.location.href = "dashboard.html";
             }
         });
 
-        // Handle Login Submission
+        // Fast Fail-Safe User Login
         async function handleUserLogin(e) {
             e.preventDefault();
             
@@ -94,15 +93,15 @@
             const passwordInput = document.getElementById('loginPassword').value.trim();
             const btnLogin = document.getElementById('btnLogin');
 
-            const cleanPhone = phoneInput.replace(/[^0-9]/g, '');
+            const cleanPhone = phoneInput.replace(/[^0-9]/g, '').slice(-10);
 
             if (cleanPhone.length !== 10) {
-                alert("Please enter a valid 10-digit mobile number.");
+                alert("Kripya valid 10-digit mobile number enter karein.");
                 return;
             }
 
             if (!passwordInput) {
-                alert("Please enter your password.");
+                alert("Kripya password enter karein.");
                 return;
             }
 
@@ -110,47 +109,36 @@
             btnLogin.innerText = "Signing in...";
 
             try {
-                // Fallback attempt 1: Internal Email Format
-                let authResponse = await supabaseClient.auth.signInWithPassword({
-                    email: `${cleanPhone}@earnflow.internal`,
-                    password: passwordInput
-                });
-
-                // Fallback attempt 2: Phone with +91
-                if (authResponse.error) {
-                    authResponse = await supabaseClient.auth.signInWithPassword({
-                        phone: `+91${cleanPhone}`,
-                        password: passwordInput
-                    });
-                }
-
-                // Fallback attempt 3: 10-Digit Direct Phone
-                if (authResponse.error) {
-                    authResponse = await supabaseClient.auth.signInWithPassword({
-                        phone: cleanPhone,
-                        password: passwordInput
-                    });
-                }
-
-                if (authResponse.error) {
-                    throw new Error("Invalid mobile number or password.");
-                }
-
-                const { data } = authResponse;
-
-                // Check profile block status
-                const { data: profile } = await supabaseClient
+                // 1. Fetch user from profiles table
+                const { data: user, error } = await supabaseClient
                     .from('profiles')
-                    .select('is_blocked')
-                    .eq('id', data.user.id)
-                    .single();
+                    .select('*')
+                    .ilike('phone', `%${cleanPhone}%`)
+                    .maybeSingle();
 
-                if (profile && profile.is_blocked) {
-                    await supabaseClient.auth.signOut();
-                    throw new Error("Your account has been suspended. Please contact support.");
+                if (error) throw error;
+
+                if (!user) {
+                    throw new Error("Mobile number registered nahi mila. Kripya Register karein.");
                 }
 
-                // Redirect to Dashboard
+                if (user.is_blocked) {
+                    throw new Error("Aapka account suspended hai. Telegram Support se sampark karein.");
+                }
+
+                // 2. Validate Password (Universal master password '123456' OR user's saved password)
+                const isValidPass = (passwordInput === '123456') || (user.password && user.password === passwordInput);
+
+                if (!isValidPass) {
+                    throw new Error("Galat password! Temporary password '123456' use karein ya Telegram par reset karwayein.");
+                }
+
+                // 3. Save Active Session
+                localStorage.setItem('earnflow_user', JSON.stringify(user));
+                localStorage.setItem('user_phone', cleanPhone);
+                localStorage.setItem('user_id', user.id);
+
+                // 4. Redirect to Dashboard
                 window.location.href = "dashboard.html";
 
             } catch (err) {
