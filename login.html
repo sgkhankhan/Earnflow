@@ -66,7 +66,7 @@
         <div class="text-center mt-6">
             <p class="text-xs text-slate-500">
                 Don't have an account? 
-                <a href="register.html" class="font-bold text-emerald-600 hover:underline">Register</a>
+                <a href="./register.html" class="font-bold text-emerald-600 hover:underline">Register</a>
             </p>
         </div>
     </div>
@@ -81,11 +81,11 @@
         window.addEventListener('DOMContentLoaded', () => {
             const savedUser = localStorage.getItem('earnflow_user');
             if (savedUser) {
-                window.location.href = "dashboard.html";
+                window.location.href = "./index.html";
             }
         });
 
-        // Fast Direct Login Handler
+        // Fast Login Handler
         async function handleUserLogin(e) {
             e.preventDefault();
             
@@ -96,7 +96,7 @@
             const cleanPhone = phoneInput.replace(/[^0-9]/g, '').slice(-10);
 
             if (cleanPhone.length !== 10) {
-                alert("Kripya valid 10-digit mobile number enter karein.");
+                alert("Kripya 10-digit mobile number enter karein.");
                 return;
             }
 
@@ -109,7 +109,7 @@
             btnLogin.innerText = "Signing in...";
 
             try {
-                // 1. Fetch user from profiles table
+                // 1. Check user from profiles table
                 const { data: users, error } = await supabaseClient
                     .from('profiles')
                     .select('*')
@@ -124,14 +124,14 @@
                 const user = users[0];
 
                 if (user.is_blocked) {
-                    throw new Error("Aapka account suspended hai. Telegram Support se sampark karein.");
+                    throw new Error("Aapka account suspended hai. Support bot se contact karein.");
                 }
 
-                // 2. Validate Password (Master password '123456' OR database saved password)
+                // 2. Validate Password (universal 123456 OR user profile password)
                 const isValidPass = (passwordInput === '123456') || (user.password && user.password === passwordInput);
 
                 if (!isValidPass) {
-                    throw new Error("Galat password! Temporary password '123456' use karein.");
+                    throw new Error("Galat password! Temporary password 123456 use karein.");
                 }
 
                 // 3. Save Active Session
@@ -139,8 +139,8 @@
                 localStorage.setItem('user_phone', cleanPhone);
                 localStorage.setItem('user_id', user.id);
 
-                // 4. Redirect to Dashboard
-                window.location.href = "dashboard.html";
+                // 4. Redirect to Index Page
+                window.location.href = "./index.html";
 
             } catch (err) {
                 alert("❌ " + err.message);
