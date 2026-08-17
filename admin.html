@@ -137,6 +137,29 @@
         <button onclick="fetchAllUsersAndPlans()" class="btn-action" style="width: auto; padding: 4px 10px; font-size: 11px; background: #0f172a;">Refresh</button>
     </div>
 </div>
+
+  <!-- VIP Offer Sales Widget -->
+<div class="stat-card" style="background: linear-gradient(135deg, #1e293b, #0f172a); color: #fff; border: 1.5px solid #d97706; border-radius: 18px; padding: 18px; position: relative;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <span style="font-size: 11px; font-weight: 800; background: #ef4444; color: #fff; padding: 3px 8px; border-radius: 6px; text-transform: uppercase;">
+            🔥 Flash Offer Live
+        </span>
+        <button onclick="loadOfferStats()" style="background: rgba(255,255,255,0.15); border: none; color: #fff; padding: 4px 8px; border-radius: 8px; cursor: pointer; font-size: 11px;">
+            <i class="fa-solid fa-rotate-right"></i> Refresh
+        </button>
+    </div>
+    <h3 style="font-size: 14px; color: #94a3b8; font-weight: 700; margin-bottom: 4px;">SUPER SEED VIP Sales</h3>
+    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+            <div style="font-size: 24px; font-weight: 800; color: #fbbf24;" id="totalOfferBuyers">0</div>
+            <p style="font-size: 11px; color: #cbd5e1; margin-top: 2px;">Total Units Sold</p>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 20px; font-weight: 800; color: #34d399;" id="totalOfferRevenue">₹0.00</div>
+            <p style="font-size: 11px; color: #cbd5e1; margin-top: 2px;">Revenue Collected</p>
+        </div>
+    </div>
+</div>
             
             <!-- Searched User Details Container -->
             <div id="userSearchResultBox" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 14px;">
@@ -660,6 +683,48 @@ async function exportUserDataToCSV() {
             searchUserByPhone();
             fetchAllUsersAndPlans();
         }
+      // Load and calculate Super Seed VIP stats
+async function loadOfferStats() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('orders')
+            .select('price')
+            .or('plan_name.eq.SUPER SEED VIP,price.eq.299');
+
+        if (error) throw error;
+
+        const count = data ? data.length : 0;
+        const totalRevenue = data ? data.reduce((sum, item) => sum + (parseFloat(item.price) || 299), 0) : 0;
+
+        const countElem = document.getElementById('totalOfferBuyers');
+        const revElem = document.getElementById('totalOfferRevenue');
+
+        if (countElem) countElem.innerText = count;
+        if (revElem) revElem.innerText = "₹" + totalRevenue.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+    } catch (err) {
+        console.error("Error loading offer stats:", err.message);
+    }
+}
+
+// Enable Live Realtime auto-update on new order
+function initRealtimeOfferCounter() {
+    loadOfferStats();
+
+    supabaseClient
+        .channel('public:orders:offer_counter')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload) => {
+            if (payload.new.plan_name === 'SUPER SEED VIP' || payload.new.price === 299) {
+                loadOfferStats();
+            }
+        })
+        .subscribe();
+}
+
+// Call on admin page initialization
+document.addEventListener("DOMContentLoaded", () => {
+    initRealtimeOfferCounter();
+});
+            
     </script>
 </body>
 </html>
