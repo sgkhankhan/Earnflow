@@ -3,40 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Earnflow Seeds - Home</title>
+    <title>Earnflow Seeds - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
         body {
-            background-color: #f8fafc;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f6f8fb;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .header-bg {
+            background: linear-gradient(180deg, #0ba34d 0%, #088b40 100%);
+            border-bottom-left-radius: 36px;
+            border-bottom-right-radius: 36px;
+        }
+        .balance-card {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+        }
+        .action-card {
+            background: #ffffff;
+            border: 1px solid #f0f3f7;
+            border-radius: 18px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        }
+        .plan-card {
+            background: #ffffff;
+            border: 1.5px solid #eef2f6;
+            border-radius: 26px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+        }
+        .center-wheel-btn {
+            background: radial-gradient(circle, #22c55e 0%, #15803d 100%);
+            box-shadow: 0 6px 18px rgba(22, 163, 74, 0.45);
+        }
     </style>
 </head>
-<body class="pb-24 select-none">
-        <!-- 1. AUTH GUARD & DATA SYNC -->
-    <script>
+<body class="pb-28 select-none">
+        <script>
         const SUPABASE_URL = "https://ardnjjbcfhnaubzsdznu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyZG5qamJjZmhuYXVienNkem51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTUwNjAsImV4cCI6MjEwMjA5MTA2MH0.CDxCJPR4iaoBQPBzmExlEdJ26DTILLbuxxgTumibpUA";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentUser = null;
 
-        // Session validation immediately on execution
-        (function initAuth() {
+        // Session Protection Guard
+        (function checkSession() {
             const raw = localStorage.getItem('earnflow_user');
             const phone = localStorage.getItem('user_phone');
-
             if (!raw || !phone) {
                 localStorage.clear();
                 window.location.replace("./login.html");
                 return;
             }
-
             try {
                 currentUser = JSON.parse(raw);
             } catch (e) {
@@ -44,238 +67,254 @@
                 window.location.replace("./login.html");
             }
         })();
-            </script>
-                <!-- Top Header -->
-    <header class="bg-emerald-600 text-white px-4 pt-4 pb-6 rounded-b-[28px] shadow-lg sticky top-0 z-40">
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center space-x-2">
-                <div class="w-9 h-9 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-xl">🌱</div>
+        </script>
+            <!-- Header Container -->
+    <header class="header-bg px-5 pt-8 pb-7 text-white shadow-md">
+        <!-- Profile Row -->
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center space-x-3">
+                <div class="w-13 h-13 rounded-full bg-white/20 border border-white/30 flex items-center justify-center p-2.5 shadow-inner">
+                    <div class="w-8 h-8 rounded-full bg-emerald-700/60 flex items-center justify-center text-xl text-white font-bold">🌱</div>
+                </div>
                 <div>
-                    <h1 class="text-sm font-extrabold tracking-wide leading-none">EARNFLOW</h1>
-                    <p class="text-[10px] text-emerald-100 font-medium">Smart Agro Growth</p>
+                    <h2 class="text-base font-extrabold tracking-wide leading-tight" id="userPhoneHeading">+91 7983678835</h2>
+                    <p class="text-[11px] text-emerald-100 font-semibold tracking-wider opacity-90">UID: <span id="userUidHeading">572C7DC9</span></p>
                 </div>
             </div>
-            <div class="flex items-center space-x-3">
-                <a href="./support.html" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20">
-                    <i class="fa-solid fa-headset text-xs"></i>
-                </a>
-                <button onclick="handleLogout()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-rose-200 hover:bg-rose-500 hover:text-white transition">
-                    <i class="fa-solid fa-power-off text-xs"></i>
-                </button>
+            <div class="bg-amber-100/90 text-amber-900 border border-amber-300/60 px-3 py-1 rounded-full text-xs font-black shadow-sm flex items-center gap-1.5">
+                <span>👑</span> VIP Member
             </div>
         </div>
 
-        <!-- Wallet Card -->
-        <div class="bg-gradient-to-br from-emerald-700/80 to-emerald-900/90 border border-white/10 rounded-2xl p-4 backdrop-blur-md">
-            <div class="flex justify-between items-start">
-                <div>
-                    <span class="text-[11px] text-emerald-200 font-semibold uppercase tracking-wider">Total Available Balance</span>
-                    <h2 class="text-2xl font-black mt-0.5 tracking-tight text-white" id="displayBalance">₹0.00</h2>
-                    <span class="text-[10px] text-emerald-200 font-medium" id="displayUserPhone">+91 User</span>
-                </div>
-                <div class="flex gap-2">
-                    <a href="./recharge.html" class="px-3.5 py-2 bg-white text-emerald-800 text-xs font-bold rounded-xl shadow-md active:scale-95 transition">Recharge</a>
-                    <a href="./withdraw.html" class="px-3.5 py-2 bg-emerald-500/40 border border-white/20 text-white text-xs font-bold rounded-xl active:scale-95 transition">Withdraw</a>
-                </div>
+        <!-- Glass Balance Card -->
+        <div class="balance-card p-4 grid grid-cols-2 divide-x divide-white/20">
+            <div class="pr-3 text-center">
+                <span class="text-[10px] text-emerald-100 font-extrabold uppercase tracking-wider block mb-0.5">TOTAL BALANCE</span>
+                <span class="text-xl font-black tracking-tight" id="totalBalanceVal">₹0.00</span>
+            </div>
+            <div class="pl-3 text-center">
+                <span class="text-[10px] text-emerald-100 font-extrabold uppercase tracking-wider block mb-0.5">TEAM INCOME</span>
+                <span class="text-xl font-black tracking-tight" id="teamIncomeVal">₹0.00</span>
             </div>
         </div>
     </header>
+        <!-- Quick Actions Row -->
+    <section class="px-4 py-4">
+        <div class="grid grid-cols-5 gap-2.5 text-center">
+            
+            <!-- Recharge -->
+            <a href="./recharge.html" class="flex flex-col items-center">
+                <div class="action-card w-14 h-14 bg-emerald-50/60 flex items-center justify-center text-emerald-600 text-xl mb-1.5 active:scale-90 transition">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+                <span class="text-[11px] font-bold text-slate-800">Recharge</span>
+            </a>
 
-        <!-- Quick Actions Grid -->
-    <section class="px-4 -mt-3 relative z-30">
-        <div class="bg-white rounded-2xl p-3 shadow-md border border-slate-100 grid grid-cols-4 gap-2 text-center">
-            <a href="./recharge.html" class="flex flex-col items-center py-1">
-                <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-base mb-1 shadow-sm"><i class="fa-solid fa-wallet"></i></div>
-                <span class="text-[10px] font-bold text-slate-700">Recharge</span>
+            <!-- Withdraw -->
+            <a href="./withdraw.html" class="flex flex-col items-center">
+                <div class="action-card w-14 h-14 bg-blue-50/60 flex items-center justify-center text-blue-600 text-xl mb-1.5 active:scale-90 transition">
+                    <i class="fa-solid fa-money-bill-transfer"></i>
+                </div>
+                <span class="text-[11px] font-bold text-slate-800">Withdraw</span>
             </a>
-            <a href="./withdraw.html" class="flex flex-col items-center py-1">
-                <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-base mb-1 shadow-sm"><i class="fa-solid fa-money-bill-transfer"></i></div>
-                <span class="text-[10px] font-bold text-slate-700">Withdraw</span>
+
+            <!-- Mission (with New Badge) -->
+            <a href="./mission.html" class="flex flex-col items-center relative">
+                <span class="absolute -top-1.5 right-1 bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase shadow">New</span>
+                <div class="action-card w-14 h-14 bg-amber-50/60 flex items-center justify-center text-amber-600 text-xl mb-1.5 active:scale-90 transition">
+                    <i class="fa-solid fa-list-check"></i>
+                </div>
+                <span class="text-[11px] font-bold text-slate-800">Mission</span>
             </a>
-            <a href="./invite.html" class="flex flex-col items-center py-1">
-                <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-base mb-1 shadow-sm"><i class="fa-solid fa-user-plus"></i></div>
-                <span class="text-[10px] font-bold text-slate-700">Invite</span>
+
+            <!-- Invite -->
+            <a href="./invite.html" class="flex flex-col items-center">
+                <div class="action-card w-14 h-14 bg-purple-50/60 flex items-center justify-center text-purple-600 text-xl mb-1.5 active:scale-90 transition">
+                    <i class="fa-solid fa-share-nodes"></i>
+                </div>
+                <span class="text-[11px] font-bold text-slate-800">Invite</span>
             </a>
-            <a href="https://t.me/EarnflowSupportBot" target="_blank" class="flex flex-col items-center py-1">
-                <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-base mb-1 shadow-sm"><i class="fa-brands fa-telegram"></i></div>
-                <span class="text-[10px] font-bold text-slate-700">Support</span>
+
+            <!-- Online / Support -->
+            <a href="https://t.me/EarnflowSupportBot" target="_blank" class="flex flex-col items-center">
+                <div class="action-card w-14 h-14 bg-sky-50/60 flex items-center justify-center text-sky-500 text-xl mb-1.5 active:scale-90 transition">
+                    <i class="fa-brands fa-telegram"></i>
+                </div>
+                <span class="text-[11px] font-bold text-slate-800">Online</span>
             </a>
+
         </div>
     </section>
+        <!-- Seed Plans Main Section -->
+    <main class="px-4 space-y-4 mt-1">
+        <div class="flex items-center justify-between px-1">
+            <h3 class="text-base font-black text-slate-900 tracking-tight">Earnflow Seed Plans</h3>
+            <span class="text-xs font-bold text-emerald-600">Daily Withdrawal</span>
+        </div>
 
-    <!-- Marquee Notice -->
-    <section class="px-4 mt-3">
-        <div class="bg-emerald-50/80 border border-emerald-100 rounded-xl px-3 py-2 flex items-center space-x-2 text-emerald-800 text-xs font-semibold">
-            <i class="fa-solid fa-bullhorn text-emerald-600 text-xs"></i>
-            <div class="overflow-hidden whitespace-nowrap w-full">
-                <p class="animate-marquee inline-block">Daily seed rewards credit every 24 hours. Invite friends to earn up to 10% commission!</p>
+        <!-- 1. Maize Seed Plan Card -->
+        <div class="plan-card p-4 relative overflow-hidden">
+            <div class="absolute top-0 right-0 bg-emerald-700 text-white text-[10px] font-black px-3.5 py-1 rounded-bl-xl uppercase tracking-wider">
+                ★ POPULAR
             </div>
-        </div>
-    </section>
 
-    <!-- Agro Seed Investment Plans -->
-    <main class="px-4 mt-4 space-y-3">
-        <div class="flex items-center justify-between mb-1">
-            <h3 class="text-sm font-extrabold text-slate-800 tracking-tight">Active Growth Seeds 🌱</h3>
-            <span class="text-[11px] font-bold text-emerald-600">Daily Returns</span>
+            <div class="flex items-center space-x-4 mb-4">
+                <div class="w-28 h-28 bg-gradient-to-b from-emerald-700 to-emerald-950 rounded-2xl p-2.5 flex flex-col items-center justify-between text-white shadow-inner relative">
+                    <span class="text-[9px] bg-black/40 px-2 py-0.5 rounded-full font-bold">Limit 0/10</span>
+                    <div class="text-3xl">🌱</div>
+                    <span class="text-[10px] font-black tracking-wider uppercase text-emerald-100">MAIZE SEED</span>
+                </div>
+                <div class="flex-1 space-y-1.5 text-xs">
+                    <div class="flex justify-between items-center"><span class="text-slate-500 font-semibold flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Price</span><span class="font-black text-emerald-700 text-sm">₹525</span></div>
+                    <div class="flex justify-between items-center"><span class="text-slate-500 font-semibold flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Daily</span><span class="font-black text-emerald-700 text-sm">₹125</span></div>
+                    <div class="flex justify-between items-center"><span class="text-slate-500 font-semibold flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Total</span><span class="font-black text-slate-900 text-sm">₹18,750</span></div>
+                    <div class="flex justify-between items-center"><span class="text-slate-500 font-semibold flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>End day</span><span class="font-bold text-slate-800">150 day</span></div>
+                </div>
+            </div>
+
+            <button onclick="handleBuySeed(1, 525, 'MAIZE SEED')" class="w-full py-3 bg-emerald-700 hover:bg-emerald-800 active:scale-[0.98] text-white font-black text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                <span>Buy Now</span> <i class="fa-solid fa-cart-shopping text-xs"></i>
+            </button>
         </div>
 
-        <div id="seedPlansContainer" class="space-y-3">
-            <!-- Dynamic Plans loaded by Script -->
-            <div class="text-center py-8 text-xs text-slate-400">Loading available seeds...</div>
+        <!-- 2. Wheat Seed Plan Card -->
+        <div class="plan-card p-4 relative overflow-hidden">
+            <div class="absolute top-0 right-0 bg-sky-600 text-white text-[10px] font-black px-3.5 py-1 rounded-bl-xl uppercase tracking-wider">
+                👑 BEST VALUE
+            </div>
+
+            <div class="flex items-center space-x-4 mb-4">
+                <div class="w-28 h-28 bg-gradient-to-b from-sky-700 to-slate-950 rounded-2xl p-2.5 flex flex-col items-center justify-between text-white shadow-inner relative">
+                    <span class="text-[9px] bg-black/40 px-2 py-0.5 rounded-full font-bold">Limit 0/5</span>
+                    <div class="text-3xl">🌾</div>
+                    <span class="text-[10px] font-black tracking-wider uppercase text-sky-100">WHEAT SEED</span>
+                </div>
+                <div class="flex-1 space-y-1.5 text-xs">
+                    <div class="flex justify-between items-center"><span class="text-slate-500 font-semibold flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>Price</span><span class="font-black text-emerald-700 text-sm">₹1,500</span></div>
+                    <div class="flex justify-between items-center"><span class="text-slate-500 font-semibold flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>Daily</span><span class="font-black text-emerald-700 text-sm">₹375</span></div>
+                    <div class="flex justify-between items-center"><span class="text-slate-500 font-semibold flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>Total</span><span class="font-black text-slate-900 text-sm">₹56,250</span></div>
+                    <div class="flex justify-between items-center"><span class="text-slate-500 font-semibold flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>End day</span><span class="font-bold text-slate-800">150 day</span></div>
+                </div>
+            </div>
+
+            <button onclick="handleBuySeed(2, 1500, 'WHEAT SEED')" class="w-full py-3 bg-emerald-700 hover:bg-emerald-800 active:scale-[0.98] text-white font-black text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                <span>Buy Now</span> <i class="fa-solid fa-cart-shopping text-xs"></i>
+            </button>
         </div>
     </main>
+        <!-- Bottom Navbar With Center Circular Button -->
+    <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-slate-100 px-4 py-2 flex justify-between items-center z-50 shadow-2xl">
+        <a href="./index.html" class="flex flex-col items-center flex-1 text-emerald-600">
+            <i class="fa-solid fa-house text-lg"></i>
+            <span class="text-[10px] font-black mt-0.5">Home</span>
+        </a>
 
-        <!-- Bottom Floating Navigation -->
-    <nav class="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-2 px-6 flex justify-between items-center z-50 shadow-lg">
-        <a href="./index.html" class="flex flex-col items-center text-emerald-600">
-            <i class="fa-solid fa-seedling text-lg"></i>
-            <span class="text-[10px] font-extrabold mt-0.5">Home</span>
+        <a href="./treasure.html" class="flex flex-col items-center flex-1 text-slate-400 hover:text-slate-600">
+            <i class="fa-solid fa-box-archive text-lg"></i>
+            <span class="text-[10px] font-bold mt-0.5">Treasure</span>
         </a>
-        <a href="./orders.html" class="flex flex-col items-center text-slate-400 hover:text-slate-600">
-            <i class="fa-solid fa-layer-group text-lg"></i>
-            <span class="text-[10px] font-bold mt-0.5">My Seeds</span>
-        </a>
-        <a href="./team.html" class="flex flex-col items-center text-slate-400 hover:text-slate-600">
+
+        <!-- Center Raised Wheel Button -->
+        <div class="flex flex-col items-center flex-1 -mt-6">
+            <a href="./wheel.html" class="w-13 h-13 rounded-full center-wheel-btn flex items-center justify-center text-white text-2xl shadow-lg border-4 border-white active:scale-95 transition">
+                <i class="fa-solid fa-dharmachakra"></i>
+            </a>
+        </div>
+
+        <a href="./team.html" class="flex flex-col items-center flex-1 text-slate-400 hover:text-slate-600">
             <i class="fa-solid fa-users text-lg"></i>
             <span class="text-[10px] font-bold mt-0.5">Team</span>
         </a>
-        <a href="./profile.html" class="flex flex-col items-center text-slate-400 hover:text-slate-600">
-            <i class="fa-solid fa-circle-user text-lg"></i>
+
+        <a href="./profile.html" class="flex flex-col items-center flex-1 text-slate-400 hover:text-slate-600">
+            <i class="fa-solid fa-user text-lg"></i>
             <span class="text-[10px] font-bold mt-0.5">Profile</span>
         </a>
     </nav>
-
         <script>
-        // Seed Products Data
-        const SEED_PLANS = [
-            { id: 1, name: "Wheat Mini Seed", price: 500, daily: 50, days: 30, total: 1500, icon: "🌾", tag: "Hot" },
-            { id: 2, name: "Corn Growth Seed", price: 1200, daily: 130, days: 35, total: 4550, icon: "🌽", tag: "Popular" },
-            { id: 3, name: "Soybean High Seed", price: 3000, daily: 350, days: 40, total: 14000, icon: "🌱", tag: "High Yield" },
-            { id: 4, name: "Cotton Gold Seed", price: 6500, daily: 800, days: 45, total: 36000, icon: "🪴", tag: "Premium" }
-        ];
+        // Sync Live Data from Supabase
+        async function fetchUserData() {
+            const phone = localStorage.getItem('user_phone') || '7417945133';
+            const cleanPhone = phone.replace(/[^0-9]/g, '').slice(-10);
 
-        // 1. Refresh live profile balance from Supabase
-        async function syncLiveUserData() {
-            if (!currentUser || !currentUser.id) return;
-
-            const phone = localStorage.getItem('user_phone');
-            document.getElementById('displayUserPhone').innerText = phone ? `+91 ${phone}` : '+91 User';
+            document.getElementById('userPhoneHeading').innerText = `+91 ${cleanPhone}`;
 
             try {
-                const { data: profile, error } = await supabaseClient
+                const { data: user, error } = await supabaseClient
                     .from('profiles')
                     .select('*')
-                    .eq('id', currentUser.id)
+                    .or(`phone.eq.${cleanPhone},phone.eq.+91${cleanPhone}`)
                     .maybeSingle();
 
-                if (profile) {
-                    currentUser = profile;
-                    localStorage.setItem('earnflow_user', JSON.stringify(profile));
-                    document.getElementById('displayBalance').innerText = `₹${parseFloat(profile.balance || 0).toFixed(2)}`;
+                if (user) {
+                    currentUser = user;
+                    localStorage.setItem('earnflow_user', JSON.stringify(user));
+
+                    // Generate Short UID
+                    const uid = (user.id || '572C7DC9').replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase();
+                    document.getElementById('userUidHeading').innerText = uid;
+
+                    // Balances
+                    const bal = parseFloat(user.balance || 0).toFixed(2);
+                    const teamBal = parseFloat(user.team_income || 0).toFixed(2);
+
+                    document.getElementById('totalBalanceVal').innerText = `₹${bal}`;
+                    document.getElementById('teamIncomeVal').innerText = `₹${teamBal}`;
                 }
             } catch (err) {
-                console.error("Balance sync error:", err);
+                console.error("Data fetch error:", err);
             }
         }
-
-        // 2. Render Plans into HTML
-        function renderPlans() {
-            const container = document.getElementById('seedPlansContainer');
-            container.innerHTML = SEED_PLANS.map(p => `
-                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col justify-between">
-                    <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-2xl">${p.icon}</span>
-                            <div>
-                                <h4 class="text-xs font-bold text-slate-800">${p.name}</h4>
-                                <span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">${p.tag}</span>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-[10px] text-slate-400 font-semibold block">Seed Price</span>
-                            <span class="text-sm font-black text-slate-800">₹${p.price}</span>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-3 gap-2 py-3 text-center">
-                        <div class="bg-slate-50 rounded-xl p-1.5">
-                            <span class="text-[9px] text-slate-400 font-bold block">Daily</span>
-                            <span class="text-xs font-black text-emerald-600">₹${p.daily}</span>
-                        </div>
-                        <div class="bg-slate-50 rounded-xl p-1.5">
-                            <span class="text-[9px] text-slate-400 font-bold block">Cycle</span>
-                            <span class="text-xs font-black text-slate-700">${p.days} Days</span>
-                        </div>
-                        <div class="bg-slate-50 rounded-xl p-1.5">
-                            <span class="text-[9px] text-slate-400 font-bold block">Total</span>
-                            <span class="text-xs font-black text-slate-800">₹${p.total}</span>
-                        </div>
-                    </div>
-                    <button onclick="buySeedPlan(${p.id}, ${p.price})" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md active:scale-95 transition">
-                        Plant Now (₹${p.price})
-                    </button>
-                </div>
-            `).join('');
-        }
-
-                    // 3. Buy Seed Order Handler
-        async function buySeedPlan(planId, price) {
-            const currentBal = parseFloat(currentUser.balance || 0);
+                    // Buy Seed Function
+        async function handleBuySeed(planId, price, planName) {
+            const currentBal = parseFloat(currentUser?.balance || 0);
 
             if (currentBal < price) {
-                if (confirm(`Insufficient Balance! ₹${price} required.\nDo you want to recharge now?`)) {
+                if (confirm(`Insufficient Balance! ₹${price} required.\nWould you like to Recharge now?`)) {
                     window.location.href = "./recharge.html";
                 }
                 return;
             }
 
-            if (!confirm(`Are you sure you want to buy this seed for ₹${price}?`)) {
+            if (!confirm(`Confirm purchase of ${planName} for ₹${price}?`)) {
                 return;
             }
 
             try {
-                // Deduct Balance
                 const newBal = currentBal - price;
-                const { error: updateErr } = await supabaseClient
+
+                // 1. Deduct balance in profiles table
+                const { error: balErr } = await supabaseClient
                     .from('profiles')
                     .update({ balance: newBal })
                     .eq('id', currentUser.id);
 
-                if (updateErr) throw updateErr;
+                if (balErr) throw balErr;
 
-                // Create Order record (optional table insert)
+                // 2. Insert order record
                 await supabaseClient.from('orders').insert({
                     user_id: currentUser.id,
-                    phone: localStorage.getItem('user_phone'),
+                    phone: currentUser.phone,
                     plan_id: planId,
+                    plan_name: planName,
                     amount: price,
                     status: 'active'
                 });
 
                 currentUser.balance = newBal;
                 localStorage.setItem('earnflow_user', JSON.stringify(currentUser));
-                document.getElementById('displayBalance').innerText = `₹${newBal.toFixed(2)}`;
+                document.getElementById('totalBalanceVal').innerText = `₹${newBal.toFixed(2)}`;
 
-                alert("🎉 Seed successfully planted! Daily returns will start crediting.");
+                alert(`🎉 ${planName} successfully purchased! Daily earnings are now active.`);
             } catch (err) {
-                alert("❌ Transaction failed: " + err.message);
+                alert("❌ Purchase failed: " + err.message);
             }
         }
 
-        // Global Logout Handler
-        function handleLogout() {
-            if (confirm("Are you sure you want to log out?")) {
-                localStorage.clear();
-                window.location.replace("./login.html");
-            }
-        }
-
-        // Run On Page Load
+        // Initialize Page
         window.addEventListener('DOMContentLoaded', () => {
-            syncLiveUserData();
-            renderPlans();
+            fetchUserData();
         });
     </script>
 </body>
 </html>
-
