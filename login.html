@@ -41,7 +41,30 @@
             </div>
             <button type="submit" id="loginBtn" class="btn-submit">Sign In</button>
         </form>
+<!-- Forgot Password Link -->
+<div style="text-align: right; margin: -6px 0 14px;">
+    <a href="javascript:void(0)" onclick="openForgotModal()" style="font-size: 13px; color: #16a34a; text-decoration: none; font-weight: 600;">Forgot Password?</a>
+</div>
 
+<!-- Forgot Password Popup Modal -->
+<div id="forgotModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; padding: 16px;">
+    <div style="background: #ffffff; border-radius: 16px; padding: 24px; width: 100%; max-width: 360px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">Reset Password 🔑</h3>
+        <p style="font-size: 13px; color: #64748b; margin: 0 0 16px;">Apna registered 10-digit number aur naya password enter karein.</p>
+
+        <label style="font-size: 12px; font-weight: 700; color: #475569;">Mobile Number</label>
+        <input type="tel" id="forgotPhone" placeholder="Enter 10-digit number" maxlength="10" style="width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; margin: 6px 0 12px; font-size: 14px; box-sizing: border-box;" />
+
+        <label style="font-size: 12px; font-weight: 700; color: #475569;">New Password</label>
+        <input type="password" id="forgotNewPassword" placeholder="Enter new password" style="width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; margin: 6px 0 18px; font-size: 14px; box-sizing: border-box;" />
+
+        <div style="display: flex; gap: 10px;">
+            <button type="button" onclick="closeForgotModal()" style="flex: 1; padding: 11px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 8px; font-weight: 700; color: #475569; cursor: pointer;">Cancel</button>
+            <button type="button" id="btnSubmitReset" onclick="handlePasswordReset()" style="flex: 1; padding: 11px; border: none; background: #16a34a; color: #ffffff; border-radius: 8px; font-weight: 700; cursor: pointer;">Reset Now</button>
+        </div>
+    </div>
+</div>
+        
         <div class="footer-text">
             Don't have an account? <a href="register.html">Register</a>
         </div>
@@ -93,6 +116,56 @@
                 btn.innerText = "Sign In";
             }
         }
+        function openForgotModal() {
+    document.getElementById('forgotModal').style.display = 'flex';
+}
+
+function closeForgotModal() {
+    document.getElementById('forgotModal').style.display = 'none';
+    document.getElementById('forgotPhone').value = '';
+    document.getElementById('forgotNewPassword').value = '';
+}
+
+async function handlePasswordReset() {
+    const phone = document.getElementById('forgotPhone').value.trim();
+    const newPassword = document.getElementById('forgotNewPassword').value.trim();
+    const btn = document.getElementById('btnSubmitReset');
+
+    if (!phone || phone.length !== 10) {
+        alert("Please enter a valid 10-digit mobile number.");
+        return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+        alert("New password must be at least 6 characters long.");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "Updating...";
+
+    try {
+        const { data, error } = await supabaseClient.rpc('reset_password_by_phone', {
+            target_phone: phone,
+            new_password: newPassword
+        });
+
+        if (error) throw error;
+
+        if (data === true) {
+            alert("✅ Password reset successful! Aap naye password se login kar sakte hain.");
+            closeForgotModal();
+        } else {
+            alert("❌ Mobile number not found. Kripya check karein ya naya account banayein.");
+        }
+    } catch (err) {
+        console.error("Reset error:", err);
+        alert("❌ Failed to reset password: " + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Reset Now";
+    }
+                                                  }
+                
     </script>
 </body>
 </html>
